@@ -39,6 +39,11 @@ export default function Dashboard() {
   const [crawling, setCrawling] = useState(false);
   const [crawlResults, setCrawlResults] = useState<CrawlResponse | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [modifying, setModifying] = useState(false);
+  const [modificationRequest, setModificationRequest] = useState('');
+  const [editableScript, setEditableScript] = useState('');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [savingScript, setSavingScript] = useState(false);
   
   // Script maintenance states
   const [maintenanceDocUrl, setMaintenanceDocUrl] = useState('');
@@ -226,8 +231,10 @@ export default function Dashboard() {
             
             // Populate existing data
             setPrompt(latestProject.prompt || '');
-            setGeneratedScript(latestProject.script || '');
+            setGeneratedScript(''); // Clear this so UI shows selectedProject.script
             setDocumentationUrl(latestProject.scrapedUrl || '');
+            setEditableScript(latestProject.script || '');
+            setHasUnsavedChanges(false);
             
             // If project has scraped content, create mock crawl results to show the green box
             if (latestProject.scrapedContent && latestProject.scrapedPages) {
@@ -250,8 +257,10 @@ export default function Dashboard() {
           } else {
             // Fallback to using the project data we already have
             setPrompt(selectedProject.prompt || '');
-            setGeneratedScript(selectedProject.script || '');
+            setGeneratedScript(''); // Clear this so UI shows selectedProject.script
             setDocumentationUrl(selectedProject.scrapedUrl || '');
+            setEditableScript(selectedProject.script || '');
+            setHasUnsavedChanges(false);
             
             if (selectedProject.scrapedContent && selectedProject.scrapedPages) {
               const scrapedPages = selectedProject.scrapedPages;
@@ -275,8 +284,10 @@ export default function Dashboard() {
           console.error('Error loading project data:', error);
           // Fallback to existing data
           setPrompt(selectedProject.prompt || '');
-          setGeneratedScript(selectedProject.script || '');
+          setGeneratedScript(''); // Clear this so UI shows selectedProject.script
           setDocumentationUrl(selectedProject.scrapedUrl || '');
+          setEditableScript(selectedProject.script || '');
+          setHasUnsavedChanges(false);
           setCrawlResults(null);
         }
       }
@@ -301,6 +312,9 @@ export default function Dashboard() {
     setUserRequest('');
     setGeneratedScript('');
     setCrawlResults(null);
+    setEditableScript('');
+    setHasUnsavedChanges(false);
+    setModificationRequest('');
     // Clear maintenance data
     setMaintenanceDocUrl('');
     setMaintenanceSpecificUrls('');
@@ -463,6 +477,8 @@ export default function Dashboard() {
 
       if (result.success && result.script) {
         setGeneratedScript(result.script);
+        setEditableScript(result.script);
+        setHasUnsavedChanges(false);
         
         // Save the generated script to the project via API
         if (selectedProject) {
@@ -509,6 +525,93 @@ export default function Dashboard() {
     setTimeout(() => {
       console.log('⏰ Timeout check - generating state should be false now');
     }, 50);
+  };
+
+  const handleModifyScript = async () => {
+    if (!selectedProject?.script || !modificationRequest.trim()) return;
+    
+    console.log('✏️ Starting script modification...');
+    setModifying(true);
+    setGeneratedScript('✏️ Modifying script with AI...\n\nPlease wait while we apply your requested changes to the existing script.');
+    
+    try {
+      const response = await fetch('/api/modify-script', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: selectedProject.id,
+          currentScript: selectedProject.script,
+          modificationRequest: modificationRequest,
+          documentationContent: selectedProject.scrapedContent || ''
+        })
+      });
+
+      const data = await response.json();
+      console.log('📝 Script modification completed:', data.success);
+
+      if (data.success && data.script) {
+        setGeneratedScript(data.script);
+        setEditableScript(data.script);
+        setHasUnsavedChanges(false);
+        // Update the selected project with the new script
+        setSelectedProject(prev => prev ? { ...prev, script: data.script } : null);
+        console.log('✅ Script modified and updated successfully');
+      } else {
+        setGeneratedScript(`❌ Script modification failed: ${data.error || 'Unknown error'}\n\nPlease check your request and try again.`);
+      }
+    } catch (error) {
+      console.error('Script modification error:', error);
+      setGeneratedScript(`❌ Script modification failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try again.`);
+    }
+    
+    setModifying(false);
+    console.log('🏁 Script modification finished');
+  };
+
+  const handleManualScriptSave = async () => {
+    if (!selectedProject || !editableScript.trim()) return;
+    
+    console.log('💾 Saving manually edited script...');
+    setSavingScript(true);
+    
+    try {
+      const response = await fetch('/api/save-script', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: selectedProject.id,
+          script: editableScript
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        console.log('✅ Manual script saved successfully');
+        // Update the selected project with the new script
+        setSelectedProject(prev => prev ? { ...prev, script: editableScript } : null);
+        setHasUnsavedChanges(false);
+        setGeneratedScript(''); // Clear to show the updated project script
+      } else {
+        console.error('❌ Error saving manual script:', data.error);
+        alert('Failed to save script: ' + data.error);
+      }
+    } catch (error) {
+      console.error('❌ Manual script save error:', error);
+      alert('Failed to save script: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+    
+    setSavingScript(false);
+  };
+
+  const handleScriptChange = (newScript: string) => {
+    setEditableScript(newScript);
+    // Check if there are unsaved changes
+    const currentScript = selectedProject?.script || '';
+    setHasUnsavedChanges(newScript !== currentScript);
   };
 
   const handleCheckScriptUpdates = async () => {
@@ -1320,79 +1423,191 @@ https://docs.example.com/api-reference`}
                    )}
                  </div>
                  
-                 {/* User Request */}
-                 <div className="bg-white p-4 rounded-lg border border-gray-200">
-                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                     What should this tutorial teach? *
-                   </label>
-                   <textarea
-                     value={userRequest}
-                     onChange={(e) => setUserRequest(e.target.value)}
-                     className="input-field resize-none"
-                     rows={4}
-                     placeholder="e.g., How to create a new product in the system, How to set up user permissions, etc."
-                   />
-                 </div>
+                 {/* Dynamic Content: Script Generation vs Modification */}
+                 {selectedProject?.script ? (
+                   /* Script Modification Mode */
+                   <>
+                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                       <div className="flex items-center mb-3">
+                         <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                         <span className="text-sm font-medium text-blue-800">Script Modification Mode</span>
+                       </div>
+                       <p className="text-sm text-blue-700">
+                         A script already exists for this project. Describe what changes you'd like to make, and AI will modify the existing script while preserving its structure and style.
+                       </p>
+                     </div>
 
-                 {/* Script Prompt Template */}
-                 <div className="bg-white p-4 rounded-lg border border-gray-200">
-                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                     AI Prompt Template
-                     <span className="text-xs text-gray-500 ml-2">(Auto-filled based on video type)</span>
-                   </label>
-                   <textarea
-                     value={prompt}
-                     onChange={(e) => setPrompt(e.target.value)}
-                     className="input-field resize-none text-xs"
-                     rows={8}
-                     placeholder="AI prompt template..."
-                   />
-                 </div>
-                 
-                 {/* Generate Button */}
-                 <div className="pt-2">
-                   <button 
-                     onClick={() => {
-                       console.log('🔘 Generate button clicked, generating state:', generating);
-                       handleGenerateScript();
-                     }}
-                     disabled={!crawlResults?.success || !prompt.trim() || !userRequest.trim() || generating}
-                     className="w-full bg-primary-600 text-white py-4 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
-                   >
-                   {generating ? (
-                     <>
-                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                       Generating Script...
-                     </>
-                   ) : (
-                     'Generate Script with Gemini AI'
-                   )}
-                   </button>
-                 </div>
+                     <div className="bg-white p-4 rounded-lg border border-gray-200">
+                       <label className="block text-sm font-medium text-gray-700 mb-3">
+                         What changes would you like to make to the script? *
+                       </label>
+                       <textarea
+                         value={modificationRequest}
+                         onChange={(e) => setModificationRequest(e.target.value)}
+                         className="input-field resize-none"
+                         rows={4}
+                         placeholder="e.g., Make the introduction shorter and more engaging, Add more examples in the setup section, Change the tone to be more casual, etc."
+                       />
+                     </div>
+
+                     <div className="pt-2">
+                       <button 
+                         onClick={handleModifyScript}
+                         disabled={!modificationRequest.trim() || modifying}
+                         className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
+                       >
+                         {modifying ? (
+                           <>
+                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                             Modifying Script...
+                           </>
+                         ) : (
+                           'Modify Script with AI'
+                         )}
+                       </button>
+                     </div>
+
+                     <div className="pt-2">
+                       <button 
+                         onClick={() => {
+                           if (confirm('Are you sure you want to generate a completely new script? This will replace the existing script.')) {
+                             setSelectedProject(prev => prev ? { ...prev, script: undefined } : null);
+                             setModificationRequest('');
+                           }
+                         }}
+                         className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 font-medium text-sm"
+                       >
+                         Generate New Script Instead
+                       </button>
+                     </div>
+                   </>
+                 ) : (
+                   /* Original Script Generation Mode */
+                   <>
+                     <div className="bg-white p-4 rounded-lg border border-gray-200">
+                       <label className="block text-sm font-medium text-gray-700 mb-3">
+                         What should this tutorial teach? *
+                       </label>
+                       <textarea
+                         value={userRequest}
+                         onChange={(e) => setUserRequest(e.target.value)}
+                         className="input-field resize-none"
+                         rows={4}
+                         placeholder="e.g., How to create a new product in the system, How to set up user permissions, etc."
+                       />
+                     </div>
+
+                     <div className="bg-white p-4 rounded-lg border border-gray-200">
+                       <label className="block text-sm font-medium text-gray-700 mb-3">
+                         AI Prompt Template
+                         <span className="text-xs text-gray-500 ml-2">(Auto-filled based on video type)</span>
+                       </label>
+                       <textarea
+                         value={prompt}
+                         onChange={(e) => setPrompt(e.target.value)}
+                         className="input-field resize-none text-xs"
+                         rows={8}
+                         placeholder="AI prompt template..."
+                       />
+                     </div>
+                     
+                     <div className="pt-2">
+                       <button 
+                         onClick={() => {
+                           console.log('🔘 Generate button clicked, generating state:', generating);
+                           handleGenerateScript();
+                         }}
+                         disabled={!crawlResults?.success || !prompt.trim() || !userRequest.trim() || generating}
+                         className="w-full bg-primary-600 text-white py-4 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
+                       >
+                         {generating ? (
+                           <>
+                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                             Generating Script...
+                           </>
+                         ) : (
+                           'Generate Script with Gemini AI'
+                         )}
+                       </button>
+                     </div>
+                   </>
+                 )}
                </div>
               
                              {/* Right Column - Generated Script */}
                <div className="lg:col-span-3 flex flex-col min-h-0">
-                 <label className="block text-sm font-medium text-gray-700 mb-2 flex-shrink-0">
-                   Generated Script
-                 </label>
-                 <div className="bg-gray-50 text-gray-900 p-6 rounded-lg border border-gray-200 overflow-y-auto flex-1">
-                   {generatedScript ? (
-                     <div className="whitespace-pre-wrap font-sans leading-relaxed">{generatedScript}</div>
-                   ) : (
-                     <div className="text-gray-500 font-sans">
-                       Generated script will appear here...
-                       <br /><br />
-                       Steps:
-                       <br />1. Enter documentation URL
-                       <br />2. Click "Crawl" to discover all pages
-                       <br />3. Describe what the tutorial should teach
-                       <br />4. Click "Generate Script with Gemini AI"
-                       <br /><br />
-                       💡 Tip: Be specific about what you want to teach!
+                 <div className="flex items-center justify-between mb-2 flex-shrink-0">
+                   <label className="block text-sm font-medium text-gray-700">
+                     {selectedProject?.script ? 'Script Editor' : 'Generated Script'}
+                   </label>
+                   {hasUnsavedChanges && (
+                     <div className="flex items-center space-x-2">
+                       <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                         Unsaved changes
+                       </span>
+                       <button
+                         onClick={handleManualScriptSave}
+                         disabled={savingScript}
+                         className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                       >
+                         {savingScript ? (
+                           <>
+                             <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
+                             Saving...
+                           </>
+                         ) : (
+                           'Save'
+                         )}
+                       </button>
                      </div>
                    )}
                  </div>
+                 
+                 {generatedScript || selectedProject?.script || editableScript ? (
+                   <textarea
+                     value={generatedScript || editableScript}
+                     onChange={(e) => {
+                       if (!generatedScript) {
+                         // Only allow editing if not showing a freshly generated script
+                         handleScriptChange(e.target.value);
+                       }
+                     }}
+                     className="bg-gray-50 text-gray-900 p-6 rounded-lg border border-gray-200 flex-1 resize-none font-sans leading-relaxed text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     placeholder={selectedProject?.script ? "Edit your script here..." : "Generated script will appear here..."}
+                     readOnly={!!generatedScript}
+                   />
+                 ) : (
+                   <div className="bg-gray-50 text-gray-500 p-6 rounded-lg border border-gray-200 overflow-y-auto flex-1 font-sans">
+                     Generated script will appear here...
+                     <br /><br />
+                     Steps:
+                     <br />1. Enter documentation URL
+                     <br />2. Click "Crawl" to discover all pages
+                     <br />3. Describe what the tutorial should teach
+                     <br />4. Click "Generate Script with Gemini AI"
+                     <br /><br />
+                     💡 Tip: Be specific about what you want to teach!
+                   </div>
+                 )}
+                 
+                 {hasUnsavedChanges && (
+                   <div className="mt-3 flex-shrink-0">
+                     <button
+                       onClick={handleManualScriptSave}
+                       disabled={savingScript}
+                       className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                     >
+                       {savingScript ? (
+                         <>
+                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                           Saving Script...
+                         </>
+                       ) : (
+                         'Save Script Changes'
+                       )}
+                     </button>
+                   </div>
+                 )}
                </div>
             </div>
           </div>
