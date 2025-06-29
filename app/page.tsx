@@ -480,6 +480,11 @@ export default function Dashboard() {
         setEditableScript(result.script);
         setHasUnsavedChanges(false);
         
+        // Clear generatedScript after a short delay to allow manual editing
+        setTimeout(() => {
+          setGeneratedScript('');
+        }, 2000); // Show the result for 2 seconds, then allow editing
+        
         // Save the generated script to the project via API
         if (selectedProject) {
           try {
@@ -558,6 +563,11 @@ export default function Dashboard() {
         // Update the selected project with the new script
         setSelectedProject(prev => prev ? { ...prev, script: data.script } : null);
         console.log('✅ Script modified and updated successfully');
+        
+        // Clear generatedScript after a short delay to allow manual editing
+        setTimeout(() => {
+          setGeneratedScript('');
+        }, 2000); // Show the result for 2 seconds, then allow editing
       } else {
         setGeneratedScript(`❌ Script modification failed: ${data.error || 'Unknown error'}\n\nPlease check your request and try again.`);
       }
@@ -1572,8 +1582,16 @@ https://docs.example.com/api-reference`}
                          handleScriptChange(e.target.value);
                        }
                      }}
-                     className="bg-gray-50 text-gray-900 p-6 rounded-lg border border-gray-200 flex-1 resize-none font-sans leading-relaxed text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                     placeholder={selectedProject?.script ? "Edit your script here..." : "Generated script will appear here..."}
+                     className={`${
+                       generatedScript 
+                         ? 'bg-blue-50 border-blue-200' 
+                         : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                     } text-gray-900 p-6 rounded-lg border flex-1 resize-none font-sans leading-relaxed text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200`}
+                     placeholder={
+                       generatedScript 
+                         ? "✨ Fresh AI result - will become editable in a moment..." 
+                         : (selectedProject?.script ? "Edit your script here..." : "Generated script will appear here...")
+                     }
                      readOnly={!!generatedScript}
                    />
                  ) : (
