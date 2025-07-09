@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+interface SearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+  position: number;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { query, numResults = 10 } = await request.json();
@@ -54,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Format results from Google Custom Search API
-    const results = (data.items || []).map((item: any, index: number) => ({
+    const results: SearchResult[] = (data.items || []).map((item: any, index: number) => ({
       title: item.title || 'No title',
       link: item.link || '',
       snippet: item.snippet || 'No description available',
@@ -68,7 +75,7 @@ export async function POST(request: NextRequest) {
     console.log('\n📚 Web Pages Found:');
     console.log('=' .repeat(80));
     
-    results.forEach((result, index) => {
+    results.forEach((result: SearchResult, index: number) => {
       console.log(`\n${index + 1}. 📄 ${result.title}`);
       console.log(`🔗 URL: ${result.link}`);
       console.log(`📝 Content Preview:`);
