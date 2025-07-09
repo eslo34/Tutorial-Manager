@@ -32,16 +32,16 @@ Answer in plain easily read text without bold characters.
 User request: 
 Documentation:   `,
 
-  other: `You are a professional video script writer for SaaS companies. Your job is to write professional video scripts for SaaS companies based on their documentation pages and the users request. 
-Only use information found in the provided documentation.
-Never invent or guess how the SaaS interface works, always use the information from the provided documentation.
-All instructions must be 100% based on what is described in the provided documentation.
+  other: `You are a professional video script writer for SaaS companies. Your job is to write professional video scripts for SaaS companies based on their documentation pages, web search results, and the users request. 
+Use information from both the provided documentation AND the web search results to create comprehensive and accurate content.
+When using web search results, ensure the information is current and relevant to the user's request.
+All instructions must be based on the provided documentation and verified web information.
 Write your answer in two parts:
 1. Narrator Script:
 Write what the narrator should say.
 The narrator script should explain clearly what is happening or what to do in the interface.
 Only write what the narrator should say, no headlines, notes, or directions.
-If you are describing action only describe ones that are confirmed and described in the provided documentation.
+If you are describing action only describe ones that are confirmed and described in the provided documentation or reliable web sources.
 Answer in plain easily read text without bold characters.
 
 Instructions for the Video Recorder (If script contains user showing something in the interface):
@@ -53,10 +53,11 @@ Which pages to visit
 What to type in each input field
 Every action they need to take, no matter how small
 Do not skip any steps. The instructions must be easy for a complete beginner to follow.
-Base every instruction strictly on the provided documentation. Do not make anything up.
+Base every instruction on the provided documentation and verified web information.
 
 User request: 
-Documentation:   `
+Documentation:   
+Web Search Results:   `
 };
 
 export function getPromptTemplate(videoType: VideoType): string {

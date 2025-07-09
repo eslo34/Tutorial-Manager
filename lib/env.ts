@@ -6,6 +6,11 @@ export function validateEnv() {
     'GEMINI_API_KEY'
   ]
 
+  const optionalEnvVars = [
+    'GOOGLE_SEARCH_API_KEY', // Optional for web search functionality
+    'GOOGLE_SEARCH_ENGINE_ID' // Optional for web search functionality
+  ]
+
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName])
 
   if (missingVars.length > 0) {
@@ -26,5 +31,7 @@ export const env = {
   DATABASE_URL: process.env.DATABASE_URL || 'postgresql://placeholder',
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'placeholder-secret',
   NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
-  GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'placeholder-key'
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'placeholder-key',
+  GOOGLE_SEARCH_API_KEY: process.env.GOOGLE_SEARCH_API_KEY || '', // Optional for web search
+  GOOGLE_SEARCH_ENGINE_ID: process.env.GOOGLE_SEARCH_ENGINE_ID || '' // Optional for web search
 } 

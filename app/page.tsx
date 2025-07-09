@@ -448,29 +448,36 @@ export default function Dashboard() {
   };
 
   const handleGenerateScript = async () => {
-    if (!crawlResults?.success || !prompt.trim() || !userRequest.trim()) return;
+    // For tutorial projects, crawling is required. For other projects, it's optional
+    const requiresCrawling = selectedProject?.videoType === 'tutorial';
+    if (requiresCrawling && !crawlResults?.success) return;
+    if (!prompt.trim() || !userRequest.trim()) return;
     
     console.log('🤖 Starting script generation...');
     setGenerating(true);
     setGeneratedScript('🤖 Generating script with Gemini AI...\n\nPlease wait while we create your professional video script based on the crawled documentation.');
     
     try {
-      // Use stored scraped content if available, otherwise use current crawl results
-      let documentationContent: string;
+      // Use stored scraped content if available, otherwise use current crawl results, or empty for 'other' projects
+      let documentationContent: string = '';
       if (selectedProject?.scrapedContent) {
         console.log('📄 Using stored scraped content from database');
         console.log('📏 Stored content length:', selectedProject.scrapedContent.length);
         console.log('📄 First 200 chars of stored content:', selectedProject.scrapedContent.substring(0, 200));
         documentationContent = selectedProject.scrapedContent;
-      } else {
+      } else if (crawlResults?.success && crawlResults) {
         console.log('📄 Using current crawl results');
         documentationContent = aggregateContent(crawlResults);
+      } else if (selectedProject?.videoType === 'other') {
+        console.log('📄 No documentation required for "other" project - will use web search only');
+        documentationContent = '';
       }
 
       const result = await generateScript({
         prompt: prompt,
         userRequest: userRequest,
-        documentationContent: documentationContent
+        documentationContent: documentationContent,
+        videoType: selectedProject?.videoType || 'tutorial'
       });
 
       console.log('📝 Script generation completed:', result.success);
@@ -1292,6 +1299,19 @@ export default function Dashboard() {
                      Documentation Scraping
                    </label>
                    
+                   {/* Optional crawling notice for 'other' projects */}
+                   {selectedProject?.videoType === 'other' && (
+                     <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                       <div className="flex items-center mb-1">
+                         <span className="text-sm font-medium text-blue-800">💡 Optional for this project type</span>
+                       </div>
+                       <p className="text-xs text-blue-700">
+                         For "Other" projects, documentation crawling is optional since the AI will search the web for current information. 
+                         You can skip to script generation or add specific company documentation if needed.
+                       </p>
+                     </div>
+                   )}
+                   
                    {/* Mode Toggle */}
                    <div className="mb-4">
                      <div className="flex space-x-4">
@@ -1527,7 +1547,12 @@ https://docs.example.com/api-reference`}
                            console.log('🔘 Generate button clicked, generating state:', generating);
                            handleGenerateScript();
                          }}
-                         disabled={!crawlResults?.success || !prompt.trim() || !userRequest.trim() || generating}
+                         disabled={
+                           (selectedProject?.videoType === 'tutorial' && !crawlResults?.success) || 
+                           !prompt.trim() || 
+                           !userRequest.trim() || 
+                           generating
+                         }
                          className="w-full bg-primary-600 text-white py-4 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
                        >
                          {generating ? (
@@ -1599,12 +1624,24 @@ https://docs.example.com/api-reference`}
                      Generated script will appear here...
                      <br /><br />
                      Steps:
-                     <br />1. Enter documentation URL
-                     <br />2. Click "Crawl" to discover all pages
-                     <br />3. Describe what the tutorial should teach
-                     <br />4. Click "Generate Script with Gemini AI"
-                     <br /><br />
-                     💡 Tip: Be specific about what you want to teach!
+                     {selectedProject?.videoType === 'other' ? (
+                       <>
+                         <br />1. Describe what the video should cover
+                         <br />2. Click "Generate Script with Gemini AI"
+                         <br />3. Optional: Add documentation if needed
+                         <br /><br />
+                         💡 For "Other" projects, the AI will search the web for current information!
+                       </>
+                     ) : (
+                       <>
+                         <br />1. Enter documentation URL
+                         <br />2. Click "Crawl" to discover all pages
+                         <br />3. Describe what the tutorial should teach
+                         <br />4. Click "Generate Script with Gemini AI"
+                         <br /><br />
+                         💡 Tip: Be specific about what you want to teach!
+                       </>
+                     )}
                    </div>
                  )}
                  

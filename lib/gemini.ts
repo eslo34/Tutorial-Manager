@@ -2,6 +2,7 @@ export interface ScriptGenerationRequest {
   prompt: string;
   userRequest: string;
   documentationContent: string;
+  videoType?: 'tutorial' | 'other';
 }
 
 export interface ScriptGenerationResponse {
