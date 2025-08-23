@@ -24,6 +24,12 @@ export async function GET(request: NextRequest) {
       email: client.email,
       createdAt: client.created_at,
       updatedAt: client.updated_at,
+      scrapedContent: client.scraped_content,
+      scrapedPages: client.scraped_pages,
+      scrapedChars: client.scraped_chars,
+      scrapedWords: client.scraped_words,
+      scrapedAt: client.scraped_at,
+      scrapedUrl: client.scraped_url,
     }))
 
     return NextResponse.json({ clients: transformedClients })
@@ -41,19 +47,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, company, email } = await request.json()
+    const { 
+      name, 
+      company, 
+      email, 
+      scrapedContent, 
+      scrapedPages, 
+      scrapedChars, 
+      scrapedWords, 
+      scrapedUrl, 
+      scrapedAt 
+    } = await request.json()
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 })
     }
 
+    const clientData: any = {
+      name,
+      company: company || '',
+      email: email || '',
+      user_id: session.user.id
+    }
+
+    // Add documentation fields if provided
+    if (scrapedContent) {
+      clientData.scraped_content = scrapedContent
+      clientData.scraped_pages = scrapedPages || 0
+      clientData.scraped_chars = scrapedChars || 0
+      clientData.scraped_words = scrapedWords || 0
+      clientData.scraped_url = scrapedUrl || ''
+      clientData.scraped_at = scrapedAt ? new Date(scrapedAt) : new Date()
+    }
+
     const client = await prisma.client.create({
-      data: {
-        name,
-        company: company || '',
-        email: email || '',
-        user_id: session.user.id
-      }
+      data: clientData
     })
 
     // Transform snake_case to camelCase for frontend
@@ -64,6 +92,12 @@ export async function POST(request: NextRequest) {
       email: client.email,
       createdAt: client.created_at,
       updatedAt: client.updated_at,
+      scrapedContent: client.scraped_content,
+      scrapedPages: client.scraped_pages,
+      scrapedChars: client.scraped_chars,
+      scrapedWords: client.scraped_words,
+      scrapedAt: client.scraped_at,
+      scrapedUrl: client.scraped_url,
     }
 
     return NextResponse.json({ client: transformedClient })

@@ -25,6 +25,7 @@ model User {
   // Relations
   clients    Client[]
   projects   Project[]
+  learning_sessions LearningSession[]
   
   @@map("users")
 }
@@ -38,9 +39,18 @@ model Client {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   
+  // Documentation fields
+  scraped_content     String?
+  scraped_pages       Int?
+  scraped_chars       Int?
+  scraped_words       Int?
+  scraped_at          DateTime?
+  scraped_url         String?
+  
   // Relations
   user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   projects   Project[]
+  learning_sessions   LearningSession[]
   
   @@map("clients")
 }
@@ -68,8 +78,80 @@ model Project {
   video_type          String?
   
   // Relations
-  user                User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  client              Client   @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  user                User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  client              Client         @relation(fields: [client_id], references: [id], onDelete: Cascade)
   
   @@map("projects")
+}
+
+model LearningSession {
+  id                    String   @id @default(cuid())
+  client_id             String
+  user_id               String
+  software_name         String
+  documentation_summary String?
+  current_phase         String   @default("getting_started") // getting_started, exploring, practicing, mastering
+  completion_percentage Float    @default(0.0)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+  
+  // Relations
+  user                  User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  client                Client         @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  tasks                 LearningTask[]
+  progress              LearningProgress[]
+  chat_messages         LearningChatMessage[]
+  
+  @@map("learning_sessions")
+}
+
+model LearningTask {
+  id                    String   @id @default(cuid())
+  learning_session_id   String
+  title                 String
+  description           String
+  instructions          String
+  category              String   // navigation, basic_features, advanced_features, integrations, etc.
+  difficulty_level      Int      @default(1) // 1-5
+  estimated_minutes     Int?
+  prerequisites         String[] // IDs of tasks that should be completed first
+  is_completed          Boolean  @default(false)
+  completed_at          DateTime?
+  user_notes            String?
+  created_at            DateTime @default(now())
+  
+  // Relations
+  learning_session      LearningSession @relation(fields: [learning_session_id], references: [id], onDelete: Cascade)
+  
+  @@map("learning_tasks")
+}
+
+model LearningProgress {
+  id                    String   @id @default(cuid())
+  learning_session_id   String
+  category              String   // Same as task categories
+  mastery_level         Float    @default(0.0) // 0.0-1.0
+  tasks_completed       Int      @default(0)
+  total_tasks           Int      @default(0)
+  last_activity         DateTime @default(now())
+  
+  // Relations
+  learning_session      LearningSession @relation(fields: [learning_session_id], references: [id], onDelete: Cascade)
+  
+  @@unique([learning_session_id, category])
+  @@map("learning_progress")
+}
+
+model LearningChatMessage {
+  id                    String   @id @default(cuid())
+  learning_session_id   String
+  role                  String   // user, assistant, system
+  content               String
+  message_type          String   @default("chat") // chat, task_assignment, progress_update, guidance
+  created_at            DateTime @default(now())
+  
+  // Relations
+  learning_session      LearningSession @relation(fields: [learning_session_id], references: [id], onDelete: Cascade)
+  
+  @@map("learning_chat_messages")
 }

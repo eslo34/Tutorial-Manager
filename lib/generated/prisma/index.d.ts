@@ -28,6 +28,26 @@ export type Client = $Result.DefaultSelection<Prisma.$ClientPayload>
  * 
  */
 export type Project = $Result.DefaultSelection<Prisma.$ProjectPayload>
+/**
+ * Model LearningSession
+ * 
+ */
+export type LearningSession = $Result.DefaultSelection<Prisma.$LearningSessionPayload>
+/**
+ * Model LearningTask
+ * 
+ */
+export type LearningTask = $Result.DefaultSelection<Prisma.$LearningTaskPayload>
+/**
+ * Model LearningProgress
+ * 
+ */
+export type LearningProgress = $Result.DefaultSelection<Prisma.$LearningProgressPayload>
+/**
+ * Model LearningChatMessage
+ * 
+ */
+export type LearningChatMessage = $Result.DefaultSelection<Prisma.$LearningChatMessagePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -183,6 +203,46 @@ export class PrismaClient<
     * ```
     */
   get project(): Prisma.ProjectDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.learningSession`: Exposes CRUD operations for the **LearningSession** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LearningSessions
+    * const learningSessions = await prisma.learningSession.findMany()
+    * ```
+    */
+  get learningSession(): Prisma.LearningSessionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.learningTask`: Exposes CRUD operations for the **LearningTask** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LearningTasks
+    * const learningTasks = await prisma.learningTask.findMany()
+    * ```
+    */
+  get learningTask(): Prisma.LearningTaskDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.learningProgress`: Exposes CRUD operations for the **LearningProgress** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LearningProgresses
+    * const learningProgresses = await prisma.learningProgress.findMany()
+    * ```
+    */
+  get learningProgress(): Prisma.LearningProgressDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.learningChatMessage`: Exposes CRUD operations for the **LearningChatMessage** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LearningChatMessages
+    * const learningChatMessages = await prisma.learningChatMessage.findMany()
+    * ```
+    */
+  get learningChatMessage(): Prisma.LearningChatMessageDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -625,7 +685,11 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Client: 'Client',
-    Project: 'Project'
+    Project: 'Project',
+    LearningSession: 'LearningSession',
+    LearningTask: 'LearningTask',
+    LearningProgress: 'LearningProgress',
+    LearningChatMessage: 'LearningChatMessage'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -644,7 +708,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "client" | "project"
+      modelProps: "user" | "client" | "project" | "learningSession" | "learningTask" | "learningProgress" | "learningChatMessage"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -870,6 +934,302 @@ export namespace Prisma {
           }
         }
       }
+      LearningSession: {
+        payload: Prisma.$LearningSessionPayload<ExtArgs>
+        fields: Prisma.LearningSessionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LearningSessionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LearningSessionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload>
+          }
+          findFirst: {
+            args: Prisma.LearningSessionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LearningSessionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload>
+          }
+          findMany: {
+            args: Prisma.LearningSessionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload>[]
+          }
+          create: {
+            args: Prisma.LearningSessionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload>
+          }
+          createMany: {
+            args: Prisma.LearningSessionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LearningSessionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload>[]
+          }
+          delete: {
+            args: Prisma.LearningSessionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload>
+          }
+          update: {
+            args: Prisma.LearningSessionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload>
+          }
+          deleteMany: {
+            args: Prisma.LearningSessionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LearningSessionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LearningSessionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload>[]
+          }
+          upsert: {
+            args: Prisma.LearningSessionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningSessionPayload>
+          }
+          aggregate: {
+            args: Prisma.LearningSessionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLearningSession>
+          }
+          groupBy: {
+            args: Prisma.LearningSessionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LearningSessionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LearningSessionCountArgs<ExtArgs>
+            result: $Utils.Optional<LearningSessionCountAggregateOutputType> | number
+          }
+        }
+      }
+      LearningTask: {
+        payload: Prisma.$LearningTaskPayload<ExtArgs>
+        fields: Prisma.LearningTaskFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LearningTaskFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LearningTaskFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload>
+          }
+          findFirst: {
+            args: Prisma.LearningTaskFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LearningTaskFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload>
+          }
+          findMany: {
+            args: Prisma.LearningTaskFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload>[]
+          }
+          create: {
+            args: Prisma.LearningTaskCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload>
+          }
+          createMany: {
+            args: Prisma.LearningTaskCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LearningTaskCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload>[]
+          }
+          delete: {
+            args: Prisma.LearningTaskDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload>
+          }
+          update: {
+            args: Prisma.LearningTaskUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload>
+          }
+          deleteMany: {
+            args: Prisma.LearningTaskDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LearningTaskUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LearningTaskUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload>[]
+          }
+          upsert: {
+            args: Prisma.LearningTaskUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningTaskPayload>
+          }
+          aggregate: {
+            args: Prisma.LearningTaskAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLearningTask>
+          }
+          groupBy: {
+            args: Prisma.LearningTaskGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LearningTaskGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LearningTaskCountArgs<ExtArgs>
+            result: $Utils.Optional<LearningTaskCountAggregateOutputType> | number
+          }
+        }
+      }
+      LearningProgress: {
+        payload: Prisma.$LearningProgressPayload<ExtArgs>
+        fields: Prisma.LearningProgressFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LearningProgressFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LearningProgressFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload>
+          }
+          findFirst: {
+            args: Prisma.LearningProgressFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LearningProgressFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload>
+          }
+          findMany: {
+            args: Prisma.LearningProgressFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload>[]
+          }
+          create: {
+            args: Prisma.LearningProgressCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload>
+          }
+          createMany: {
+            args: Prisma.LearningProgressCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LearningProgressCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload>[]
+          }
+          delete: {
+            args: Prisma.LearningProgressDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload>
+          }
+          update: {
+            args: Prisma.LearningProgressUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload>
+          }
+          deleteMany: {
+            args: Prisma.LearningProgressDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LearningProgressUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LearningProgressUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload>[]
+          }
+          upsert: {
+            args: Prisma.LearningProgressUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningProgressPayload>
+          }
+          aggregate: {
+            args: Prisma.LearningProgressAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLearningProgress>
+          }
+          groupBy: {
+            args: Prisma.LearningProgressGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LearningProgressGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LearningProgressCountArgs<ExtArgs>
+            result: $Utils.Optional<LearningProgressCountAggregateOutputType> | number
+          }
+        }
+      }
+      LearningChatMessage: {
+        payload: Prisma.$LearningChatMessagePayload<ExtArgs>
+        fields: Prisma.LearningChatMessageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LearningChatMessageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LearningChatMessageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload>
+          }
+          findFirst: {
+            args: Prisma.LearningChatMessageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LearningChatMessageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload>
+          }
+          findMany: {
+            args: Prisma.LearningChatMessageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload>[]
+          }
+          create: {
+            args: Prisma.LearningChatMessageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload>
+          }
+          createMany: {
+            args: Prisma.LearningChatMessageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LearningChatMessageCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload>[]
+          }
+          delete: {
+            args: Prisma.LearningChatMessageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload>
+          }
+          update: {
+            args: Prisma.LearningChatMessageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload>
+          }
+          deleteMany: {
+            args: Prisma.LearningChatMessageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LearningChatMessageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LearningChatMessageUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload>[]
+          }
+          upsert: {
+            args: Prisma.LearningChatMessageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LearningChatMessagePayload>
+          }
+          aggregate: {
+            args: Prisma.LearningChatMessageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLearningChatMessage>
+          }
+          groupBy: {
+            args: Prisma.LearningChatMessageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LearningChatMessageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LearningChatMessageCountArgs<ExtArgs>
+            result: $Utils.Optional<LearningChatMessageCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -957,6 +1317,10 @@ export namespace Prisma {
     user?: UserOmit
     client?: ClientOmit
     project?: ProjectOmit
+    learningSession?: LearningSessionOmit
+    learningTask?: LearningTaskOmit
+    learningProgress?: LearningProgressOmit
+    learningChatMessage?: LearningChatMessageOmit
   }
 
   /* Types for Logging */
@@ -1053,11 +1417,13 @@ export namespace Prisma {
   export type UserCountOutputType = {
     clients: number
     projects: number
+    learning_sessions: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     clients?: boolean | UserCountOutputTypeCountClientsArgs
     projects?: boolean | UserCountOutputTypeCountProjectsArgs
+    learning_sessions?: boolean | UserCountOutputTypeCountLearning_sessionsArgs
   }
 
   // Custom InputTypes
@@ -1085,6 +1451,13 @@ export namespace Prisma {
     where?: ProjectWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountLearning_sessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LearningSessionWhereInput
+  }
+
 
   /**
    * Count Type ClientCountOutputType
@@ -1092,10 +1465,12 @@ export namespace Prisma {
 
   export type ClientCountOutputType = {
     projects: number
+    learning_sessions: number
   }
 
   export type ClientCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     projects?: boolean | ClientCountOutputTypeCountProjectsArgs
+    learning_sessions?: boolean | ClientCountOutputTypeCountLearning_sessionsArgs
   }
 
   // Custom InputTypes
@@ -1114,6 +1489,62 @@ export namespace Prisma {
    */
   export type ClientCountOutputTypeCountProjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProjectWhereInput
+  }
+
+  /**
+   * ClientCountOutputType without action
+   */
+  export type ClientCountOutputTypeCountLearning_sessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LearningSessionWhereInput
+  }
+
+
+  /**
+   * Count Type LearningSessionCountOutputType
+   */
+
+  export type LearningSessionCountOutputType = {
+    tasks: number
+    progress: number
+    chat_messages: number
+  }
+
+  export type LearningSessionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tasks?: boolean | LearningSessionCountOutputTypeCountTasksArgs
+    progress?: boolean | LearningSessionCountOutputTypeCountProgressArgs
+    chat_messages?: boolean | LearningSessionCountOutputTypeCountChat_messagesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * LearningSessionCountOutputType without action
+   */
+  export type LearningSessionCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSessionCountOutputType
+     */
+    select?: LearningSessionCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * LearningSessionCountOutputType without action
+   */
+  export type LearningSessionCountOutputTypeCountTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LearningTaskWhereInput
+  }
+
+  /**
+   * LearningSessionCountOutputType without action
+   */
+  export type LearningSessionCountOutputTypeCountProgressArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LearningProgressWhereInput
+  }
+
+  /**
+   * LearningSessionCountOutputType without action
+   */
+  export type LearningSessionCountOutputTypeCountChat_messagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LearningChatMessageWhereInput
   }
 
 
@@ -1295,6 +1726,7 @@ export namespace Prisma {
     updated_at?: boolean
     clients?: boolean | User$clientsArgs<ExtArgs>
     projects?: boolean | User$projectsArgs<ExtArgs>
+    learning_sessions?: boolean | User$learning_sessionsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1329,6 +1761,7 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     clients?: boolean | User$clientsArgs<ExtArgs>
     projects?: boolean | User$projectsArgs<ExtArgs>
+    learning_sessions?: boolean | User$learning_sessionsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1339,6 +1772,7 @@ export namespace Prisma {
     objects: {
       clients: Prisma.$ClientPayload<ExtArgs>[]
       projects: Prisma.$ProjectPayload<ExtArgs>[]
+      learning_sessions: Prisma.$LearningSessionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -1743,6 +2177,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     clients<T extends User$clientsArgs<ExtArgs> = {}>(args?: Subset<T, User$clientsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     projects<T extends User$projectsArgs<ExtArgs> = {}>(args?: Subset<T, User$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    learning_sessions<T extends User$learning_sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$learning_sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2214,6 +2649,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.learning_sessions
+   */
+  export type User$learning_sessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    where?: LearningSessionWhereInput
+    orderBy?: LearningSessionOrderByWithRelationInput | LearningSessionOrderByWithRelationInput[]
+    cursor?: LearningSessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LearningSessionScalarFieldEnum | LearningSessionScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2238,8 +2697,22 @@ export namespace Prisma {
 
   export type AggregateClient = {
     _count: ClientCountAggregateOutputType | null
+    _avg: ClientAvgAggregateOutputType | null
+    _sum: ClientSumAggregateOutputType | null
     _min: ClientMinAggregateOutputType | null
     _max: ClientMaxAggregateOutputType | null
+  }
+
+  export type ClientAvgAggregateOutputType = {
+    scraped_pages: number | null
+    scraped_chars: number | null
+    scraped_words: number | null
+  }
+
+  export type ClientSumAggregateOutputType = {
+    scraped_pages: number | null
+    scraped_chars: number | null
+    scraped_words: number | null
   }
 
   export type ClientMinAggregateOutputType = {
@@ -2250,6 +2723,12 @@ export namespace Prisma {
     user_id: string | null
     created_at: Date | null
     updated_at: Date | null
+    scraped_content: string | null
+    scraped_pages: number | null
+    scraped_chars: number | null
+    scraped_words: number | null
+    scraped_at: Date | null
+    scraped_url: string | null
   }
 
   export type ClientMaxAggregateOutputType = {
@@ -2260,6 +2739,12 @@ export namespace Prisma {
     user_id: string | null
     created_at: Date | null
     updated_at: Date | null
+    scraped_content: string | null
+    scraped_pages: number | null
+    scraped_chars: number | null
+    scraped_words: number | null
+    scraped_at: Date | null
+    scraped_url: string | null
   }
 
   export type ClientCountAggregateOutputType = {
@@ -2270,9 +2755,27 @@ export namespace Prisma {
     user_id: number
     created_at: number
     updated_at: number
+    scraped_content: number
+    scraped_pages: number
+    scraped_chars: number
+    scraped_words: number
+    scraped_at: number
+    scraped_url: number
     _all: number
   }
 
+
+  export type ClientAvgAggregateInputType = {
+    scraped_pages?: true
+    scraped_chars?: true
+    scraped_words?: true
+  }
+
+  export type ClientSumAggregateInputType = {
+    scraped_pages?: true
+    scraped_chars?: true
+    scraped_words?: true
+  }
 
   export type ClientMinAggregateInputType = {
     id?: true
@@ -2282,6 +2785,12 @@ export namespace Prisma {
     user_id?: true
     created_at?: true
     updated_at?: true
+    scraped_content?: true
+    scraped_pages?: true
+    scraped_chars?: true
+    scraped_words?: true
+    scraped_at?: true
+    scraped_url?: true
   }
 
   export type ClientMaxAggregateInputType = {
@@ -2292,6 +2801,12 @@ export namespace Prisma {
     user_id?: true
     created_at?: true
     updated_at?: true
+    scraped_content?: true
+    scraped_pages?: true
+    scraped_chars?: true
+    scraped_words?: true
+    scraped_at?: true
+    scraped_url?: true
   }
 
   export type ClientCountAggregateInputType = {
@@ -2302,6 +2817,12 @@ export namespace Prisma {
     user_id?: true
     created_at?: true
     updated_at?: true
+    scraped_content?: true
+    scraped_pages?: true
+    scraped_chars?: true
+    scraped_words?: true
+    scraped_at?: true
+    scraped_url?: true
     _all?: true
   }
 
@@ -2343,6 +2864,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ClientAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ClientSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ClientMinAggregateInputType
@@ -2373,6 +2906,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ClientCountAggregateInputType | true
+    _avg?: ClientAvgAggregateInputType
+    _sum?: ClientSumAggregateInputType
     _min?: ClientMinAggregateInputType
     _max?: ClientMaxAggregateInputType
   }
@@ -2385,7 +2920,15 @@ export namespace Prisma {
     user_id: string
     created_at: Date
     updated_at: Date
+    scraped_content: string | null
+    scraped_pages: number | null
+    scraped_chars: number | null
+    scraped_words: number | null
+    scraped_at: Date | null
+    scraped_url: string | null
     _count: ClientCountAggregateOutputType | null
+    _avg: ClientAvgAggregateOutputType | null
+    _sum: ClientSumAggregateOutputType | null
     _min: ClientMinAggregateOutputType | null
     _max: ClientMaxAggregateOutputType | null
   }
@@ -2412,8 +2955,15 @@ export namespace Prisma {
     user_id?: boolean
     created_at?: boolean
     updated_at?: boolean
+    scraped_content?: boolean
+    scraped_pages?: boolean
+    scraped_chars?: boolean
+    scraped_words?: boolean
+    scraped_at?: boolean
+    scraped_url?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     projects?: boolean | Client$projectsArgs<ExtArgs>
+    learning_sessions?: boolean | Client$learning_sessionsArgs<ExtArgs>
     _count?: boolean | ClientCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["client"]>
 
@@ -2425,6 +2975,12 @@ export namespace Prisma {
     user_id?: boolean
     created_at?: boolean
     updated_at?: boolean
+    scraped_content?: boolean
+    scraped_pages?: boolean
+    scraped_chars?: boolean
+    scraped_words?: boolean
+    scraped_at?: boolean
+    scraped_url?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["client"]>
 
@@ -2436,6 +2992,12 @@ export namespace Prisma {
     user_id?: boolean
     created_at?: boolean
     updated_at?: boolean
+    scraped_content?: boolean
+    scraped_pages?: boolean
+    scraped_chars?: boolean
+    scraped_words?: boolean
+    scraped_at?: boolean
+    scraped_url?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["client"]>
 
@@ -2447,12 +3009,19 @@ export namespace Prisma {
     user_id?: boolean
     created_at?: boolean
     updated_at?: boolean
+    scraped_content?: boolean
+    scraped_pages?: boolean
+    scraped_chars?: boolean
+    scraped_words?: boolean
+    scraped_at?: boolean
+    scraped_url?: boolean
   }
 
-  export type ClientOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "company" | "email" | "user_id" | "created_at" | "updated_at", ExtArgs["result"]["client"]>
+  export type ClientOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "company" | "email" | "user_id" | "created_at" | "updated_at" | "scraped_content" | "scraped_pages" | "scraped_chars" | "scraped_words" | "scraped_at" | "scraped_url", ExtArgs["result"]["client"]>
   export type ClientInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     projects?: boolean | Client$projectsArgs<ExtArgs>
+    learning_sessions?: boolean | Client$learning_sessionsArgs<ExtArgs>
     _count?: boolean | ClientCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ClientIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2467,6 +3036,7 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       projects: Prisma.$ProjectPayload<ExtArgs>[]
+      learning_sessions: Prisma.$LearningSessionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2476,6 +3046,12 @@ export namespace Prisma {
       user_id: string
       created_at: Date
       updated_at: Date
+      scraped_content: string | null
+      scraped_pages: number | null
+      scraped_chars: number | null
+      scraped_words: number | null
+      scraped_at: Date | null
+      scraped_url: string | null
     }, ExtArgs["result"]["client"]>
     composites: {}
   }
@@ -2872,6 +3448,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     projects<T extends Client$projectsArgs<ExtArgs> = {}>(args?: Subset<T, Client$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    learning_sessions<T extends Client$learning_sessionsArgs<ExtArgs> = {}>(args?: Subset<T, Client$learning_sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2908,6 +3485,12 @@ export namespace Prisma {
     readonly user_id: FieldRef<"Client", 'String'>
     readonly created_at: FieldRef<"Client", 'DateTime'>
     readonly updated_at: FieldRef<"Client", 'DateTime'>
+    readonly scraped_content: FieldRef<"Client", 'String'>
+    readonly scraped_pages: FieldRef<"Client", 'Int'>
+    readonly scraped_chars: FieldRef<"Client", 'Int'>
+    readonly scraped_words: FieldRef<"Client", 'Int'>
+    readonly scraped_at: FieldRef<"Client", 'DateTime'>
+    readonly scraped_url: FieldRef<"Client", 'String'>
   }
     
 
@@ -3325,6 +3908,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProjectScalarFieldEnum | ProjectScalarFieldEnum[]
+  }
+
+  /**
+   * Client.learning_sessions
+   */
+  export type Client$learning_sessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    where?: LearningSessionWhereInput
+    orderBy?: LearningSessionOrderByWithRelationInput | LearningSessionOrderByWithRelationInput[]
+    cursor?: LearningSessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LearningSessionScalarFieldEnum | LearningSessionScalarFieldEnum[]
   }
 
   /**
@@ -4620,6 +5227,4637 @@ export namespace Prisma {
 
 
   /**
+   * Model LearningSession
+   */
+
+  export type AggregateLearningSession = {
+    _count: LearningSessionCountAggregateOutputType | null
+    _avg: LearningSessionAvgAggregateOutputType | null
+    _sum: LearningSessionSumAggregateOutputType | null
+    _min: LearningSessionMinAggregateOutputType | null
+    _max: LearningSessionMaxAggregateOutputType | null
+  }
+
+  export type LearningSessionAvgAggregateOutputType = {
+    completion_percentage: number | null
+  }
+
+  export type LearningSessionSumAggregateOutputType = {
+    completion_percentage: number | null
+  }
+
+  export type LearningSessionMinAggregateOutputType = {
+    id: string | null
+    client_id: string | null
+    user_id: string | null
+    software_name: string | null
+    documentation_summary: string | null
+    current_phase: string | null
+    completion_percentage: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type LearningSessionMaxAggregateOutputType = {
+    id: string | null
+    client_id: string | null
+    user_id: string | null
+    software_name: string | null
+    documentation_summary: string | null
+    current_phase: string | null
+    completion_percentage: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type LearningSessionCountAggregateOutputType = {
+    id: number
+    client_id: number
+    user_id: number
+    software_name: number
+    documentation_summary: number
+    current_phase: number
+    completion_percentage: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type LearningSessionAvgAggregateInputType = {
+    completion_percentage?: true
+  }
+
+  export type LearningSessionSumAggregateInputType = {
+    completion_percentage?: true
+  }
+
+  export type LearningSessionMinAggregateInputType = {
+    id?: true
+    client_id?: true
+    user_id?: true
+    software_name?: true
+    documentation_summary?: true
+    current_phase?: true
+    completion_percentage?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type LearningSessionMaxAggregateInputType = {
+    id?: true
+    client_id?: true
+    user_id?: true
+    software_name?: true
+    documentation_summary?: true
+    current_phase?: true
+    completion_percentage?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type LearningSessionCountAggregateInputType = {
+    id?: true
+    client_id?: true
+    user_id?: true
+    software_name?: true
+    documentation_summary?: true
+    current_phase?: true
+    completion_percentage?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type LearningSessionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LearningSession to aggregate.
+     */
+    where?: LearningSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningSessions to fetch.
+     */
+    orderBy?: LearningSessionOrderByWithRelationInput | LearningSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LearningSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LearningSessions
+    **/
+    _count?: true | LearningSessionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LearningSessionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LearningSessionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LearningSessionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LearningSessionMaxAggregateInputType
+  }
+
+  export type GetLearningSessionAggregateType<T extends LearningSessionAggregateArgs> = {
+        [P in keyof T & keyof AggregateLearningSession]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLearningSession[P]>
+      : GetScalarType<T[P], AggregateLearningSession[P]>
+  }
+
+
+
+
+  export type LearningSessionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LearningSessionWhereInput
+    orderBy?: LearningSessionOrderByWithAggregationInput | LearningSessionOrderByWithAggregationInput[]
+    by: LearningSessionScalarFieldEnum[] | LearningSessionScalarFieldEnum
+    having?: LearningSessionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LearningSessionCountAggregateInputType | true
+    _avg?: LearningSessionAvgAggregateInputType
+    _sum?: LearningSessionSumAggregateInputType
+    _min?: LearningSessionMinAggregateInputType
+    _max?: LearningSessionMaxAggregateInputType
+  }
+
+  export type LearningSessionGroupByOutputType = {
+    id: string
+    client_id: string
+    user_id: string
+    software_name: string
+    documentation_summary: string | null
+    current_phase: string
+    completion_percentage: number
+    created_at: Date
+    updated_at: Date
+    _count: LearningSessionCountAggregateOutputType | null
+    _avg: LearningSessionAvgAggregateOutputType | null
+    _sum: LearningSessionSumAggregateOutputType | null
+    _min: LearningSessionMinAggregateOutputType | null
+    _max: LearningSessionMaxAggregateOutputType | null
+  }
+
+  type GetLearningSessionGroupByPayload<T extends LearningSessionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LearningSessionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LearningSessionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LearningSessionGroupByOutputType[P]>
+            : GetScalarType<T[P], LearningSessionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LearningSessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    client_id?: boolean
+    user_id?: boolean
+    software_name?: boolean
+    documentation_summary?: boolean
+    current_phase?: boolean
+    completion_percentage?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    client?: boolean | ClientDefaultArgs<ExtArgs>
+    tasks?: boolean | LearningSession$tasksArgs<ExtArgs>
+    progress?: boolean | LearningSession$progressArgs<ExtArgs>
+    chat_messages?: boolean | LearningSession$chat_messagesArgs<ExtArgs>
+    _count?: boolean | LearningSessionCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningSession"]>
+
+  export type LearningSessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    client_id?: boolean
+    user_id?: boolean
+    software_name?: boolean
+    documentation_summary?: boolean
+    current_phase?: boolean
+    completion_percentage?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    client?: boolean | ClientDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningSession"]>
+
+  export type LearningSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    client_id?: boolean
+    user_id?: boolean
+    software_name?: boolean
+    documentation_summary?: boolean
+    current_phase?: boolean
+    completion_percentage?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    client?: boolean | ClientDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningSession"]>
+
+  export type LearningSessionSelectScalar = {
+    id?: boolean
+    client_id?: boolean
+    user_id?: boolean
+    software_name?: boolean
+    documentation_summary?: boolean
+    current_phase?: boolean
+    completion_percentage?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type LearningSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "client_id" | "user_id" | "software_name" | "documentation_summary" | "current_phase" | "completion_percentage" | "created_at" | "updated_at", ExtArgs["result"]["learningSession"]>
+  export type LearningSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    client?: boolean | ClientDefaultArgs<ExtArgs>
+    tasks?: boolean | LearningSession$tasksArgs<ExtArgs>
+    progress?: boolean | LearningSession$progressArgs<ExtArgs>
+    chat_messages?: boolean | LearningSession$chat_messagesArgs<ExtArgs>
+    _count?: boolean | LearningSessionCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type LearningSessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    client?: boolean | ClientDefaultArgs<ExtArgs>
+  }
+  export type LearningSessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    client?: boolean | ClientDefaultArgs<ExtArgs>
+  }
+
+  export type $LearningSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LearningSession"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      client: Prisma.$ClientPayload<ExtArgs>
+      tasks: Prisma.$LearningTaskPayload<ExtArgs>[]
+      progress: Prisma.$LearningProgressPayload<ExtArgs>[]
+      chat_messages: Prisma.$LearningChatMessagePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      client_id: string
+      user_id: string
+      software_name: string
+      documentation_summary: string | null
+      current_phase: string
+      completion_percentage: number
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["learningSession"]>
+    composites: {}
+  }
+
+  type LearningSessionGetPayload<S extends boolean | null | undefined | LearningSessionDefaultArgs> = $Result.GetResult<Prisma.$LearningSessionPayload, S>
+
+  type LearningSessionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LearningSessionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LearningSessionCountAggregateInputType | true
+    }
+
+  export interface LearningSessionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LearningSession'], meta: { name: 'LearningSession' } }
+    /**
+     * Find zero or one LearningSession that matches the filter.
+     * @param {LearningSessionFindUniqueArgs} args - Arguments to find a LearningSession
+     * @example
+     * // Get one LearningSession
+     * const learningSession = await prisma.learningSession.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LearningSessionFindUniqueArgs>(args: SelectSubset<T, LearningSessionFindUniqueArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one LearningSession that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LearningSessionFindUniqueOrThrowArgs} args - Arguments to find a LearningSession
+     * @example
+     * // Get one LearningSession
+     * const learningSession = await prisma.learningSession.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LearningSessionFindUniqueOrThrowArgs>(args: SelectSubset<T, LearningSessionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LearningSession that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningSessionFindFirstArgs} args - Arguments to find a LearningSession
+     * @example
+     * // Get one LearningSession
+     * const learningSession = await prisma.learningSession.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LearningSessionFindFirstArgs>(args?: SelectSubset<T, LearningSessionFindFirstArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LearningSession that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningSessionFindFirstOrThrowArgs} args - Arguments to find a LearningSession
+     * @example
+     * // Get one LearningSession
+     * const learningSession = await prisma.learningSession.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LearningSessionFindFirstOrThrowArgs>(args?: SelectSubset<T, LearningSessionFindFirstOrThrowArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more LearningSessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningSessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LearningSessions
+     * const learningSessions = await prisma.learningSession.findMany()
+     * 
+     * // Get first 10 LearningSessions
+     * const learningSessions = await prisma.learningSession.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const learningSessionWithIdOnly = await prisma.learningSession.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LearningSessionFindManyArgs>(args?: SelectSubset<T, LearningSessionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a LearningSession.
+     * @param {LearningSessionCreateArgs} args - Arguments to create a LearningSession.
+     * @example
+     * // Create one LearningSession
+     * const LearningSession = await prisma.learningSession.create({
+     *   data: {
+     *     // ... data to create a LearningSession
+     *   }
+     * })
+     * 
+     */
+    create<T extends LearningSessionCreateArgs>(args: SelectSubset<T, LearningSessionCreateArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many LearningSessions.
+     * @param {LearningSessionCreateManyArgs} args - Arguments to create many LearningSessions.
+     * @example
+     * // Create many LearningSessions
+     * const learningSession = await prisma.learningSession.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LearningSessionCreateManyArgs>(args?: SelectSubset<T, LearningSessionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LearningSessions and returns the data saved in the database.
+     * @param {LearningSessionCreateManyAndReturnArgs} args - Arguments to create many LearningSessions.
+     * @example
+     * // Create many LearningSessions
+     * const learningSession = await prisma.learningSession.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LearningSessions and only return the `id`
+     * const learningSessionWithIdOnly = await prisma.learningSession.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LearningSessionCreateManyAndReturnArgs>(args?: SelectSubset<T, LearningSessionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a LearningSession.
+     * @param {LearningSessionDeleteArgs} args - Arguments to delete one LearningSession.
+     * @example
+     * // Delete one LearningSession
+     * const LearningSession = await prisma.learningSession.delete({
+     *   where: {
+     *     // ... filter to delete one LearningSession
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LearningSessionDeleteArgs>(args: SelectSubset<T, LearningSessionDeleteArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one LearningSession.
+     * @param {LearningSessionUpdateArgs} args - Arguments to update one LearningSession.
+     * @example
+     * // Update one LearningSession
+     * const learningSession = await prisma.learningSession.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LearningSessionUpdateArgs>(args: SelectSubset<T, LearningSessionUpdateArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more LearningSessions.
+     * @param {LearningSessionDeleteManyArgs} args - Arguments to filter LearningSessions to delete.
+     * @example
+     * // Delete a few LearningSessions
+     * const { count } = await prisma.learningSession.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LearningSessionDeleteManyArgs>(args?: SelectSubset<T, LearningSessionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LearningSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningSessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LearningSessions
+     * const learningSession = await prisma.learningSession.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LearningSessionUpdateManyArgs>(args: SelectSubset<T, LearningSessionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LearningSessions and returns the data updated in the database.
+     * @param {LearningSessionUpdateManyAndReturnArgs} args - Arguments to update many LearningSessions.
+     * @example
+     * // Update many LearningSessions
+     * const learningSession = await prisma.learningSession.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more LearningSessions and only return the `id`
+     * const learningSessionWithIdOnly = await prisma.learningSession.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends LearningSessionUpdateManyAndReturnArgs>(args: SelectSubset<T, LearningSessionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one LearningSession.
+     * @param {LearningSessionUpsertArgs} args - Arguments to update or create a LearningSession.
+     * @example
+     * // Update or create a LearningSession
+     * const learningSession = await prisma.learningSession.upsert({
+     *   create: {
+     *     // ... data to create a LearningSession
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LearningSession we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LearningSessionUpsertArgs>(args: SelectSubset<T, LearningSessionUpsertArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of LearningSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningSessionCountArgs} args - Arguments to filter LearningSessions to count.
+     * @example
+     * // Count the number of LearningSessions
+     * const count = await prisma.learningSession.count({
+     *   where: {
+     *     // ... the filter for the LearningSessions we want to count
+     *   }
+     * })
+    **/
+    count<T extends LearningSessionCountArgs>(
+      args?: Subset<T, LearningSessionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LearningSessionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LearningSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningSessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LearningSessionAggregateArgs>(args: Subset<T, LearningSessionAggregateArgs>): Prisma.PrismaPromise<GetLearningSessionAggregateType<T>>
+
+    /**
+     * Group by LearningSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningSessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LearningSessionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LearningSessionGroupByArgs['orderBy'] }
+        : { orderBy?: LearningSessionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LearningSessionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLearningSessionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LearningSession model
+   */
+  readonly fields: LearningSessionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LearningSession.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LearningSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    client<T extends ClientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ClientDefaultArgs<ExtArgs>>): Prisma__ClientClient<$Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    tasks<T extends LearningSession$tasksArgs<ExtArgs> = {}>(args?: Subset<T, LearningSession$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    progress<T extends LearningSession$progressArgs<ExtArgs> = {}>(args?: Subset<T, LearningSession$progressArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    chat_messages<T extends LearningSession$chat_messagesArgs<ExtArgs> = {}>(args?: Subset<T, LearningSession$chat_messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LearningSession model
+   */
+  interface LearningSessionFieldRefs {
+    readonly id: FieldRef<"LearningSession", 'String'>
+    readonly client_id: FieldRef<"LearningSession", 'String'>
+    readonly user_id: FieldRef<"LearningSession", 'String'>
+    readonly software_name: FieldRef<"LearningSession", 'String'>
+    readonly documentation_summary: FieldRef<"LearningSession", 'String'>
+    readonly current_phase: FieldRef<"LearningSession", 'String'>
+    readonly completion_percentage: FieldRef<"LearningSession", 'Float'>
+    readonly created_at: FieldRef<"LearningSession", 'DateTime'>
+    readonly updated_at: FieldRef<"LearningSession", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LearningSession findUnique
+   */
+  export type LearningSessionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningSession to fetch.
+     */
+    where: LearningSessionWhereUniqueInput
+  }
+
+  /**
+   * LearningSession findUniqueOrThrow
+   */
+  export type LearningSessionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningSession to fetch.
+     */
+    where: LearningSessionWhereUniqueInput
+  }
+
+  /**
+   * LearningSession findFirst
+   */
+  export type LearningSessionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningSession to fetch.
+     */
+    where?: LearningSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningSessions to fetch.
+     */
+    orderBy?: LearningSessionOrderByWithRelationInput | LearningSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LearningSessions.
+     */
+    cursor?: LearningSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LearningSessions.
+     */
+    distinct?: LearningSessionScalarFieldEnum | LearningSessionScalarFieldEnum[]
+  }
+
+  /**
+   * LearningSession findFirstOrThrow
+   */
+  export type LearningSessionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningSession to fetch.
+     */
+    where?: LearningSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningSessions to fetch.
+     */
+    orderBy?: LearningSessionOrderByWithRelationInput | LearningSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LearningSessions.
+     */
+    cursor?: LearningSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LearningSessions.
+     */
+    distinct?: LearningSessionScalarFieldEnum | LearningSessionScalarFieldEnum[]
+  }
+
+  /**
+   * LearningSession findMany
+   */
+  export type LearningSessionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningSessions to fetch.
+     */
+    where?: LearningSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningSessions to fetch.
+     */
+    orderBy?: LearningSessionOrderByWithRelationInput | LearningSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LearningSessions.
+     */
+    cursor?: LearningSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningSessions.
+     */
+    skip?: number
+    distinct?: LearningSessionScalarFieldEnum | LearningSessionScalarFieldEnum[]
+  }
+
+  /**
+   * LearningSession create
+   */
+  export type LearningSessionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LearningSession.
+     */
+    data: XOR<LearningSessionCreateInput, LearningSessionUncheckedCreateInput>
+  }
+
+  /**
+   * LearningSession createMany
+   */
+  export type LearningSessionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LearningSessions.
+     */
+    data: LearningSessionCreateManyInput | LearningSessionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LearningSession createManyAndReturn
+   */
+  export type LearningSessionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * The data used to create many LearningSessions.
+     */
+    data: LearningSessionCreateManyInput | LearningSessionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LearningSession update
+   */
+  export type LearningSessionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LearningSession.
+     */
+    data: XOR<LearningSessionUpdateInput, LearningSessionUncheckedUpdateInput>
+    /**
+     * Choose, which LearningSession to update.
+     */
+    where: LearningSessionWhereUniqueInput
+  }
+
+  /**
+   * LearningSession updateMany
+   */
+  export type LearningSessionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LearningSessions.
+     */
+    data: XOR<LearningSessionUpdateManyMutationInput, LearningSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which LearningSessions to update
+     */
+    where?: LearningSessionWhereInput
+    /**
+     * Limit how many LearningSessions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * LearningSession updateManyAndReturn
+   */
+  export type LearningSessionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * The data used to update LearningSessions.
+     */
+    data: XOR<LearningSessionUpdateManyMutationInput, LearningSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which LearningSessions to update
+     */
+    where?: LearningSessionWhereInput
+    /**
+     * Limit how many LearningSessions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LearningSession upsert
+   */
+  export type LearningSessionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LearningSession to update in case it exists.
+     */
+    where: LearningSessionWhereUniqueInput
+    /**
+     * In case the LearningSession found by the `where` argument doesn't exist, create a new LearningSession with this data.
+     */
+    create: XOR<LearningSessionCreateInput, LearningSessionUncheckedCreateInput>
+    /**
+     * In case the LearningSession was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LearningSessionUpdateInput, LearningSessionUncheckedUpdateInput>
+  }
+
+  /**
+   * LearningSession delete
+   */
+  export type LearningSessionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+    /**
+     * Filter which LearningSession to delete.
+     */
+    where: LearningSessionWhereUniqueInput
+  }
+
+  /**
+   * LearningSession deleteMany
+   */
+  export type LearningSessionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LearningSessions to delete
+     */
+    where?: LearningSessionWhereInput
+    /**
+     * Limit how many LearningSessions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * LearningSession.tasks
+   */
+  export type LearningSession$tasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    where?: LearningTaskWhereInput
+    orderBy?: LearningTaskOrderByWithRelationInput | LearningTaskOrderByWithRelationInput[]
+    cursor?: LearningTaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LearningTaskScalarFieldEnum | LearningTaskScalarFieldEnum[]
+  }
+
+  /**
+   * LearningSession.progress
+   */
+  export type LearningSession$progressArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    where?: LearningProgressWhereInput
+    orderBy?: LearningProgressOrderByWithRelationInput | LearningProgressOrderByWithRelationInput[]
+    cursor?: LearningProgressWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LearningProgressScalarFieldEnum | LearningProgressScalarFieldEnum[]
+  }
+
+  /**
+   * LearningSession.chat_messages
+   */
+  export type LearningSession$chat_messagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    where?: LearningChatMessageWhereInput
+    orderBy?: LearningChatMessageOrderByWithRelationInput | LearningChatMessageOrderByWithRelationInput[]
+    cursor?: LearningChatMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LearningChatMessageScalarFieldEnum | LearningChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * LearningSession without action
+   */
+  export type LearningSessionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningSession
+     */
+    select?: LearningSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningSession
+     */
+    omit?: LearningSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningSessionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LearningTask
+   */
+
+  export type AggregateLearningTask = {
+    _count: LearningTaskCountAggregateOutputType | null
+    _avg: LearningTaskAvgAggregateOutputType | null
+    _sum: LearningTaskSumAggregateOutputType | null
+    _min: LearningTaskMinAggregateOutputType | null
+    _max: LearningTaskMaxAggregateOutputType | null
+  }
+
+  export type LearningTaskAvgAggregateOutputType = {
+    difficulty_level: number | null
+    estimated_minutes: number | null
+  }
+
+  export type LearningTaskSumAggregateOutputType = {
+    difficulty_level: number | null
+    estimated_minutes: number | null
+  }
+
+  export type LearningTaskMinAggregateOutputType = {
+    id: string | null
+    learning_session_id: string | null
+    title: string | null
+    description: string | null
+    instructions: string | null
+    category: string | null
+    difficulty_level: number | null
+    estimated_minutes: number | null
+    is_completed: boolean | null
+    completed_at: Date | null
+    user_notes: string | null
+    created_at: Date | null
+  }
+
+  export type LearningTaskMaxAggregateOutputType = {
+    id: string | null
+    learning_session_id: string | null
+    title: string | null
+    description: string | null
+    instructions: string | null
+    category: string | null
+    difficulty_level: number | null
+    estimated_minutes: number | null
+    is_completed: boolean | null
+    completed_at: Date | null
+    user_notes: string | null
+    created_at: Date | null
+  }
+
+  export type LearningTaskCountAggregateOutputType = {
+    id: number
+    learning_session_id: number
+    title: number
+    description: number
+    instructions: number
+    category: number
+    difficulty_level: number
+    estimated_minutes: number
+    prerequisites: number
+    is_completed: number
+    completed_at: number
+    user_notes: number
+    created_at: number
+    _all: number
+  }
+
+
+  export type LearningTaskAvgAggregateInputType = {
+    difficulty_level?: true
+    estimated_minutes?: true
+  }
+
+  export type LearningTaskSumAggregateInputType = {
+    difficulty_level?: true
+    estimated_minutes?: true
+  }
+
+  export type LearningTaskMinAggregateInputType = {
+    id?: true
+    learning_session_id?: true
+    title?: true
+    description?: true
+    instructions?: true
+    category?: true
+    difficulty_level?: true
+    estimated_minutes?: true
+    is_completed?: true
+    completed_at?: true
+    user_notes?: true
+    created_at?: true
+  }
+
+  export type LearningTaskMaxAggregateInputType = {
+    id?: true
+    learning_session_id?: true
+    title?: true
+    description?: true
+    instructions?: true
+    category?: true
+    difficulty_level?: true
+    estimated_minutes?: true
+    is_completed?: true
+    completed_at?: true
+    user_notes?: true
+    created_at?: true
+  }
+
+  export type LearningTaskCountAggregateInputType = {
+    id?: true
+    learning_session_id?: true
+    title?: true
+    description?: true
+    instructions?: true
+    category?: true
+    difficulty_level?: true
+    estimated_minutes?: true
+    prerequisites?: true
+    is_completed?: true
+    completed_at?: true
+    user_notes?: true
+    created_at?: true
+    _all?: true
+  }
+
+  export type LearningTaskAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LearningTask to aggregate.
+     */
+    where?: LearningTaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningTasks to fetch.
+     */
+    orderBy?: LearningTaskOrderByWithRelationInput | LearningTaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LearningTaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningTasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningTasks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LearningTasks
+    **/
+    _count?: true | LearningTaskCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LearningTaskAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LearningTaskSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LearningTaskMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LearningTaskMaxAggregateInputType
+  }
+
+  export type GetLearningTaskAggregateType<T extends LearningTaskAggregateArgs> = {
+        [P in keyof T & keyof AggregateLearningTask]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLearningTask[P]>
+      : GetScalarType<T[P], AggregateLearningTask[P]>
+  }
+
+
+
+
+  export type LearningTaskGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LearningTaskWhereInput
+    orderBy?: LearningTaskOrderByWithAggregationInput | LearningTaskOrderByWithAggregationInput[]
+    by: LearningTaskScalarFieldEnum[] | LearningTaskScalarFieldEnum
+    having?: LearningTaskScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LearningTaskCountAggregateInputType | true
+    _avg?: LearningTaskAvgAggregateInputType
+    _sum?: LearningTaskSumAggregateInputType
+    _min?: LearningTaskMinAggregateInputType
+    _max?: LearningTaskMaxAggregateInputType
+  }
+
+  export type LearningTaskGroupByOutputType = {
+    id: string
+    learning_session_id: string
+    title: string
+    description: string
+    instructions: string
+    category: string
+    difficulty_level: number
+    estimated_minutes: number | null
+    prerequisites: string[]
+    is_completed: boolean
+    completed_at: Date | null
+    user_notes: string | null
+    created_at: Date
+    _count: LearningTaskCountAggregateOutputType | null
+    _avg: LearningTaskAvgAggregateOutputType | null
+    _sum: LearningTaskSumAggregateOutputType | null
+    _min: LearningTaskMinAggregateOutputType | null
+    _max: LearningTaskMaxAggregateOutputType | null
+  }
+
+  type GetLearningTaskGroupByPayload<T extends LearningTaskGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LearningTaskGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LearningTaskGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LearningTaskGroupByOutputType[P]>
+            : GetScalarType<T[P], LearningTaskGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LearningTaskSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    learning_session_id?: boolean
+    title?: boolean
+    description?: boolean
+    instructions?: boolean
+    category?: boolean
+    difficulty_level?: boolean
+    estimated_minutes?: boolean
+    prerequisites?: boolean
+    is_completed?: boolean
+    completed_at?: boolean
+    user_notes?: boolean
+    created_at?: boolean
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningTask"]>
+
+  export type LearningTaskSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    learning_session_id?: boolean
+    title?: boolean
+    description?: boolean
+    instructions?: boolean
+    category?: boolean
+    difficulty_level?: boolean
+    estimated_minutes?: boolean
+    prerequisites?: boolean
+    is_completed?: boolean
+    completed_at?: boolean
+    user_notes?: boolean
+    created_at?: boolean
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningTask"]>
+
+  export type LearningTaskSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    learning_session_id?: boolean
+    title?: boolean
+    description?: boolean
+    instructions?: boolean
+    category?: boolean
+    difficulty_level?: boolean
+    estimated_minutes?: boolean
+    prerequisites?: boolean
+    is_completed?: boolean
+    completed_at?: boolean
+    user_notes?: boolean
+    created_at?: boolean
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningTask"]>
+
+  export type LearningTaskSelectScalar = {
+    id?: boolean
+    learning_session_id?: boolean
+    title?: boolean
+    description?: boolean
+    instructions?: boolean
+    category?: boolean
+    difficulty_level?: boolean
+    estimated_minutes?: boolean
+    prerequisites?: boolean
+    is_completed?: boolean
+    completed_at?: boolean
+    user_notes?: boolean
+    created_at?: boolean
+  }
+
+  export type LearningTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "learning_session_id" | "title" | "description" | "instructions" | "category" | "difficulty_level" | "estimated_minutes" | "prerequisites" | "is_completed" | "completed_at" | "user_notes" | "created_at", ExtArgs["result"]["learningTask"]>
+  export type LearningTaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }
+  export type LearningTaskIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }
+  export type LearningTaskIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }
+
+  export type $LearningTaskPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LearningTask"
+    objects: {
+      learning_session: Prisma.$LearningSessionPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      learning_session_id: string
+      title: string
+      description: string
+      instructions: string
+      category: string
+      difficulty_level: number
+      estimated_minutes: number | null
+      prerequisites: string[]
+      is_completed: boolean
+      completed_at: Date | null
+      user_notes: string | null
+      created_at: Date
+    }, ExtArgs["result"]["learningTask"]>
+    composites: {}
+  }
+
+  type LearningTaskGetPayload<S extends boolean | null | undefined | LearningTaskDefaultArgs> = $Result.GetResult<Prisma.$LearningTaskPayload, S>
+
+  type LearningTaskCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LearningTaskFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LearningTaskCountAggregateInputType | true
+    }
+
+  export interface LearningTaskDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LearningTask'], meta: { name: 'LearningTask' } }
+    /**
+     * Find zero or one LearningTask that matches the filter.
+     * @param {LearningTaskFindUniqueArgs} args - Arguments to find a LearningTask
+     * @example
+     * // Get one LearningTask
+     * const learningTask = await prisma.learningTask.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LearningTaskFindUniqueArgs>(args: SelectSubset<T, LearningTaskFindUniqueArgs<ExtArgs>>): Prisma__LearningTaskClient<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one LearningTask that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LearningTaskFindUniqueOrThrowArgs} args - Arguments to find a LearningTask
+     * @example
+     * // Get one LearningTask
+     * const learningTask = await prisma.learningTask.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LearningTaskFindUniqueOrThrowArgs>(args: SelectSubset<T, LearningTaskFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LearningTaskClient<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LearningTask that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningTaskFindFirstArgs} args - Arguments to find a LearningTask
+     * @example
+     * // Get one LearningTask
+     * const learningTask = await prisma.learningTask.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LearningTaskFindFirstArgs>(args?: SelectSubset<T, LearningTaskFindFirstArgs<ExtArgs>>): Prisma__LearningTaskClient<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LearningTask that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningTaskFindFirstOrThrowArgs} args - Arguments to find a LearningTask
+     * @example
+     * // Get one LearningTask
+     * const learningTask = await prisma.learningTask.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LearningTaskFindFirstOrThrowArgs>(args?: SelectSubset<T, LearningTaskFindFirstOrThrowArgs<ExtArgs>>): Prisma__LearningTaskClient<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more LearningTasks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningTaskFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LearningTasks
+     * const learningTasks = await prisma.learningTask.findMany()
+     * 
+     * // Get first 10 LearningTasks
+     * const learningTasks = await prisma.learningTask.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const learningTaskWithIdOnly = await prisma.learningTask.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LearningTaskFindManyArgs>(args?: SelectSubset<T, LearningTaskFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a LearningTask.
+     * @param {LearningTaskCreateArgs} args - Arguments to create a LearningTask.
+     * @example
+     * // Create one LearningTask
+     * const LearningTask = await prisma.learningTask.create({
+     *   data: {
+     *     // ... data to create a LearningTask
+     *   }
+     * })
+     * 
+     */
+    create<T extends LearningTaskCreateArgs>(args: SelectSubset<T, LearningTaskCreateArgs<ExtArgs>>): Prisma__LearningTaskClient<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many LearningTasks.
+     * @param {LearningTaskCreateManyArgs} args - Arguments to create many LearningTasks.
+     * @example
+     * // Create many LearningTasks
+     * const learningTask = await prisma.learningTask.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LearningTaskCreateManyArgs>(args?: SelectSubset<T, LearningTaskCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LearningTasks and returns the data saved in the database.
+     * @param {LearningTaskCreateManyAndReturnArgs} args - Arguments to create many LearningTasks.
+     * @example
+     * // Create many LearningTasks
+     * const learningTask = await prisma.learningTask.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LearningTasks and only return the `id`
+     * const learningTaskWithIdOnly = await prisma.learningTask.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LearningTaskCreateManyAndReturnArgs>(args?: SelectSubset<T, LearningTaskCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a LearningTask.
+     * @param {LearningTaskDeleteArgs} args - Arguments to delete one LearningTask.
+     * @example
+     * // Delete one LearningTask
+     * const LearningTask = await prisma.learningTask.delete({
+     *   where: {
+     *     // ... filter to delete one LearningTask
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LearningTaskDeleteArgs>(args: SelectSubset<T, LearningTaskDeleteArgs<ExtArgs>>): Prisma__LearningTaskClient<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one LearningTask.
+     * @param {LearningTaskUpdateArgs} args - Arguments to update one LearningTask.
+     * @example
+     * // Update one LearningTask
+     * const learningTask = await prisma.learningTask.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LearningTaskUpdateArgs>(args: SelectSubset<T, LearningTaskUpdateArgs<ExtArgs>>): Prisma__LearningTaskClient<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more LearningTasks.
+     * @param {LearningTaskDeleteManyArgs} args - Arguments to filter LearningTasks to delete.
+     * @example
+     * // Delete a few LearningTasks
+     * const { count } = await prisma.learningTask.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LearningTaskDeleteManyArgs>(args?: SelectSubset<T, LearningTaskDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LearningTasks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningTaskUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LearningTasks
+     * const learningTask = await prisma.learningTask.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LearningTaskUpdateManyArgs>(args: SelectSubset<T, LearningTaskUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LearningTasks and returns the data updated in the database.
+     * @param {LearningTaskUpdateManyAndReturnArgs} args - Arguments to update many LearningTasks.
+     * @example
+     * // Update many LearningTasks
+     * const learningTask = await prisma.learningTask.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more LearningTasks and only return the `id`
+     * const learningTaskWithIdOnly = await prisma.learningTask.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends LearningTaskUpdateManyAndReturnArgs>(args: SelectSubset<T, LearningTaskUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one LearningTask.
+     * @param {LearningTaskUpsertArgs} args - Arguments to update or create a LearningTask.
+     * @example
+     * // Update or create a LearningTask
+     * const learningTask = await prisma.learningTask.upsert({
+     *   create: {
+     *     // ... data to create a LearningTask
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LearningTask we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LearningTaskUpsertArgs>(args: SelectSubset<T, LearningTaskUpsertArgs<ExtArgs>>): Prisma__LearningTaskClient<$Result.GetResult<Prisma.$LearningTaskPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of LearningTasks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningTaskCountArgs} args - Arguments to filter LearningTasks to count.
+     * @example
+     * // Count the number of LearningTasks
+     * const count = await prisma.learningTask.count({
+     *   where: {
+     *     // ... the filter for the LearningTasks we want to count
+     *   }
+     * })
+    **/
+    count<T extends LearningTaskCountArgs>(
+      args?: Subset<T, LearningTaskCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LearningTaskCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LearningTask.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningTaskAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LearningTaskAggregateArgs>(args: Subset<T, LearningTaskAggregateArgs>): Prisma.PrismaPromise<GetLearningTaskAggregateType<T>>
+
+    /**
+     * Group by LearningTask.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningTaskGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LearningTaskGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LearningTaskGroupByArgs['orderBy'] }
+        : { orderBy?: LearningTaskGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LearningTaskGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLearningTaskGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LearningTask model
+   */
+  readonly fields: LearningTaskFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LearningTask.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LearningTaskClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    learning_session<T extends LearningSessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LearningSessionDefaultArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LearningTask model
+   */
+  interface LearningTaskFieldRefs {
+    readonly id: FieldRef<"LearningTask", 'String'>
+    readonly learning_session_id: FieldRef<"LearningTask", 'String'>
+    readonly title: FieldRef<"LearningTask", 'String'>
+    readonly description: FieldRef<"LearningTask", 'String'>
+    readonly instructions: FieldRef<"LearningTask", 'String'>
+    readonly category: FieldRef<"LearningTask", 'String'>
+    readonly difficulty_level: FieldRef<"LearningTask", 'Int'>
+    readonly estimated_minutes: FieldRef<"LearningTask", 'Int'>
+    readonly prerequisites: FieldRef<"LearningTask", 'String[]'>
+    readonly is_completed: FieldRef<"LearningTask", 'Boolean'>
+    readonly completed_at: FieldRef<"LearningTask", 'DateTime'>
+    readonly user_notes: FieldRef<"LearningTask", 'String'>
+    readonly created_at: FieldRef<"LearningTask", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LearningTask findUnique
+   */
+  export type LearningTaskFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningTask to fetch.
+     */
+    where: LearningTaskWhereUniqueInput
+  }
+
+  /**
+   * LearningTask findUniqueOrThrow
+   */
+  export type LearningTaskFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningTask to fetch.
+     */
+    where: LearningTaskWhereUniqueInput
+  }
+
+  /**
+   * LearningTask findFirst
+   */
+  export type LearningTaskFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningTask to fetch.
+     */
+    where?: LearningTaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningTasks to fetch.
+     */
+    orderBy?: LearningTaskOrderByWithRelationInput | LearningTaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LearningTasks.
+     */
+    cursor?: LearningTaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningTasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningTasks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LearningTasks.
+     */
+    distinct?: LearningTaskScalarFieldEnum | LearningTaskScalarFieldEnum[]
+  }
+
+  /**
+   * LearningTask findFirstOrThrow
+   */
+  export type LearningTaskFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningTask to fetch.
+     */
+    where?: LearningTaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningTasks to fetch.
+     */
+    orderBy?: LearningTaskOrderByWithRelationInput | LearningTaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LearningTasks.
+     */
+    cursor?: LearningTaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningTasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningTasks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LearningTasks.
+     */
+    distinct?: LearningTaskScalarFieldEnum | LearningTaskScalarFieldEnum[]
+  }
+
+  /**
+   * LearningTask findMany
+   */
+  export type LearningTaskFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningTasks to fetch.
+     */
+    where?: LearningTaskWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningTasks to fetch.
+     */
+    orderBy?: LearningTaskOrderByWithRelationInput | LearningTaskOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LearningTasks.
+     */
+    cursor?: LearningTaskWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningTasks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningTasks.
+     */
+    skip?: number
+    distinct?: LearningTaskScalarFieldEnum | LearningTaskScalarFieldEnum[]
+  }
+
+  /**
+   * LearningTask create
+   */
+  export type LearningTaskCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LearningTask.
+     */
+    data: XOR<LearningTaskCreateInput, LearningTaskUncheckedCreateInput>
+  }
+
+  /**
+   * LearningTask createMany
+   */
+  export type LearningTaskCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LearningTasks.
+     */
+    data: LearningTaskCreateManyInput | LearningTaskCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LearningTask createManyAndReturn
+   */
+  export type LearningTaskCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * The data used to create many LearningTasks.
+     */
+    data: LearningTaskCreateManyInput | LearningTaskCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LearningTask update
+   */
+  export type LearningTaskUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LearningTask.
+     */
+    data: XOR<LearningTaskUpdateInput, LearningTaskUncheckedUpdateInput>
+    /**
+     * Choose, which LearningTask to update.
+     */
+    where: LearningTaskWhereUniqueInput
+  }
+
+  /**
+   * LearningTask updateMany
+   */
+  export type LearningTaskUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LearningTasks.
+     */
+    data: XOR<LearningTaskUpdateManyMutationInput, LearningTaskUncheckedUpdateManyInput>
+    /**
+     * Filter which LearningTasks to update
+     */
+    where?: LearningTaskWhereInput
+    /**
+     * Limit how many LearningTasks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * LearningTask updateManyAndReturn
+   */
+  export type LearningTaskUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * The data used to update LearningTasks.
+     */
+    data: XOR<LearningTaskUpdateManyMutationInput, LearningTaskUncheckedUpdateManyInput>
+    /**
+     * Filter which LearningTasks to update
+     */
+    where?: LearningTaskWhereInput
+    /**
+     * Limit how many LearningTasks to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LearningTask upsert
+   */
+  export type LearningTaskUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LearningTask to update in case it exists.
+     */
+    where: LearningTaskWhereUniqueInput
+    /**
+     * In case the LearningTask found by the `where` argument doesn't exist, create a new LearningTask with this data.
+     */
+    create: XOR<LearningTaskCreateInput, LearningTaskUncheckedCreateInput>
+    /**
+     * In case the LearningTask was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LearningTaskUpdateInput, LearningTaskUncheckedUpdateInput>
+  }
+
+  /**
+   * LearningTask delete
+   */
+  export type LearningTaskDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+    /**
+     * Filter which LearningTask to delete.
+     */
+    where: LearningTaskWhereUniqueInput
+  }
+
+  /**
+   * LearningTask deleteMany
+   */
+  export type LearningTaskDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LearningTasks to delete
+     */
+    where?: LearningTaskWhereInput
+    /**
+     * Limit how many LearningTasks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * LearningTask without action
+   */
+  export type LearningTaskDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningTask
+     */
+    select?: LearningTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningTask
+     */
+    omit?: LearningTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningTaskInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LearningProgress
+   */
+
+  export type AggregateLearningProgress = {
+    _count: LearningProgressCountAggregateOutputType | null
+    _avg: LearningProgressAvgAggregateOutputType | null
+    _sum: LearningProgressSumAggregateOutputType | null
+    _min: LearningProgressMinAggregateOutputType | null
+    _max: LearningProgressMaxAggregateOutputType | null
+  }
+
+  export type LearningProgressAvgAggregateOutputType = {
+    mastery_level: number | null
+    tasks_completed: number | null
+    total_tasks: number | null
+  }
+
+  export type LearningProgressSumAggregateOutputType = {
+    mastery_level: number | null
+    tasks_completed: number | null
+    total_tasks: number | null
+  }
+
+  export type LearningProgressMinAggregateOutputType = {
+    id: string | null
+    learning_session_id: string | null
+    category: string | null
+    mastery_level: number | null
+    tasks_completed: number | null
+    total_tasks: number | null
+    last_activity: Date | null
+  }
+
+  export type LearningProgressMaxAggregateOutputType = {
+    id: string | null
+    learning_session_id: string | null
+    category: string | null
+    mastery_level: number | null
+    tasks_completed: number | null
+    total_tasks: number | null
+    last_activity: Date | null
+  }
+
+  export type LearningProgressCountAggregateOutputType = {
+    id: number
+    learning_session_id: number
+    category: number
+    mastery_level: number
+    tasks_completed: number
+    total_tasks: number
+    last_activity: number
+    _all: number
+  }
+
+
+  export type LearningProgressAvgAggregateInputType = {
+    mastery_level?: true
+    tasks_completed?: true
+    total_tasks?: true
+  }
+
+  export type LearningProgressSumAggregateInputType = {
+    mastery_level?: true
+    tasks_completed?: true
+    total_tasks?: true
+  }
+
+  export type LearningProgressMinAggregateInputType = {
+    id?: true
+    learning_session_id?: true
+    category?: true
+    mastery_level?: true
+    tasks_completed?: true
+    total_tasks?: true
+    last_activity?: true
+  }
+
+  export type LearningProgressMaxAggregateInputType = {
+    id?: true
+    learning_session_id?: true
+    category?: true
+    mastery_level?: true
+    tasks_completed?: true
+    total_tasks?: true
+    last_activity?: true
+  }
+
+  export type LearningProgressCountAggregateInputType = {
+    id?: true
+    learning_session_id?: true
+    category?: true
+    mastery_level?: true
+    tasks_completed?: true
+    total_tasks?: true
+    last_activity?: true
+    _all?: true
+  }
+
+  export type LearningProgressAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LearningProgress to aggregate.
+     */
+    where?: LearningProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningProgresses to fetch.
+     */
+    orderBy?: LearningProgressOrderByWithRelationInput | LearningProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LearningProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningProgresses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LearningProgresses
+    **/
+    _count?: true | LearningProgressCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LearningProgressAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LearningProgressSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LearningProgressMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LearningProgressMaxAggregateInputType
+  }
+
+  export type GetLearningProgressAggregateType<T extends LearningProgressAggregateArgs> = {
+        [P in keyof T & keyof AggregateLearningProgress]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLearningProgress[P]>
+      : GetScalarType<T[P], AggregateLearningProgress[P]>
+  }
+
+
+
+
+  export type LearningProgressGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LearningProgressWhereInput
+    orderBy?: LearningProgressOrderByWithAggregationInput | LearningProgressOrderByWithAggregationInput[]
+    by: LearningProgressScalarFieldEnum[] | LearningProgressScalarFieldEnum
+    having?: LearningProgressScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LearningProgressCountAggregateInputType | true
+    _avg?: LearningProgressAvgAggregateInputType
+    _sum?: LearningProgressSumAggregateInputType
+    _min?: LearningProgressMinAggregateInputType
+    _max?: LearningProgressMaxAggregateInputType
+  }
+
+  export type LearningProgressGroupByOutputType = {
+    id: string
+    learning_session_id: string
+    category: string
+    mastery_level: number
+    tasks_completed: number
+    total_tasks: number
+    last_activity: Date
+    _count: LearningProgressCountAggregateOutputType | null
+    _avg: LearningProgressAvgAggregateOutputType | null
+    _sum: LearningProgressSumAggregateOutputType | null
+    _min: LearningProgressMinAggregateOutputType | null
+    _max: LearningProgressMaxAggregateOutputType | null
+  }
+
+  type GetLearningProgressGroupByPayload<T extends LearningProgressGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LearningProgressGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LearningProgressGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LearningProgressGroupByOutputType[P]>
+            : GetScalarType<T[P], LearningProgressGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LearningProgressSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    learning_session_id?: boolean
+    category?: boolean
+    mastery_level?: boolean
+    tasks_completed?: boolean
+    total_tasks?: boolean
+    last_activity?: boolean
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningProgress"]>
+
+  export type LearningProgressSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    learning_session_id?: boolean
+    category?: boolean
+    mastery_level?: boolean
+    tasks_completed?: boolean
+    total_tasks?: boolean
+    last_activity?: boolean
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningProgress"]>
+
+  export type LearningProgressSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    learning_session_id?: boolean
+    category?: boolean
+    mastery_level?: boolean
+    tasks_completed?: boolean
+    total_tasks?: boolean
+    last_activity?: boolean
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningProgress"]>
+
+  export type LearningProgressSelectScalar = {
+    id?: boolean
+    learning_session_id?: boolean
+    category?: boolean
+    mastery_level?: boolean
+    tasks_completed?: boolean
+    total_tasks?: boolean
+    last_activity?: boolean
+  }
+
+  export type LearningProgressOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "learning_session_id" | "category" | "mastery_level" | "tasks_completed" | "total_tasks" | "last_activity", ExtArgs["result"]["learningProgress"]>
+  export type LearningProgressInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }
+  export type LearningProgressIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }
+  export type LearningProgressIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }
+
+  export type $LearningProgressPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LearningProgress"
+    objects: {
+      learning_session: Prisma.$LearningSessionPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      learning_session_id: string
+      category: string
+      mastery_level: number
+      tasks_completed: number
+      total_tasks: number
+      last_activity: Date
+    }, ExtArgs["result"]["learningProgress"]>
+    composites: {}
+  }
+
+  type LearningProgressGetPayload<S extends boolean | null | undefined | LearningProgressDefaultArgs> = $Result.GetResult<Prisma.$LearningProgressPayload, S>
+
+  type LearningProgressCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LearningProgressFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LearningProgressCountAggregateInputType | true
+    }
+
+  export interface LearningProgressDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LearningProgress'], meta: { name: 'LearningProgress' } }
+    /**
+     * Find zero or one LearningProgress that matches the filter.
+     * @param {LearningProgressFindUniqueArgs} args - Arguments to find a LearningProgress
+     * @example
+     * // Get one LearningProgress
+     * const learningProgress = await prisma.learningProgress.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LearningProgressFindUniqueArgs>(args: SelectSubset<T, LearningProgressFindUniqueArgs<ExtArgs>>): Prisma__LearningProgressClient<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one LearningProgress that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LearningProgressFindUniqueOrThrowArgs} args - Arguments to find a LearningProgress
+     * @example
+     * // Get one LearningProgress
+     * const learningProgress = await prisma.learningProgress.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LearningProgressFindUniqueOrThrowArgs>(args: SelectSubset<T, LearningProgressFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LearningProgressClient<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LearningProgress that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningProgressFindFirstArgs} args - Arguments to find a LearningProgress
+     * @example
+     * // Get one LearningProgress
+     * const learningProgress = await prisma.learningProgress.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LearningProgressFindFirstArgs>(args?: SelectSubset<T, LearningProgressFindFirstArgs<ExtArgs>>): Prisma__LearningProgressClient<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LearningProgress that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningProgressFindFirstOrThrowArgs} args - Arguments to find a LearningProgress
+     * @example
+     * // Get one LearningProgress
+     * const learningProgress = await prisma.learningProgress.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LearningProgressFindFirstOrThrowArgs>(args?: SelectSubset<T, LearningProgressFindFirstOrThrowArgs<ExtArgs>>): Prisma__LearningProgressClient<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more LearningProgresses that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningProgressFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LearningProgresses
+     * const learningProgresses = await prisma.learningProgress.findMany()
+     * 
+     * // Get first 10 LearningProgresses
+     * const learningProgresses = await prisma.learningProgress.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const learningProgressWithIdOnly = await prisma.learningProgress.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LearningProgressFindManyArgs>(args?: SelectSubset<T, LearningProgressFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a LearningProgress.
+     * @param {LearningProgressCreateArgs} args - Arguments to create a LearningProgress.
+     * @example
+     * // Create one LearningProgress
+     * const LearningProgress = await prisma.learningProgress.create({
+     *   data: {
+     *     // ... data to create a LearningProgress
+     *   }
+     * })
+     * 
+     */
+    create<T extends LearningProgressCreateArgs>(args: SelectSubset<T, LearningProgressCreateArgs<ExtArgs>>): Prisma__LearningProgressClient<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many LearningProgresses.
+     * @param {LearningProgressCreateManyArgs} args - Arguments to create many LearningProgresses.
+     * @example
+     * // Create many LearningProgresses
+     * const learningProgress = await prisma.learningProgress.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LearningProgressCreateManyArgs>(args?: SelectSubset<T, LearningProgressCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LearningProgresses and returns the data saved in the database.
+     * @param {LearningProgressCreateManyAndReturnArgs} args - Arguments to create many LearningProgresses.
+     * @example
+     * // Create many LearningProgresses
+     * const learningProgress = await prisma.learningProgress.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LearningProgresses and only return the `id`
+     * const learningProgressWithIdOnly = await prisma.learningProgress.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LearningProgressCreateManyAndReturnArgs>(args?: SelectSubset<T, LearningProgressCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a LearningProgress.
+     * @param {LearningProgressDeleteArgs} args - Arguments to delete one LearningProgress.
+     * @example
+     * // Delete one LearningProgress
+     * const LearningProgress = await prisma.learningProgress.delete({
+     *   where: {
+     *     // ... filter to delete one LearningProgress
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LearningProgressDeleteArgs>(args: SelectSubset<T, LearningProgressDeleteArgs<ExtArgs>>): Prisma__LearningProgressClient<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one LearningProgress.
+     * @param {LearningProgressUpdateArgs} args - Arguments to update one LearningProgress.
+     * @example
+     * // Update one LearningProgress
+     * const learningProgress = await prisma.learningProgress.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LearningProgressUpdateArgs>(args: SelectSubset<T, LearningProgressUpdateArgs<ExtArgs>>): Prisma__LearningProgressClient<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more LearningProgresses.
+     * @param {LearningProgressDeleteManyArgs} args - Arguments to filter LearningProgresses to delete.
+     * @example
+     * // Delete a few LearningProgresses
+     * const { count } = await prisma.learningProgress.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LearningProgressDeleteManyArgs>(args?: SelectSubset<T, LearningProgressDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LearningProgresses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningProgressUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LearningProgresses
+     * const learningProgress = await prisma.learningProgress.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LearningProgressUpdateManyArgs>(args: SelectSubset<T, LearningProgressUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LearningProgresses and returns the data updated in the database.
+     * @param {LearningProgressUpdateManyAndReturnArgs} args - Arguments to update many LearningProgresses.
+     * @example
+     * // Update many LearningProgresses
+     * const learningProgress = await prisma.learningProgress.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more LearningProgresses and only return the `id`
+     * const learningProgressWithIdOnly = await prisma.learningProgress.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends LearningProgressUpdateManyAndReturnArgs>(args: SelectSubset<T, LearningProgressUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one LearningProgress.
+     * @param {LearningProgressUpsertArgs} args - Arguments to update or create a LearningProgress.
+     * @example
+     * // Update or create a LearningProgress
+     * const learningProgress = await prisma.learningProgress.upsert({
+     *   create: {
+     *     // ... data to create a LearningProgress
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LearningProgress we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LearningProgressUpsertArgs>(args: SelectSubset<T, LearningProgressUpsertArgs<ExtArgs>>): Prisma__LearningProgressClient<$Result.GetResult<Prisma.$LearningProgressPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of LearningProgresses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningProgressCountArgs} args - Arguments to filter LearningProgresses to count.
+     * @example
+     * // Count the number of LearningProgresses
+     * const count = await prisma.learningProgress.count({
+     *   where: {
+     *     // ... the filter for the LearningProgresses we want to count
+     *   }
+     * })
+    **/
+    count<T extends LearningProgressCountArgs>(
+      args?: Subset<T, LearningProgressCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LearningProgressCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LearningProgress.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningProgressAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LearningProgressAggregateArgs>(args: Subset<T, LearningProgressAggregateArgs>): Prisma.PrismaPromise<GetLearningProgressAggregateType<T>>
+
+    /**
+     * Group by LearningProgress.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningProgressGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LearningProgressGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LearningProgressGroupByArgs['orderBy'] }
+        : { orderBy?: LearningProgressGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LearningProgressGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLearningProgressGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LearningProgress model
+   */
+  readonly fields: LearningProgressFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LearningProgress.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LearningProgressClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    learning_session<T extends LearningSessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LearningSessionDefaultArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LearningProgress model
+   */
+  interface LearningProgressFieldRefs {
+    readonly id: FieldRef<"LearningProgress", 'String'>
+    readonly learning_session_id: FieldRef<"LearningProgress", 'String'>
+    readonly category: FieldRef<"LearningProgress", 'String'>
+    readonly mastery_level: FieldRef<"LearningProgress", 'Float'>
+    readonly tasks_completed: FieldRef<"LearningProgress", 'Int'>
+    readonly total_tasks: FieldRef<"LearningProgress", 'Int'>
+    readonly last_activity: FieldRef<"LearningProgress", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LearningProgress findUnique
+   */
+  export type LearningProgressFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningProgress to fetch.
+     */
+    where: LearningProgressWhereUniqueInput
+  }
+
+  /**
+   * LearningProgress findUniqueOrThrow
+   */
+  export type LearningProgressFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningProgress to fetch.
+     */
+    where: LearningProgressWhereUniqueInput
+  }
+
+  /**
+   * LearningProgress findFirst
+   */
+  export type LearningProgressFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningProgress to fetch.
+     */
+    where?: LearningProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningProgresses to fetch.
+     */
+    orderBy?: LearningProgressOrderByWithRelationInput | LearningProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LearningProgresses.
+     */
+    cursor?: LearningProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningProgresses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LearningProgresses.
+     */
+    distinct?: LearningProgressScalarFieldEnum | LearningProgressScalarFieldEnum[]
+  }
+
+  /**
+   * LearningProgress findFirstOrThrow
+   */
+  export type LearningProgressFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningProgress to fetch.
+     */
+    where?: LearningProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningProgresses to fetch.
+     */
+    orderBy?: LearningProgressOrderByWithRelationInput | LearningProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LearningProgresses.
+     */
+    cursor?: LearningProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningProgresses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LearningProgresses.
+     */
+    distinct?: LearningProgressScalarFieldEnum | LearningProgressScalarFieldEnum[]
+  }
+
+  /**
+   * LearningProgress findMany
+   */
+  export type LearningProgressFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningProgresses to fetch.
+     */
+    where?: LearningProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningProgresses to fetch.
+     */
+    orderBy?: LearningProgressOrderByWithRelationInput | LearningProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LearningProgresses.
+     */
+    cursor?: LearningProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningProgresses.
+     */
+    skip?: number
+    distinct?: LearningProgressScalarFieldEnum | LearningProgressScalarFieldEnum[]
+  }
+
+  /**
+   * LearningProgress create
+   */
+  export type LearningProgressCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LearningProgress.
+     */
+    data: XOR<LearningProgressCreateInput, LearningProgressUncheckedCreateInput>
+  }
+
+  /**
+   * LearningProgress createMany
+   */
+  export type LearningProgressCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LearningProgresses.
+     */
+    data: LearningProgressCreateManyInput | LearningProgressCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LearningProgress createManyAndReturn
+   */
+  export type LearningProgressCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * The data used to create many LearningProgresses.
+     */
+    data: LearningProgressCreateManyInput | LearningProgressCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LearningProgress update
+   */
+  export type LearningProgressUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LearningProgress.
+     */
+    data: XOR<LearningProgressUpdateInput, LearningProgressUncheckedUpdateInput>
+    /**
+     * Choose, which LearningProgress to update.
+     */
+    where: LearningProgressWhereUniqueInput
+  }
+
+  /**
+   * LearningProgress updateMany
+   */
+  export type LearningProgressUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LearningProgresses.
+     */
+    data: XOR<LearningProgressUpdateManyMutationInput, LearningProgressUncheckedUpdateManyInput>
+    /**
+     * Filter which LearningProgresses to update
+     */
+    where?: LearningProgressWhereInput
+    /**
+     * Limit how many LearningProgresses to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * LearningProgress updateManyAndReturn
+   */
+  export type LearningProgressUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * The data used to update LearningProgresses.
+     */
+    data: XOR<LearningProgressUpdateManyMutationInput, LearningProgressUncheckedUpdateManyInput>
+    /**
+     * Filter which LearningProgresses to update
+     */
+    where?: LearningProgressWhereInput
+    /**
+     * Limit how many LearningProgresses to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LearningProgress upsert
+   */
+  export type LearningProgressUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LearningProgress to update in case it exists.
+     */
+    where: LearningProgressWhereUniqueInput
+    /**
+     * In case the LearningProgress found by the `where` argument doesn't exist, create a new LearningProgress with this data.
+     */
+    create: XOR<LearningProgressCreateInput, LearningProgressUncheckedCreateInput>
+    /**
+     * In case the LearningProgress was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LearningProgressUpdateInput, LearningProgressUncheckedUpdateInput>
+  }
+
+  /**
+   * LearningProgress delete
+   */
+  export type LearningProgressDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+    /**
+     * Filter which LearningProgress to delete.
+     */
+    where: LearningProgressWhereUniqueInput
+  }
+
+  /**
+   * LearningProgress deleteMany
+   */
+  export type LearningProgressDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LearningProgresses to delete
+     */
+    where?: LearningProgressWhereInput
+    /**
+     * Limit how many LearningProgresses to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * LearningProgress without action
+   */
+  export type LearningProgressDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningProgress
+     */
+    select?: LearningProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningProgress
+     */
+    omit?: LearningProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningProgressInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LearningChatMessage
+   */
+
+  export type AggregateLearningChatMessage = {
+    _count: LearningChatMessageCountAggregateOutputType | null
+    _min: LearningChatMessageMinAggregateOutputType | null
+    _max: LearningChatMessageMaxAggregateOutputType | null
+  }
+
+  export type LearningChatMessageMinAggregateOutputType = {
+    id: string | null
+    learning_session_id: string | null
+    role: string | null
+    content: string | null
+    message_type: string | null
+    created_at: Date | null
+  }
+
+  export type LearningChatMessageMaxAggregateOutputType = {
+    id: string | null
+    learning_session_id: string | null
+    role: string | null
+    content: string | null
+    message_type: string | null
+    created_at: Date | null
+  }
+
+  export type LearningChatMessageCountAggregateOutputType = {
+    id: number
+    learning_session_id: number
+    role: number
+    content: number
+    message_type: number
+    created_at: number
+    _all: number
+  }
+
+
+  export type LearningChatMessageMinAggregateInputType = {
+    id?: true
+    learning_session_id?: true
+    role?: true
+    content?: true
+    message_type?: true
+    created_at?: true
+  }
+
+  export type LearningChatMessageMaxAggregateInputType = {
+    id?: true
+    learning_session_id?: true
+    role?: true
+    content?: true
+    message_type?: true
+    created_at?: true
+  }
+
+  export type LearningChatMessageCountAggregateInputType = {
+    id?: true
+    learning_session_id?: true
+    role?: true
+    content?: true
+    message_type?: true
+    created_at?: true
+    _all?: true
+  }
+
+  export type LearningChatMessageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LearningChatMessage to aggregate.
+     */
+    where?: LearningChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningChatMessages to fetch.
+     */
+    orderBy?: LearningChatMessageOrderByWithRelationInput | LearningChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LearningChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LearningChatMessages
+    **/
+    _count?: true | LearningChatMessageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LearningChatMessageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LearningChatMessageMaxAggregateInputType
+  }
+
+  export type GetLearningChatMessageAggregateType<T extends LearningChatMessageAggregateArgs> = {
+        [P in keyof T & keyof AggregateLearningChatMessage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLearningChatMessage[P]>
+      : GetScalarType<T[P], AggregateLearningChatMessage[P]>
+  }
+
+
+
+
+  export type LearningChatMessageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LearningChatMessageWhereInput
+    orderBy?: LearningChatMessageOrderByWithAggregationInput | LearningChatMessageOrderByWithAggregationInput[]
+    by: LearningChatMessageScalarFieldEnum[] | LearningChatMessageScalarFieldEnum
+    having?: LearningChatMessageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LearningChatMessageCountAggregateInputType | true
+    _min?: LearningChatMessageMinAggregateInputType
+    _max?: LearningChatMessageMaxAggregateInputType
+  }
+
+  export type LearningChatMessageGroupByOutputType = {
+    id: string
+    learning_session_id: string
+    role: string
+    content: string
+    message_type: string
+    created_at: Date
+    _count: LearningChatMessageCountAggregateOutputType | null
+    _min: LearningChatMessageMinAggregateOutputType | null
+    _max: LearningChatMessageMaxAggregateOutputType | null
+  }
+
+  type GetLearningChatMessageGroupByPayload<T extends LearningChatMessageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LearningChatMessageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LearningChatMessageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LearningChatMessageGroupByOutputType[P]>
+            : GetScalarType<T[P], LearningChatMessageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LearningChatMessageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    learning_session_id?: boolean
+    role?: boolean
+    content?: boolean
+    message_type?: boolean
+    created_at?: boolean
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningChatMessage"]>
+
+  export type LearningChatMessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    learning_session_id?: boolean
+    role?: boolean
+    content?: boolean
+    message_type?: boolean
+    created_at?: boolean
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningChatMessage"]>
+
+  export type LearningChatMessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    learning_session_id?: boolean
+    role?: boolean
+    content?: boolean
+    message_type?: boolean
+    created_at?: boolean
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["learningChatMessage"]>
+
+  export type LearningChatMessageSelectScalar = {
+    id?: boolean
+    learning_session_id?: boolean
+    role?: boolean
+    content?: boolean
+    message_type?: boolean
+    created_at?: boolean
+  }
+
+  export type LearningChatMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "learning_session_id" | "role" | "content" | "message_type" | "created_at", ExtArgs["result"]["learningChatMessage"]>
+  export type LearningChatMessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }
+  export type LearningChatMessageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }
+  export type LearningChatMessageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    learning_session?: boolean | LearningSessionDefaultArgs<ExtArgs>
+  }
+
+  export type $LearningChatMessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LearningChatMessage"
+    objects: {
+      learning_session: Prisma.$LearningSessionPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      learning_session_id: string
+      role: string
+      content: string
+      message_type: string
+      created_at: Date
+    }, ExtArgs["result"]["learningChatMessage"]>
+    composites: {}
+  }
+
+  type LearningChatMessageGetPayload<S extends boolean | null | undefined | LearningChatMessageDefaultArgs> = $Result.GetResult<Prisma.$LearningChatMessagePayload, S>
+
+  type LearningChatMessageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LearningChatMessageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LearningChatMessageCountAggregateInputType | true
+    }
+
+  export interface LearningChatMessageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LearningChatMessage'], meta: { name: 'LearningChatMessage' } }
+    /**
+     * Find zero or one LearningChatMessage that matches the filter.
+     * @param {LearningChatMessageFindUniqueArgs} args - Arguments to find a LearningChatMessage
+     * @example
+     * // Get one LearningChatMessage
+     * const learningChatMessage = await prisma.learningChatMessage.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LearningChatMessageFindUniqueArgs>(args: SelectSubset<T, LearningChatMessageFindUniqueArgs<ExtArgs>>): Prisma__LearningChatMessageClient<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one LearningChatMessage that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LearningChatMessageFindUniqueOrThrowArgs} args - Arguments to find a LearningChatMessage
+     * @example
+     * // Get one LearningChatMessage
+     * const learningChatMessage = await prisma.learningChatMessage.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LearningChatMessageFindUniqueOrThrowArgs>(args: SelectSubset<T, LearningChatMessageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LearningChatMessageClient<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LearningChatMessage that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningChatMessageFindFirstArgs} args - Arguments to find a LearningChatMessage
+     * @example
+     * // Get one LearningChatMessage
+     * const learningChatMessage = await prisma.learningChatMessage.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LearningChatMessageFindFirstArgs>(args?: SelectSubset<T, LearningChatMessageFindFirstArgs<ExtArgs>>): Prisma__LearningChatMessageClient<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first LearningChatMessage that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningChatMessageFindFirstOrThrowArgs} args - Arguments to find a LearningChatMessage
+     * @example
+     * // Get one LearningChatMessage
+     * const learningChatMessage = await prisma.learningChatMessage.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LearningChatMessageFindFirstOrThrowArgs>(args?: SelectSubset<T, LearningChatMessageFindFirstOrThrowArgs<ExtArgs>>): Prisma__LearningChatMessageClient<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more LearningChatMessages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningChatMessageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LearningChatMessages
+     * const learningChatMessages = await prisma.learningChatMessage.findMany()
+     * 
+     * // Get first 10 LearningChatMessages
+     * const learningChatMessages = await prisma.learningChatMessage.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const learningChatMessageWithIdOnly = await prisma.learningChatMessage.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LearningChatMessageFindManyArgs>(args?: SelectSubset<T, LearningChatMessageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a LearningChatMessage.
+     * @param {LearningChatMessageCreateArgs} args - Arguments to create a LearningChatMessage.
+     * @example
+     * // Create one LearningChatMessage
+     * const LearningChatMessage = await prisma.learningChatMessage.create({
+     *   data: {
+     *     // ... data to create a LearningChatMessage
+     *   }
+     * })
+     * 
+     */
+    create<T extends LearningChatMessageCreateArgs>(args: SelectSubset<T, LearningChatMessageCreateArgs<ExtArgs>>): Prisma__LearningChatMessageClient<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many LearningChatMessages.
+     * @param {LearningChatMessageCreateManyArgs} args - Arguments to create many LearningChatMessages.
+     * @example
+     * // Create many LearningChatMessages
+     * const learningChatMessage = await prisma.learningChatMessage.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LearningChatMessageCreateManyArgs>(args?: SelectSubset<T, LearningChatMessageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LearningChatMessages and returns the data saved in the database.
+     * @param {LearningChatMessageCreateManyAndReturnArgs} args - Arguments to create many LearningChatMessages.
+     * @example
+     * // Create many LearningChatMessages
+     * const learningChatMessage = await prisma.learningChatMessage.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LearningChatMessages and only return the `id`
+     * const learningChatMessageWithIdOnly = await prisma.learningChatMessage.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LearningChatMessageCreateManyAndReturnArgs>(args?: SelectSubset<T, LearningChatMessageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a LearningChatMessage.
+     * @param {LearningChatMessageDeleteArgs} args - Arguments to delete one LearningChatMessage.
+     * @example
+     * // Delete one LearningChatMessage
+     * const LearningChatMessage = await prisma.learningChatMessage.delete({
+     *   where: {
+     *     // ... filter to delete one LearningChatMessage
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LearningChatMessageDeleteArgs>(args: SelectSubset<T, LearningChatMessageDeleteArgs<ExtArgs>>): Prisma__LearningChatMessageClient<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one LearningChatMessage.
+     * @param {LearningChatMessageUpdateArgs} args - Arguments to update one LearningChatMessage.
+     * @example
+     * // Update one LearningChatMessage
+     * const learningChatMessage = await prisma.learningChatMessage.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LearningChatMessageUpdateArgs>(args: SelectSubset<T, LearningChatMessageUpdateArgs<ExtArgs>>): Prisma__LearningChatMessageClient<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more LearningChatMessages.
+     * @param {LearningChatMessageDeleteManyArgs} args - Arguments to filter LearningChatMessages to delete.
+     * @example
+     * // Delete a few LearningChatMessages
+     * const { count } = await prisma.learningChatMessage.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LearningChatMessageDeleteManyArgs>(args?: SelectSubset<T, LearningChatMessageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LearningChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningChatMessageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LearningChatMessages
+     * const learningChatMessage = await prisma.learningChatMessage.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LearningChatMessageUpdateManyArgs>(args: SelectSubset<T, LearningChatMessageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LearningChatMessages and returns the data updated in the database.
+     * @param {LearningChatMessageUpdateManyAndReturnArgs} args - Arguments to update many LearningChatMessages.
+     * @example
+     * // Update many LearningChatMessages
+     * const learningChatMessage = await prisma.learningChatMessage.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more LearningChatMessages and only return the `id`
+     * const learningChatMessageWithIdOnly = await prisma.learningChatMessage.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends LearningChatMessageUpdateManyAndReturnArgs>(args: SelectSubset<T, LearningChatMessageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one LearningChatMessage.
+     * @param {LearningChatMessageUpsertArgs} args - Arguments to update or create a LearningChatMessage.
+     * @example
+     * // Update or create a LearningChatMessage
+     * const learningChatMessage = await prisma.learningChatMessage.upsert({
+     *   create: {
+     *     // ... data to create a LearningChatMessage
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LearningChatMessage we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LearningChatMessageUpsertArgs>(args: SelectSubset<T, LearningChatMessageUpsertArgs<ExtArgs>>): Prisma__LearningChatMessageClient<$Result.GetResult<Prisma.$LearningChatMessagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of LearningChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningChatMessageCountArgs} args - Arguments to filter LearningChatMessages to count.
+     * @example
+     * // Count the number of LearningChatMessages
+     * const count = await prisma.learningChatMessage.count({
+     *   where: {
+     *     // ... the filter for the LearningChatMessages we want to count
+     *   }
+     * })
+    **/
+    count<T extends LearningChatMessageCountArgs>(
+      args?: Subset<T, LearningChatMessageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LearningChatMessageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LearningChatMessage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningChatMessageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LearningChatMessageAggregateArgs>(args: Subset<T, LearningChatMessageAggregateArgs>): Prisma.PrismaPromise<GetLearningChatMessageAggregateType<T>>
+
+    /**
+     * Group by LearningChatMessage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LearningChatMessageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LearningChatMessageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LearningChatMessageGroupByArgs['orderBy'] }
+        : { orderBy?: LearningChatMessageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LearningChatMessageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLearningChatMessageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LearningChatMessage model
+   */
+  readonly fields: LearningChatMessageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LearningChatMessage.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LearningChatMessageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    learning_session<T extends LearningSessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LearningSessionDefaultArgs<ExtArgs>>): Prisma__LearningSessionClient<$Result.GetResult<Prisma.$LearningSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LearningChatMessage model
+   */
+  interface LearningChatMessageFieldRefs {
+    readonly id: FieldRef<"LearningChatMessage", 'String'>
+    readonly learning_session_id: FieldRef<"LearningChatMessage", 'String'>
+    readonly role: FieldRef<"LearningChatMessage", 'String'>
+    readonly content: FieldRef<"LearningChatMessage", 'String'>
+    readonly message_type: FieldRef<"LearningChatMessage", 'String'>
+    readonly created_at: FieldRef<"LearningChatMessage", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LearningChatMessage findUnique
+   */
+  export type LearningChatMessageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningChatMessage to fetch.
+     */
+    where: LearningChatMessageWhereUniqueInput
+  }
+
+  /**
+   * LearningChatMessage findUniqueOrThrow
+   */
+  export type LearningChatMessageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningChatMessage to fetch.
+     */
+    where: LearningChatMessageWhereUniqueInput
+  }
+
+  /**
+   * LearningChatMessage findFirst
+   */
+  export type LearningChatMessageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningChatMessage to fetch.
+     */
+    where?: LearningChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningChatMessages to fetch.
+     */
+    orderBy?: LearningChatMessageOrderByWithRelationInput | LearningChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LearningChatMessages.
+     */
+    cursor?: LearningChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LearningChatMessages.
+     */
+    distinct?: LearningChatMessageScalarFieldEnum | LearningChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * LearningChatMessage findFirstOrThrow
+   */
+  export type LearningChatMessageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningChatMessage to fetch.
+     */
+    where?: LearningChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningChatMessages to fetch.
+     */
+    orderBy?: LearningChatMessageOrderByWithRelationInput | LearningChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LearningChatMessages.
+     */
+    cursor?: LearningChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LearningChatMessages.
+     */
+    distinct?: LearningChatMessageScalarFieldEnum | LearningChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * LearningChatMessage findMany
+   */
+  export type LearningChatMessageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which LearningChatMessages to fetch.
+     */
+    where?: LearningChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LearningChatMessages to fetch.
+     */
+    orderBy?: LearningChatMessageOrderByWithRelationInput | LearningChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LearningChatMessages.
+     */
+    cursor?: LearningChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LearningChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LearningChatMessages.
+     */
+    skip?: number
+    distinct?: LearningChatMessageScalarFieldEnum | LearningChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * LearningChatMessage create
+   */
+  export type LearningChatMessageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LearningChatMessage.
+     */
+    data: XOR<LearningChatMessageCreateInput, LearningChatMessageUncheckedCreateInput>
+  }
+
+  /**
+   * LearningChatMessage createMany
+   */
+  export type LearningChatMessageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LearningChatMessages.
+     */
+    data: LearningChatMessageCreateManyInput | LearningChatMessageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LearningChatMessage createManyAndReturn
+   */
+  export type LearningChatMessageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * The data used to create many LearningChatMessages.
+     */
+    data: LearningChatMessageCreateManyInput | LearningChatMessageCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LearningChatMessage update
+   */
+  export type LearningChatMessageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LearningChatMessage.
+     */
+    data: XOR<LearningChatMessageUpdateInput, LearningChatMessageUncheckedUpdateInput>
+    /**
+     * Choose, which LearningChatMessage to update.
+     */
+    where: LearningChatMessageWhereUniqueInput
+  }
+
+  /**
+   * LearningChatMessage updateMany
+   */
+  export type LearningChatMessageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LearningChatMessages.
+     */
+    data: XOR<LearningChatMessageUpdateManyMutationInput, LearningChatMessageUncheckedUpdateManyInput>
+    /**
+     * Filter which LearningChatMessages to update
+     */
+    where?: LearningChatMessageWhereInput
+    /**
+     * Limit how many LearningChatMessages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * LearningChatMessage updateManyAndReturn
+   */
+  export type LearningChatMessageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * The data used to update LearningChatMessages.
+     */
+    data: XOR<LearningChatMessageUpdateManyMutationInput, LearningChatMessageUncheckedUpdateManyInput>
+    /**
+     * Filter which LearningChatMessages to update
+     */
+    where?: LearningChatMessageWhereInput
+    /**
+     * Limit how many LearningChatMessages to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LearningChatMessage upsert
+   */
+  export type LearningChatMessageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LearningChatMessage to update in case it exists.
+     */
+    where: LearningChatMessageWhereUniqueInput
+    /**
+     * In case the LearningChatMessage found by the `where` argument doesn't exist, create a new LearningChatMessage with this data.
+     */
+    create: XOR<LearningChatMessageCreateInput, LearningChatMessageUncheckedCreateInput>
+    /**
+     * In case the LearningChatMessage was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LearningChatMessageUpdateInput, LearningChatMessageUncheckedUpdateInput>
+  }
+
+  /**
+   * LearningChatMessage delete
+   */
+  export type LearningChatMessageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter which LearningChatMessage to delete.
+     */
+    where: LearningChatMessageWhereUniqueInput
+  }
+
+  /**
+   * LearningChatMessage deleteMany
+   */
+  export type LearningChatMessageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LearningChatMessages to delete
+     */
+    where?: LearningChatMessageWhereInput
+    /**
+     * Limit how many LearningChatMessages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * LearningChatMessage without action
+   */
+  export type LearningChatMessageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LearningChatMessage
+     */
+    select?: LearningChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LearningChatMessage
+     */
+    omit?: LearningChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LearningChatMessageInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -4652,7 +9890,13 @@ export namespace Prisma {
     email: 'email',
     user_id: 'user_id',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    scraped_content: 'scraped_content',
+    scraped_pages: 'scraped_pages',
+    scraped_chars: 'scraped_chars',
+    scraped_words: 'scraped_words',
+    scraped_at: 'scraped_at',
+    scraped_url: 'scraped_url'
   };
 
   export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]
@@ -4680,6 +9924,65 @@ export namespace Prisma {
   };
 
   export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
+
+
+  export const LearningSessionScalarFieldEnum: {
+    id: 'id',
+    client_id: 'client_id',
+    user_id: 'user_id',
+    software_name: 'software_name',
+    documentation_summary: 'documentation_summary',
+    current_phase: 'current_phase',
+    completion_percentage: 'completion_percentage',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type LearningSessionScalarFieldEnum = (typeof LearningSessionScalarFieldEnum)[keyof typeof LearningSessionScalarFieldEnum]
+
+
+  export const LearningTaskScalarFieldEnum: {
+    id: 'id',
+    learning_session_id: 'learning_session_id',
+    title: 'title',
+    description: 'description',
+    instructions: 'instructions',
+    category: 'category',
+    difficulty_level: 'difficulty_level',
+    estimated_minutes: 'estimated_minutes',
+    prerequisites: 'prerequisites',
+    is_completed: 'is_completed',
+    completed_at: 'completed_at',
+    user_notes: 'user_notes',
+    created_at: 'created_at'
+  };
+
+  export type LearningTaskScalarFieldEnum = (typeof LearningTaskScalarFieldEnum)[keyof typeof LearningTaskScalarFieldEnum]
+
+
+  export const LearningProgressScalarFieldEnum: {
+    id: 'id',
+    learning_session_id: 'learning_session_id',
+    category: 'category',
+    mastery_level: 'mastery_level',
+    tasks_completed: 'tasks_completed',
+    total_tasks: 'total_tasks',
+    last_activity: 'last_activity'
+  };
+
+  export type LearningProgressScalarFieldEnum = (typeof LearningProgressScalarFieldEnum)[keyof typeof LearningProgressScalarFieldEnum]
+
+
+  export const LearningChatMessageScalarFieldEnum: {
+    id: 'id',
+    learning_session_id: 'learning_session_id',
+    role: 'role',
+    content: 'content',
+    message_type: 'message_type',
+    created_at: 'created_at'
+  };
+
+  export type LearningChatMessageScalarFieldEnum = (typeof LearningChatMessageScalarFieldEnum)[keyof typeof LearningChatMessageScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -4765,6 +10068,13 @@ export namespace Prisma {
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
   /**
    * Deep Input Types
    */
@@ -4782,6 +10092,7 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"User"> | Date | string
     clients?: ClientListRelationFilter
     projects?: ProjectListRelationFilter
+    learning_sessions?: LearningSessionListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -4793,6 +10104,7 @@ export namespace Prisma {
     updated_at?: SortOrder
     clients?: ClientOrderByRelationAggregateInput
     projects?: ProjectOrderByRelationAggregateInput
+    learning_sessions?: LearningSessionOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -4807,6 +10119,7 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"User"> | Date | string
     clients?: ClientListRelationFilter
     projects?: ProjectListRelationFilter
+    learning_sessions?: LearningSessionListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -4844,8 +10157,15 @@ export namespace Prisma {
     user_id?: StringFilter<"Client"> | string
     created_at?: DateTimeFilter<"Client"> | Date | string
     updated_at?: DateTimeFilter<"Client"> | Date | string
+    scraped_content?: StringNullableFilter<"Client"> | string | null
+    scraped_pages?: IntNullableFilter<"Client"> | number | null
+    scraped_chars?: IntNullableFilter<"Client"> | number | null
+    scraped_words?: IntNullableFilter<"Client"> | number | null
+    scraped_at?: DateTimeNullableFilter<"Client"> | Date | string | null
+    scraped_url?: StringNullableFilter<"Client"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     projects?: ProjectListRelationFilter
+    learning_sessions?: LearningSessionListRelationFilter
   }
 
   export type ClientOrderByWithRelationInput = {
@@ -4856,8 +10176,15 @@ export namespace Prisma {
     user_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    scraped_content?: SortOrderInput | SortOrder
+    scraped_pages?: SortOrderInput | SortOrder
+    scraped_chars?: SortOrderInput | SortOrder
+    scraped_words?: SortOrderInput | SortOrder
+    scraped_at?: SortOrderInput | SortOrder
+    scraped_url?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
     projects?: ProjectOrderByRelationAggregateInput
+    learning_sessions?: LearningSessionOrderByRelationAggregateInput
   }
 
   export type ClientWhereUniqueInput = Prisma.AtLeast<{
@@ -4871,8 +10198,15 @@ export namespace Prisma {
     user_id?: StringFilter<"Client"> | string
     created_at?: DateTimeFilter<"Client"> | Date | string
     updated_at?: DateTimeFilter<"Client"> | Date | string
+    scraped_content?: StringNullableFilter<"Client"> | string | null
+    scraped_pages?: IntNullableFilter<"Client"> | number | null
+    scraped_chars?: IntNullableFilter<"Client"> | number | null
+    scraped_words?: IntNullableFilter<"Client"> | number | null
+    scraped_at?: DateTimeNullableFilter<"Client"> | Date | string | null
+    scraped_url?: StringNullableFilter<"Client"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     projects?: ProjectListRelationFilter
+    learning_sessions?: LearningSessionListRelationFilter
   }, "id">
 
   export type ClientOrderByWithAggregationInput = {
@@ -4883,9 +10217,17 @@ export namespace Prisma {
     user_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    scraped_content?: SortOrderInput | SortOrder
+    scraped_pages?: SortOrderInput | SortOrder
+    scraped_chars?: SortOrderInput | SortOrder
+    scraped_words?: SortOrderInput | SortOrder
+    scraped_at?: SortOrderInput | SortOrder
+    scraped_url?: SortOrderInput | SortOrder
     _count?: ClientCountOrderByAggregateInput
+    _avg?: ClientAvgOrderByAggregateInput
     _max?: ClientMaxOrderByAggregateInput
     _min?: ClientMinOrderByAggregateInput
+    _sum?: ClientSumOrderByAggregateInput
   }
 
   export type ClientScalarWhereWithAggregatesInput = {
@@ -4899,6 +10241,12 @@ export namespace Prisma {
     user_id?: StringWithAggregatesFilter<"Client"> | string
     created_at?: DateTimeWithAggregatesFilter<"Client"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"Client"> | Date | string
+    scraped_content?: StringNullableWithAggregatesFilter<"Client"> | string | null
+    scraped_pages?: IntNullableWithAggregatesFilter<"Client"> | number | null
+    scraped_chars?: IntNullableWithAggregatesFilter<"Client"> | number | null
+    scraped_words?: IntNullableWithAggregatesFilter<"Client"> | number | null
+    scraped_at?: DateTimeNullableWithAggregatesFilter<"Client"> | Date | string | null
+    scraped_url?: StringNullableWithAggregatesFilter<"Client"> | string | null
   }
 
   export type ProjectWhereInput = {
@@ -5026,6 +10374,320 @@ export namespace Prisma {
     video_type?: StringNullableWithAggregatesFilter<"Project"> | string | null
   }
 
+  export type LearningSessionWhereInput = {
+    AND?: LearningSessionWhereInput | LearningSessionWhereInput[]
+    OR?: LearningSessionWhereInput[]
+    NOT?: LearningSessionWhereInput | LearningSessionWhereInput[]
+    id?: StringFilter<"LearningSession"> | string
+    client_id?: StringFilter<"LearningSession"> | string
+    user_id?: StringFilter<"LearningSession"> | string
+    software_name?: StringFilter<"LearningSession"> | string
+    documentation_summary?: StringNullableFilter<"LearningSession"> | string | null
+    current_phase?: StringFilter<"LearningSession"> | string
+    completion_percentage?: FloatFilter<"LearningSession"> | number
+    created_at?: DateTimeFilter<"LearningSession"> | Date | string
+    updated_at?: DateTimeFilter<"LearningSession"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    client?: XOR<ClientScalarRelationFilter, ClientWhereInput>
+    tasks?: LearningTaskListRelationFilter
+    progress?: LearningProgressListRelationFilter
+    chat_messages?: LearningChatMessageListRelationFilter
+  }
+
+  export type LearningSessionOrderByWithRelationInput = {
+    id?: SortOrder
+    client_id?: SortOrder
+    user_id?: SortOrder
+    software_name?: SortOrder
+    documentation_summary?: SortOrderInput | SortOrder
+    current_phase?: SortOrder
+    completion_percentage?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+    client?: ClientOrderByWithRelationInput
+    tasks?: LearningTaskOrderByRelationAggregateInput
+    progress?: LearningProgressOrderByRelationAggregateInput
+    chat_messages?: LearningChatMessageOrderByRelationAggregateInput
+  }
+
+  export type LearningSessionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LearningSessionWhereInput | LearningSessionWhereInput[]
+    OR?: LearningSessionWhereInput[]
+    NOT?: LearningSessionWhereInput | LearningSessionWhereInput[]
+    client_id?: StringFilter<"LearningSession"> | string
+    user_id?: StringFilter<"LearningSession"> | string
+    software_name?: StringFilter<"LearningSession"> | string
+    documentation_summary?: StringNullableFilter<"LearningSession"> | string | null
+    current_phase?: StringFilter<"LearningSession"> | string
+    completion_percentage?: FloatFilter<"LearningSession"> | number
+    created_at?: DateTimeFilter<"LearningSession"> | Date | string
+    updated_at?: DateTimeFilter<"LearningSession"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    client?: XOR<ClientScalarRelationFilter, ClientWhereInput>
+    tasks?: LearningTaskListRelationFilter
+    progress?: LearningProgressListRelationFilter
+    chat_messages?: LearningChatMessageListRelationFilter
+  }, "id">
+
+  export type LearningSessionOrderByWithAggregationInput = {
+    id?: SortOrder
+    client_id?: SortOrder
+    user_id?: SortOrder
+    software_name?: SortOrder
+    documentation_summary?: SortOrderInput | SortOrder
+    current_phase?: SortOrder
+    completion_percentage?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: LearningSessionCountOrderByAggregateInput
+    _avg?: LearningSessionAvgOrderByAggregateInput
+    _max?: LearningSessionMaxOrderByAggregateInput
+    _min?: LearningSessionMinOrderByAggregateInput
+    _sum?: LearningSessionSumOrderByAggregateInput
+  }
+
+  export type LearningSessionScalarWhereWithAggregatesInput = {
+    AND?: LearningSessionScalarWhereWithAggregatesInput | LearningSessionScalarWhereWithAggregatesInput[]
+    OR?: LearningSessionScalarWhereWithAggregatesInput[]
+    NOT?: LearningSessionScalarWhereWithAggregatesInput | LearningSessionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LearningSession"> | string
+    client_id?: StringWithAggregatesFilter<"LearningSession"> | string
+    user_id?: StringWithAggregatesFilter<"LearningSession"> | string
+    software_name?: StringWithAggregatesFilter<"LearningSession"> | string
+    documentation_summary?: StringNullableWithAggregatesFilter<"LearningSession"> | string | null
+    current_phase?: StringWithAggregatesFilter<"LearningSession"> | string
+    completion_percentage?: FloatWithAggregatesFilter<"LearningSession"> | number
+    created_at?: DateTimeWithAggregatesFilter<"LearningSession"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"LearningSession"> | Date | string
+  }
+
+  export type LearningTaskWhereInput = {
+    AND?: LearningTaskWhereInput | LearningTaskWhereInput[]
+    OR?: LearningTaskWhereInput[]
+    NOT?: LearningTaskWhereInput | LearningTaskWhereInput[]
+    id?: StringFilter<"LearningTask"> | string
+    learning_session_id?: StringFilter<"LearningTask"> | string
+    title?: StringFilter<"LearningTask"> | string
+    description?: StringFilter<"LearningTask"> | string
+    instructions?: StringFilter<"LearningTask"> | string
+    category?: StringFilter<"LearningTask"> | string
+    difficulty_level?: IntFilter<"LearningTask"> | number
+    estimated_minutes?: IntNullableFilter<"LearningTask"> | number | null
+    prerequisites?: StringNullableListFilter<"LearningTask">
+    is_completed?: BoolFilter<"LearningTask"> | boolean
+    completed_at?: DateTimeNullableFilter<"LearningTask"> | Date | string | null
+    user_notes?: StringNullableFilter<"LearningTask"> | string | null
+    created_at?: DateTimeFilter<"LearningTask"> | Date | string
+    learning_session?: XOR<LearningSessionScalarRelationFilter, LearningSessionWhereInput>
+  }
+
+  export type LearningTaskOrderByWithRelationInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    instructions?: SortOrder
+    category?: SortOrder
+    difficulty_level?: SortOrder
+    estimated_minutes?: SortOrderInput | SortOrder
+    prerequisites?: SortOrder
+    is_completed?: SortOrder
+    completed_at?: SortOrderInput | SortOrder
+    user_notes?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    learning_session?: LearningSessionOrderByWithRelationInput
+  }
+
+  export type LearningTaskWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LearningTaskWhereInput | LearningTaskWhereInput[]
+    OR?: LearningTaskWhereInput[]
+    NOT?: LearningTaskWhereInput | LearningTaskWhereInput[]
+    learning_session_id?: StringFilter<"LearningTask"> | string
+    title?: StringFilter<"LearningTask"> | string
+    description?: StringFilter<"LearningTask"> | string
+    instructions?: StringFilter<"LearningTask"> | string
+    category?: StringFilter<"LearningTask"> | string
+    difficulty_level?: IntFilter<"LearningTask"> | number
+    estimated_minutes?: IntNullableFilter<"LearningTask"> | number | null
+    prerequisites?: StringNullableListFilter<"LearningTask">
+    is_completed?: BoolFilter<"LearningTask"> | boolean
+    completed_at?: DateTimeNullableFilter<"LearningTask"> | Date | string | null
+    user_notes?: StringNullableFilter<"LearningTask"> | string | null
+    created_at?: DateTimeFilter<"LearningTask"> | Date | string
+    learning_session?: XOR<LearningSessionScalarRelationFilter, LearningSessionWhereInput>
+  }, "id">
+
+  export type LearningTaskOrderByWithAggregationInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    instructions?: SortOrder
+    category?: SortOrder
+    difficulty_level?: SortOrder
+    estimated_minutes?: SortOrderInput | SortOrder
+    prerequisites?: SortOrder
+    is_completed?: SortOrder
+    completed_at?: SortOrderInput | SortOrder
+    user_notes?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    _count?: LearningTaskCountOrderByAggregateInput
+    _avg?: LearningTaskAvgOrderByAggregateInput
+    _max?: LearningTaskMaxOrderByAggregateInput
+    _min?: LearningTaskMinOrderByAggregateInput
+    _sum?: LearningTaskSumOrderByAggregateInput
+  }
+
+  export type LearningTaskScalarWhereWithAggregatesInput = {
+    AND?: LearningTaskScalarWhereWithAggregatesInput | LearningTaskScalarWhereWithAggregatesInput[]
+    OR?: LearningTaskScalarWhereWithAggregatesInput[]
+    NOT?: LearningTaskScalarWhereWithAggregatesInput | LearningTaskScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LearningTask"> | string
+    learning_session_id?: StringWithAggregatesFilter<"LearningTask"> | string
+    title?: StringWithAggregatesFilter<"LearningTask"> | string
+    description?: StringWithAggregatesFilter<"LearningTask"> | string
+    instructions?: StringWithAggregatesFilter<"LearningTask"> | string
+    category?: StringWithAggregatesFilter<"LearningTask"> | string
+    difficulty_level?: IntWithAggregatesFilter<"LearningTask"> | number
+    estimated_minutes?: IntNullableWithAggregatesFilter<"LearningTask"> | number | null
+    prerequisites?: StringNullableListFilter<"LearningTask">
+    is_completed?: BoolWithAggregatesFilter<"LearningTask"> | boolean
+    completed_at?: DateTimeNullableWithAggregatesFilter<"LearningTask"> | Date | string | null
+    user_notes?: StringNullableWithAggregatesFilter<"LearningTask"> | string | null
+    created_at?: DateTimeWithAggregatesFilter<"LearningTask"> | Date | string
+  }
+
+  export type LearningProgressWhereInput = {
+    AND?: LearningProgressWhereInput | LearningProgressWhereInput[]
+    OR?: LearningProgressWhereInput[]
+    NOT?: LearningProgressWhereInput | LearningProgressWhereInput[]
+    id?: StringFilter<"LearningProgress"> | string
+    learning_session_id?: StringFilter<"LearningProgress"> | string
+    category?: StringFilter<"LearningProgress"> | string
+    mastery_level?: FloatFilter<"LearningProgress"> | number
+    tasks_completed?: IntFilter<"LearningProgress"> | number
+    total_tasks?: IntFilter<"LearningProgress"> | number
+    last_activity?: DateTimeFilter<"LearningProgress"> | Date | string
+    learning_session?: XOR<LearningSessionScalarRelationFilter, LearningSessionWhereInput>
+  }
+
+  export type LearningProgressOrderByWithRelationInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    category?: SortOrder
+    mastery_level?: SortOrder
+    tasks_completed?: SortOrder
+    total_tasks?: SortOrder
+    last_activity?: SortOrder
+    learning_session?: LearningSessionOrderByWithRelationInput
+  }
+
+  export type LearningProgressWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    learning_session_id_category?: LearningProgressLearning_session_idCategoryCompoundUniqueInput
+    AND?: LearningProgressWhereInput | LearningProgressWhereInput[]
+    OR?: LearningProgressWhereInput[]
+    NOT?: LearningProgressWhereInput | LearningProgressWhereInput[]
+    learning_session_id?: StringFilter<"LearningProgress"> | string
+    category?: StringFilter<"LearningProgress"> | string
+    mastery_level?: FloatFilter<"LearningProgress"> | number
+    tasks_completed?: IntFilter<"LearningProgress"> | number
+    total_tasks?: IntFilter<"LearningProgress"> | number
+    last_activity?: DateTimeFilter<"LearningProgress"> | Date | string
+    learning_session?: XOR<LearningSessionScalarRelationFilter, LearningSessionWhereInput>
+  }, "id" | "learning_session_id_category">
+
+  export type LearningProgressOrderByWithAggregationInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    category?: SortOrder
+    mastery_level?: SortOrder
+    tasks_completed?: SortOrder
+    total_tasks?: SortOrder
+    last_activity?: SortOrder
+    _count?: LearningProgressCountOrderByAggregateInput
+    _avg?: LearningProgressAvgOrderByAggregateInput
+    _max?: LearningProgressMaxOrderByAggregateInput
+    _min?: LearningProgressMinOrderByAggregateInput
+    _sum?: LearningProgressSumOrderByAggregateInput
+  }
+
+  export type LearningProgressScalarWhereWithAggregatesInput = {
+    AND?: LearningProgressScalarWhereWithAggregatesInput | LearningProgressScalarWhereWithAggregatesInput[]
+    OR?: LearningProgressScalarWhereWithAggregatesInput[]
+    NOT?: LearningProgressScalarWhereWithAggregatesInput | LearningProgressScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LearningProgress"> | string
+    learning_session_id?: StringWithAggregatesFilter<"LearningProgress"> | string
+    category?: StringWithAggregatesFilter<"LearningProgress"> | string
+    mastery_level?: FloatWithAggregatesFilter<"LearningProgress"> | number
+    tasks_completed?: IntWithAggregatesFilter<"LearningProgress"> | number
+    total_tasks?: IntWithAggregatesFilter<"LearningProgress"> | number
+    last_activity?: DateTimeWithAggregatesFilter<"LearningProgress"> | Date | string
+  }
+
+  export type LearningChatMessageWhereInput = {
+    AND?: LearningChatMessageWhereInput | LearningChatMessageWhereInput[]
+    OR?: LearningChatMessageWhereInput[]
+    NOT?: LearningChatMessageWhereInput | LearningChatMessageWhereInput[]
+    id?: StringFilter<"LearningChatMessage"> | string
+    learning_session_id?: StringFilter<"LearningChatMessage"> | string
+    role?: StringFilter<"LearningChatMessage"> | string
+    content?: StringFilter<"LearningChatMessage"> | string
+    message_type?: StringFilter<"LearningChatMessage"> | string
+    created_at?: DateTimeFilter<"LearningChatMessage"> | Date | string
+    learning_session?: XOR<LearningSessionScalarRelationFilter, LearningSessionWhereInput>
+  }
+
+  export type LearningChatMessageOrderByWithRelationInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    role?: SortOrder
+    content?: SortOrder
+    message_type?: SortOrder
+    created_at?: SortOrder
+    learning_session?: LearningSessionOrderByWithRelationInput
+  }
+
+  export type LearningChatMessageWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LearningChatMessageWhereInput | LearningChatMessageWhereInput[]
+    OR?: LearningChatMessageWhereInput[]
+    NOT?: LearningChatMessageWhereInput | LearningChatMessageWhereInput[]
+    learning_session_id?: StringFilter<"LearningChatMessage"> | string
+    role?: StringFilter<"LearningChatMessage"> | string
+    content?: StringFilter<"LearningChatMessage"> | string
+    message_type?: StringFilter<"LearningChatMessage"> | string
+    created_at?: DateTimeFilter<"LearningChatMessage"> | Date | string
+    learning_session?: XOR<LearningSessionScalarRelationFilter, LearningSessionWhereInput>
+  }, "id">
+
+  export type LearningChatMessageOrderByWithAggregationInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    role?: SortOrder
+    content?: SortOrder
+    message_type?: SortOrder
+    created_at?: SortOrder
+    _count?: LearningChatMessageCountOrderByAggregateInput
+    _max?: LearningChatMessageMaxOrderByAggregateInput
+    _min?: LearningChatMessageMinOrderByAggregateInput
+  }
+
+  export type LearningChatMessageScalarWhereWithAggregatesInput = {
+    AND?: LearningChatMessageScalarWhereWithAggregatesInput | LearningChatMessageScalarWhereWithAggregatesInput[]
+    OR?: LearningChatMessageScalarWhereWithAggregatesInput[]
+    NOT?: LearningChatMessageScalarWhereWithAggregatesInput | LearningChatMessageScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LearningChatMessage"> | string
+    learning_session_id?: StringWithAggregatesFilter<"LearningChatMessage"> | string
+    role?: StringWithAggregatesFilter<"LearningChatMessage"> | string
+    content?: StringWithAggregatesFilter<"LearningChatMessage"> | string
+    message_type?: StringWithAggregatesFilter<"LearningChatMessage"> | string
+    created_at?: DateTimeWithAggregatesFilter<"LearningChatMessage"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -5035,6 +10697,7 @@ export namespace Prisma {
     updated_at?: Date | string
     clients?: ClientCreateNestedManyWithoutUserInput
     projects?: ProjectCreateNestedManyWithoutUserInput
+    learning_sessions?: LearningSessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -5046,6 +10709,7 @@ export namespace Prisma {
     updated_at?: Date | string
     clients?: ClientUncheckedCreateNestedManyWithoutUserInput
     projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    learning_sessions?: LearningSessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -5057,6 +10721,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     clients?: ClientUpdateManyWithoutUserNestedInput
     projects?: ProjectUpdateManyWithoutUserNestedInput
+    learning_sessions?: LearningSessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -5068,6 +10733,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     clients?: ClientUncheckedUpdateManyWithoutUserNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    learning_sessions?: LearningSessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -5104,8 +10770,15 @@ export namespace Prisma {
     email?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
     user: UserCreateNestedOneWithoutClientsInput
     projects?: ProjectCreateNestedManyWithoutClientInput
+    learning_sessions?: LearningSessionCreateNestedManyWithoutClientInput
   }
 
   export type ClientUncheckedCreateInput = {
@@ -5116,7 +10789,14 @@ export namespace Prisma {
     user_id: string
     created_at?: Date | string
     updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
     projects?: ProjectUncheckedCreateNestedManyWithoutClientInput
+    learning_sessions?: LearningSessionUncheckedCreateNestedManyWithoutClientInput
   }
 
   export type ClientUpdateInput = {
@@ -5126,8 +10806,15 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutClientsNestedInput
     projects?: ProjectUpdateManyWithoutClientNestedInput
+    learning_sessions?: LearningSessionUpdateManyWithoutClientNestedInput
   }
 
   export type ClientUncheckedUpdateInput = {
@@ -5138,7 +10825,14 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
     projects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
+    learning_sessions?: LearningSessionUncheckedUpdateManyWithoutClientNestedInput
   }
 
   export type ClientCreateManyInput = {
@@ -5149,6 +10843,12 @@ export namespace Prisma {
     user_id: string
     created_at?: Date | string
     updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
   }
 
   export type ClientUpdateManyMutationInput = {
@@ -5158,6 +10858,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ClientUncheckedUpdateManyInput = {
@@ -5168,6 +10874,12 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ProjectCreateInput = {
@@ -5315,6 +11027,342 @@ export namespace Prisma {
     video_type?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
+  export type LearningSessionCreateInput = {
+    id?: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutLearning_sessionsInput
+    client: ClientCreateNestedOneWithoutLearning_sessionsInput
+    tasks?: LearningTaskCreateNestedManyWithoutLearning_sessionInput
+    progress?: LearningProgressCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionUncheckedCreateInput = {
+    id?: string
+    client_id: string
+    user_id: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    tasks?: LearningTaskUncheckedCreateNestedManyWithoutLearning_sessionInput
+    progress?: LearningProgressUncheckedCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageUncheckedCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    client?: ClientUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    tasks?: LearningTaskUpdateManyWithoutLearning_sessionNestedInput
+    progress?: LearningProgressUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    client_id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: LearningTaskUncheckedUpdateManyWithoutLearning_sessionNestedInput
+    progress?: LearningProgressUncheckedUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUncheckedUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionCreateManyInput = {
+    id?: string
+    client_id: string
+    user_id: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type LearningSessionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningSessionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    client_id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningTaskCreateInput = {
+    id?: string
+    title: string
+    description: string
+    instructions: string
+    category: string
+    difficulty_level?: number
+    estimated_minutes?: number | null
+    prerequisites?: LearningTaskCreateprerequisitesInput | string[]
+    is_completed?: boolean
+    completed_at?: Date | string | null
+    user_notes?: string | null
+    created_at?: Date | string
+    learning_session: LearningSessionCreateNestedOneWithoutTasksInput
+  }
+
+  export type LearningTaskUncheckedCreateInput = {
+    id?: string
+    learning_session_id: string
+    title: string
+    description: string
+    instructions: string
+    category: string
+    difficulty_level?: number
+    estimated_minutes?: number | null
+    prerequisites?: LearningTaskCreateprerequisitesInput | string[]
+    is_completed?: boolean
+    completed_at?: Date | string | null
+    user_notes?: string | null
+    created_at?: Date | string
+  }
+
+  export type LearningTaskUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    difficulty_level?: IntFieldUpdateOperationsInput | number
+    estimated_minutes?: NullableIntFieldUpdateOperationsInput | number | null
+    prerequisites?: LearningTaskUpdateprerequisitesInput | string[]
+    is_completed?: BoolFieldUpdateOperationsInput | boolean
+    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    learning_session?: LearningSessionUpdateOneRequiredWithoutTasksNestedInput
+  }
+
+  export type LearningTaskUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    learning_session_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    difficulty_level?: IntFieldUpdateOperationsInput | number
+    estimated_minutes?: NullableIntFieldUpdateOperationsInput | number | null
+    prerequisites?: LearningTaskUpdateprerequisitesInput | string[]
+    is_completed?: BoolFieldUpdateOperationsInput | boolean
+    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningTaskCreateManyInput = {
+    id?: string
+    learning_session_id: string
+    title: string
+    description: string
+    instructions: string
+    category: string
+    difficulty_level?: number
+    estimated_minutes?: number | null
+    prerequisites?: LearningTaskCreateprerequisitesInput | string[]
+    is_completed?: boolean
+    completed_at?: Date | string | null
+    user_notes?: string | null
+    created_at?: Date | string
+  }
+
+  export type LearningTaskUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    difficulty_level?: IntFieldUpdateOperationsInput | number
+    estimated_minutes?: NullableIntFieldUpdateOperationsInput | number | null
+    prerequisites?: LearningTaskUpdateprerequisitesInput | string[]
+    is_completed?: BoolFieldUpdateOperationsInput | boolean
+    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningTaskUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    learning_session_id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    difficulty_level?: IntFieldUpdateOperationsInput | number
+    estimated_minutes?: NullableIntFieldUpdateOperationsInput | number | null
+    prerequisites?: LearningTaskUpdateprerequisitesInput | string[]
+    is_completed?: BoolFieldUpdateOperationsInput | boolean
+    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningProgressCreateInput = {
+    id?: string
+    category: string
+    mastery_level?: number
+    tasks_completed?: number
+    total_tasks?: number
+    last_activity?: Date | string
+    learning_session: LearningSessionCreateNestedOneWithoutProgressInput
+  }
+
+  export type LearningProgressUncheckedCreateInput = {
+    id?: string
+    learning_session_id: string
+    category: string
+    mastery_level?: number
+    tasks_completed?: number
+    total_tasks?: number
+    last_activity?: Date | string
+  }
+
+  export type LearningProgressUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    mastery_level?: FloatFieldUpdateOperationsInput | number
+    tasks_completed?: IntFieldUpdateOperationsInput | number
+    total_tasks?: IntFieldUpdateOperationsInput | number
+    last_activity?: DateTimeFieldUpdateOperationsInput | Date | string
+    learning_session?: LearningSessionUpdateOneRequiredWithoutProgressNestedInput
+  }
+
+  export type LearningProgressUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    learning_session_id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    mastery_level?: FloatFieldUpdateOperationsInput | number
+    tasks_completed?: IntFieldUpdateOperationsInput | number
+    total_tasks?: IntFieldUpdateOperationsInput | number
+    last_activity?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningProgressCreateManyInput = {
+    id?: string
+    learning_session_id: string
+    category: string
+    mastery_level?: number
+    tasks_completed?: number
+    total_tasks?: number
+    last_activity?: Date | string
+  }
+
+  export type LearningProgressUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    mastery_level?: FloatFieldUpdateOperationsInput | number
+    tasks_completed?: IntFieldUpdateOperationsInput | number
+    total_tasks?: IntFieldUpdateOperationsInput | number
+    last_activity?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningProgressUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    learning_session_id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    mastery_level?: FloatFieldUpdateOperationsInput | number
+    tasks_completed?: IntFieldUpdateOperationsInput | number
+    total_tasks?: IntFieldUpdateOperationsInput | number
+    last_activity?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningChatMessageCreateInput = {
+    id?: string
+    role: string
+    content: string
+    message_type?: string
+    created_at?: Date | string
+    learning_session: LearningSessionCreateNestedOneWithoutChat_messagesInput
+  }
+
+  export type LearningChatMessageUncheckedCreateInput = {
+    id?: string
+    learning_session_id: string
+    role: string
+    content: string
+    message_type?: string
+    created_at?: Date | string
+  }
+
+  export type LearningChatMessageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    message_type?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    learning_session?: LearningSessionUpdateOneRequiredWithoutChat_messagesNestedInput
+  }
+
+  export type LearningChatMessageUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    learning_session_id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    message_type?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningChatMessageCreateManyInput = {
+    id?: string
+    learning_session_id: string
+    role: string
+    content: string
+    message_type?: string
+    created_at?: Date | string
+  }
+
+  export type LearningChatMessageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    message_type?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningChatMessageUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    learning_session_id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    message_type?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -5368,6 +11416,12 @@ export namespace Prisma {
     none?: ProjectWhereInput
   }
 
+  export type LearningSessionListRelationFilter = {
+    every?: LearningSessionWhereInput
+    some?: LearningSessionWhereInput
+    none?: LearningSessionWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -5378,6 +11432,10 @@ export namespace Prisma {
   }
 
   export type ProjectOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LearningSessionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -5458,49 +11516,6 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
-  }
-
-  export type ClientCountOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    company?: SortOrder
-    email?: SortOrder
-    user_id?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type ClientMaxOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    company?: SortOrder
-    email?: SortOrder
-    user_id?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type ClientMinOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    company?: SortOrder
-    email?: SortOrder
-    user_id?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type StringNullableListFilter<$PrismaModel = never> = {
-    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    has?: string | StringFieldRefInput<$PrismaModel> | null
-    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
-    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
-  }
-
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -5521,6 +11536,109 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type ClientCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    company?: SortOrder
+    email?: SortOrder
+    user_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    scraped_content?: SortOrder
+    scraped_pages?: SortOrder
+    scraped_chars?: SortOrder
+    scraped_words?: SortOrder
+    scraped_at?: SortOrder
+    scraped_url?: SortOrder
+  }
+
+  export type ClientAvgOrderByAggregateInput = {
+    scraped_pages?: SortOrder
+    scraped_chars?: SortOrder
+    scraped_words?: SortOrder
+  }
+
+  export type ClientMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    company?: SortOrder
+    email?: SortOrder
+    user_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    scraped_content?: SortOrder
+    scraped_pages?: SortOrder
+    scraped_chars?: SortOrder
+    scraped_words?: SortOrder
+    scraped_at?: SortOrder
+    scraped_url?: SortOrder
+  }
+
+  export type ClientMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    company?: SortOrder
+    email?: SortOrder
+    user_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    scraped_content?: SortOrder
+    scraped_pages?: SortOrder
+    scraped_chars?: SortOrder
+    scraped_words?: SortOrder
+    scraped_at?: SortOrder
+    scraped_url?: SortOrder
+  }
+
+  export type ClientSumOrderByAggregateInput = {
+    scraped_pages?: SortOrder
+    scraped_chars?: SortOrder
+    scraped_words?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
   }
 
   export type ClientScalarRelationFilter = {
@@ -5601,34 +11719,280 @@ export namespace Prisma {
     scraped_words?: SortOrder
   }
 
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type LearningTaskListRelationFilter = {
+    every?: LearningTaskWhereInput
+    some?: LearningTaskWhereInput
+    none?: LearningTaskWhereInput
+  }
+
+  export type LearningProgressListRelationFilter = {
+    every?: LearningProgressWhereInput
+    some?: LearningProgressWhereInput
+    none?: LearningProgressWhereInput
+  }
+
+  export type LearningChatMessageListRelationFilter = {
+    every?: LearningChatMessageWhereInput
+    some?: LearningChatMessageWhereInput
+    none?: LearningChatMessageWhereInput
+  }
+
+  export type LearningTaskOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LearningProgressOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LearningChatMessageOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LearningSessionCountOrderByAggregateInput = {
+    id?: SortOrder
+    client_id?: SortOrder
+    user_id?: SortOrder
+    software_name?: SortOrder
+    documentation_summary?: SortOrder
+    current_phase?: SortOrder
+    completion_percentage?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type LearningSessionAvgOrderByAggregateInput = {
+    completion_percentage?: SortOrder
+  }
+
+  export type LearningSessionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    client_id?: SortOrder
+    user_id?: SortOrder
+    software_name?: SortOrder
+    documentation_summary?: SortOrder
+    current_phase?: SortOrder
+    completion_percentage?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type LearningSessionMinOrderByAggregateInput = {
+    id?: SortOrder
+    client_id?: SortOrder
+    user_id?: SortOrder
+    software_name?: SortOrder
+    documentation_summary?: SortOrder
+    current_phase?: SortOrder
+    completion_percentage?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type LearningSessionSumOrderByAggregateInput = {
+    completion_percentage?: SortOrder
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type LearningSessionScalarRelationFilter = {
+    is?: LearningSessionWhereInput
+    isNot?: LearningSessionWhereInput
+  }
+
+  export type LearningTaskCountOrderByAggregateInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    instructions?: SortOrder
+    category?: SortOrder
+    difficulty_level?: SortOrder
+    estimated_minutes?: SortOrder
+    prerequisites?: SortOrder
+    is_completed?: SortOrder
+    completed_at?: SortOrder
+    user_notes?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type LearningTaskAvgOrderByAggregateInput = {
+    difficulty_level?: SortOrder
+    estimated_minutes?: SortOrder
+  }
+
+  export type LearningTaskMaxOrderByAggregateInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    instructions?: SortOrder
+    category?: SortOrder
+    difficulty_level?: SortOrder
+    estimated_minutes?: SortOrder
+    is_completed?: SortOrder
+    completed_at?: SortOrder
+    user_notes?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type LearningTaskMinOrderByAggregateInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    instructions?: SortOrder
+    category?: SortOrder
+    difficulty_level?: SortOrder
+    estimated_minutes?: SortOrder
+    is_completed?: SortOrder
+    completed_at?: SortOrder
+    user_notes?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type LearningTaskSumOrderByAggregateInput = {
+    difficulty_level?: SortOrder
+    estimated_minutes?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type LearningProgressLearning_session_idCategoryCompoundUniqueInput = {
+    learning_session_id: string
+    category: string
+  }
+
+  export type LearningProgressCountOrderByAggregateInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    category?: SortOrder
+    mastery_level?: SortOrder
+    tasks_completed?: SortOrder
+    total_tasks?: SortOrder
+    last_activity?: SortOrder
+  }
+
+  export type LearningProgressAvgOrderByAggregateInput = {
+    mastery_level?: SortOrder
+    tasks_completed?: SortOrder
+    total_tasks?: SortOrder
+  }
+
+  export type LearningProgressMaxOrderByAggregateInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    category?: SortOrder
+    mastery_level?: SortOrder
+    tasks_completed?: SortOrder
+    total_tasks?: SortOrder
+    last_activity?: SortOrder
+  }
+
+  export type LearningProgressMinOrderByAggregateInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    category?: SortOrder
+    mastery_level?: SortOrder
+    tasks_completed?: SortOrder
+    total_tasks?: SortOrder
+    last_activity?: SortOrder
+  }
+
+  export type LearningProgressSumOrderByAggregateInput = {
+    mastery_level?: SortOrder
+    tasks_completed?: SortOrder
+    total_tasks?: SortOrder
+  }
+
+  export type LearningChatMessageCountOrderByAggregateInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    role?: SortOrder
+    content?: SortOrder
+    message_type?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type LearningChatMessageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    role?: SortOrder
+    content?: SortOrder
+    message_type?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type LearningChatMessageMinOrderByAggregateInput = {
+    id?: SortOrder
+    learning_session_id?: SortOrder
+    role?: SortOrder
+    content?: SortOrder
+    message_type?: SortOrder
+    created_at?: SortOrder
   }
 
   export type ClientCreateNestedManyWithoutUserInput = {
@@ -5645,6 +12009,13 @@ export namespace Prisma {
     connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
   }
 
+  export type LearningSessionCreateNestedManyWithoutUserInput = {
+    create?: XOR<LearningSessionCreateWithoutUserInput, LearningSessionUncheckedCreateWithoutUserInput> | LearningSessionCreateWithoutUserInput[] | LearningSessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutUserInput | LearningSessionCreateOrConnectWithoutUserInput[]
+    createMany?: LearningSessionCreateManyUserInputEnvelope
+    connect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+  }
+
   export type ClientUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<ClientCreateWithoutUserInput, ClientUncheckedCreateWithoutUserInput> | ClientCreateWithoutUserInput[] | ClientUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ClientCreateOrConnectWithoutUserInput | ClientCreateOrConnectWithoutUserInput[]
@@ -5657,6 +12028,13 @@ export namespace Prisma {
     connectOrCreate?: ProjectCreateOrConnectWithoutUserInput | ProjectCreateOrConnectWithoutUserInput[]
     createMany?: ProjectCreateManyUserInputEnvelope
     connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+  }
+
+  export type LearningSessionUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<LearningSessionCreateWithoutUserInput, LearningSessionUncheckedCreateWithoutUserInput> | LearningSessionCreateWithoutUserInput[] | LearningSessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutUserInput | LearningSessionCreateOrConnectWithoutUserInput[]
+    createMany?: LearningSessionCreateManyUserInputEnvelope
+    connect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -5699,6 +12077,20 @@ export namespace Prisma {
     deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
   }
 
+  export type LearningSessionUpdateManyWithoutUserNestedInput = {
+    create?: XOR<LearningSessionCreateWithoutUserInput, LearningSessionUncheckedCreateWithoutUserInput> | LearningSessionCreateWithoutUserInput[] | LearningSessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutUserInput | LearningSessionCreateOrConnectWithoutUserInput[]
+    upsert?: LearningSessionUpsertWithWhereUniqueWithoutUserInput | LearningSessionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: LearningSessionCreateManyUserInputEnvelope
+    set?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    disconnect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    delete?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    connect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    update?: LearningSessionUpdateWithWhereUniqueWithoutUserInput | LearningSessionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: LearningSessionUpdateManyWithWhereWithoutUserInput | LearningSessionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: LearningSessionScalarWhereInput | LearningSessionScalarWhereInput[]
+  }
+
   export type ClientUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<ClientCreateWithoutUserInput, ClientUncheckedCreateWithoutUserInput> | ClientCreateWithoutUserInput[] | ClientUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ClientCreateOrConnectWithoutUserInput | ClientCreateOrConnectWithoutUserInput[]
@@ -5727,6 +12119,20 @@ export namespace Prisma {
     deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
   }
 
+  export type LearningSessionUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<LearningSessionCreateWithoutUserInput, LearningSessionUncheckedCreateWithoutUserInput> | LearningSessionCreateWithoutUserInput[] | LearningSessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutUserInput | LearningSessionCreateOrConnectWithoutUserInput[]
+    upsert?: LearningSessionUpsertWithWhereUniqueWithoutUserInput | LearningSessionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: LearningSessionCreateManyUserInputEnvelope
+    set?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    disconnect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    delete?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    connect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    update?: LearningSessionUpdateWithWhereUniqueWithoutUserInput | LearningSessionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: LearningSessionUpdateManyWithWhereWithoutUserInput | LearningSessionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: LearningSessionScalarWhereInput | LearningSessionScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutClientsInput = {
     create?: XOR<UserCreateWithoutClientsInput, UserUncheckedCreateWithoutClientsInput>
     connectOrCreate?: UserCreateOrConnectWithoutClientsInput
@@ -5740,11 +12146,37 @@ export namespace Prisma {
     connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
   }
 
+  export type LearningSessionCreateNestedManyWithoutClientInput = {
+    create?: XOR<LearningSessionCreateWithoutClientInput, LearningSessionUncheckedCreateWithoutClientInput> | LearningSessionCreateWithoutClientInput[] | LearningSessionUncheckedCreateWithoutClientInput[]
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutClientInput | LearningSessionCreateOrConnectWithoutClientInput[]
+    createMany?: LearningSessionCreateManyClientInputEnvelope
+    connect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+  }
+
   export type ProjectUncheckedCreateNestedManyWithoutClientInput = {
     create?: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput> | ProjectCreateWithoutClientInput[] | ProjectUncheckedCreateWithoutClientInput[]
     connectOrCreate?: ProjectCreateOrConnectWithoutClientInput | ProjectCreateOrConnectWithoutClientInput[]
     createMany?: ProjectCreateManyClientInputEnvelope
     connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+  }
+
+  export type LearningSessionUncheckedCreateNestedManyWithoutClientInput = {
+    create?: XOR<LearningSessionCreateWithoutClientInput, LearningSessionUncheckedCreateWithoutClientInput> | LearningSessionCreateWithoutClientInput[] | LearningSessionUncheckedCreateWithoutClientInput[]
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutClientInput | LearningSessionCreateOrConnectWithoutClientInput[]
+    createMany?: LearningSessionCreateManyClientInputEnvelope
+    connect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type UserUpdateOneRequiredWithoutClientsNestedInput = {
@@ -5769,6 +12201,20 @@ export namespace Prisma {
     deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
   }
 
+  export type LearningSessionUpdateManyWithoutClientNestedInput = {
+    create?: XOR<LearningSessionCreateWithoutClientInput, LearningSessionUncheckedCreateWithoutClientInput> | LearningSessionCreateWithoutClientInput[] | LearningSessionUncheckedCreateWithoutClientInput[]
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutClientInput | LearningSessionCreateOrConnectWithoutClientInput[]
+    upsert?: LearningSessionUpsertWithWhereUniqueWithoutClientInput | LearningSessionUpsertWithWhereUniqueWithoutClientInput[]
+    createMany?: LearningSessionCreateManyClientInputEnvelope
+    set?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    disconnect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    delete?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    connect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    update?: LearningSessionUpdateWithWhereUniqueWithoutClientInput | LearningSessionUpdateWithWhereUniqueWithoutClientInput[]
+    updateMany?: LearningSessionUpdateManyWithWhereWithoutClientInput | LearningSessionUpdateManyWithWhereWithoutClientInput[]
+    deleteMany?: LearningSessionScalarWhereInput | LearningSessionScalarWhereInput[]
+  }
+
   export type ProjectUncheckedUpdateManyWithoutClientNestedInput = {
     create?: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput> | ProjectCreateWithoutClientInput[] | ProjectUncheckedCreateWithoutClientInput[]
     connectOrCreate?: ProjectCreateOrConnectWithoutClientInput | ProjectCreateOrConnectWithoutClientInput[]
@@ -5781,6 +12227,20 @@ export namespace Prisma {
     update?: ProjectUpdateWithWhereUniqueWithoutClientInput | ProjectUpdateWithWhereUniqueWithoutClientInput[]
     updateMany?: ProjectUpdateManyWithWhereWithoutClientInput | ProjectUpdateManyWithWhereWithoutClientInput[]
     deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
+  }
+
+  export type LearningSessionUncheckedUpdateManyWithoutClientNestedInput = {
+    create?: XOR<LearningSessionCreateWithoutClientInput, LearningSessionUncheckedCreateWithoutClientInput> | LearningSessionCreateWithoutClientInput[] | LearningSessionUncheckedCreateWithoutClientInput[]
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutClientInput | LearningSessionCreateOrConnectWithoutClientInput[]
+    upsert?: LearningSessionUpsertWithWhereUniqueWithoutClientInput | LearningSessionUpsertWithWhereUniqueWithoutClientInput[]
+    createMany?: LearningSessionCreateManyClientInputEnvelope
+    set?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    disconnect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    delete?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    connect?: LearningSessionWhereUniqueInput | LearningSessionWhereUniqueInput[]
+    update?: LearningSessionUpdateWithWhereUniqueWithoutClientInput | LearningSessionUpdateWithWhereUniqueWithoutClientInput[]
+    updateMany?: LearningSessionUpdateManyWithWhereWithoutClientInput | LearningSessionUpdateManyWithWhereWithoutClientInput[]
+    deleteMany?: LearningSessionScalarWhereInput | LearningSessionScalarWhereInput[]
   }
 
   export type ProjectCreatedocumentation_urlsInput = {
@@ -5804,18 +12264,6 @@ export namespace Prisma {
     push?: string | string[]
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
-  }
-
   export type UserUpdateOneRequiredWithoutProjectsNestedInput = {
     create?: XOR<UserCreateWithoutProjectsInput, UserUncheckedCreateWithoutProjectsInput>
     connectOrCreate?: UserCreateOrConnectWithoutProjectsInput
@@ -5830,6 +12278,231 @@ export namespace Prisma {
     upsert?: ClientUpsertWithoutProjectsInput
     connect?: ClientWhereUniqueInput
     update?: XOR<XOR<ClientUpdateToOneWithWhereWithoutProjectsInput, ClientUpdateWithoutProjectsInput>, ClientUncheckedUpdateWithoutProjectsInput>
+  }
+
+  export type UserCreateNestedOneWithoutLearning_sessionsInput = {
+    create?: XOR<UserCreateWithoutLearning_sessionsInput, UserUncheckedCreateWithoutLearning_sessionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutLearning_sessionsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ClientCreateNestedOneWithoutLearning_sessionsInput = {
+    create?: XOR<ClientCreateWithoutLearning_sessionsInput, ClientUncheckedCreateWithoutLearning_sessionsInput>
+    connectOrCreate?: ClientCreateOrConnectWithoutLearning_sessionsInput
+    connect?: ClientWhereUniqueInput
+  }
+
+  export type LearningTaskCreateNestedManyWithoutLearning_sessionInput = {
+    create?: XOR<LearningTaskCreateWithoutLearning_sessionInput, LearningTaskUncheckedCreateWithoutLearning_sessionInput> | LearningTaskCreateWithoutLearning_sessionInput[] | LearningTaskUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningTaskCreateOrConnectWithoutLearning_sessionInput | LearningTaskCreateOrConnectWithoutLearning_sessionInput[]
+    createMany?: LearningTaskCreateManyLearning_sessionInputEnvelope
+    connect?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+  }
+
+  export type LearningProgressCreateNestedManyWithoutLearning_sessionInput = {
+    create?: XOR<LearningProgressCreateWithoutLearning_sessionInput, LearningProgressUncheckedCreateWithoutLearning_sessionInput> | LearningProgressCreateWithoutLearning_sessionInput[] | LearningProgressUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningProgressCreateOrConnectWithoutLearning_sessionInput | LearningProgressCreateOrConnectWithoutLearning_sessionInput[]
+    createMany?: LearningProgressCreateManyLearning_sessionInputEnvelope
+    connect?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+  }
+
+  export type LearningChatMessageCreateNestedManyWithoutLearning_sessionInput = {
+    create?: XOR<LearningChatMessageCreateWithoutLearning_sessionInput, LearningChatMessageUncheckedCreateWithoutLearning_sessionInput> | LearningChatMessageCreateWithoutLearning_sessionInput[] | LearningChatMessageUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningChatMessageCreateOrConnectWithoutLearning_sessionInput | LearningChatMessageCreateOrConnectWithoutLearning_sessionInput[]
+    createMany?: LearningChatMessageCreateManyLearning_sessionInputEnvelope
+    connect?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+  }
+
+  export type LearningTaskUncheckedCreateNestedManyWithoutLearning_sessionInput = {
+    create?: XOR<LearningTaskCreateWithoutLearning_sessionInput, LearningTaskUncheckedCreateWithoutLearning_sessionInput> | LearningTaskCreateWithoutLearning_sessionInput[] | LearningTaskUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningTaskCreateOrConnectWithoutLearning_sessionInput | LearningTaskCreateOrConnectWithoutLearning_sessionInput[]
+    createMany?: LearningTaskCreateManyLearning_sessionInputEnvelope
+    connect?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+  }
+
+  export type LearningProgressUncheckedCreateNestedManyWithoutLearning_sessionInput = {
+    create?: XOR<LearningProgressCreateWithoutLearning_sessionInput, LearningProgressUncheckedCreateWithoutLearning_sessionInput> | LearningProgressCreateWithoutLearning_sessionInput[] | LearningProgressUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningProgressCreateOrConnectWithoutLearning_sessionInput | LearningProgressCreateOrConnectWithoutLearning_sessionInput[]
+    createMany?: LearningProgressCreateManyLearning_sessionInputEnvelope
+    connect?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+  }
+
+  export type LearningChatMessageUncheckedCreateNestedManyWithoutLearning_sessionInput = {
+    create?: XOR<LearningChatMessageCreateWithoutLearning_sessionInput, LearningChatMessageUncheckedCreateWithoutLearning_sessionInput> | LearningChatMessageCreateWithoutLearning_sessionInput[] | LearningChatMessageUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningChatMessageCreateOrConnectWithoutLearning_sessionInput | LearningChatMessageCreateOrConnectWithoutLearning_sessionInput[]
+    createMany?: LearningChatMessageCreateManyLearning_sessionInputEnvelope
+    connect?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type UserUpdateOneRequiredWithoutLearning_sessionsNestedInput = {
+    create?: XOR<UserCreateWithoutLearning_sessionsInput, UserUncheckedCreateWithoutLearning_sessionsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutLearning_sessionsInput
+    upsert?: UserUpsertWithoutLearning_sessionsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutLearning_sessionsInput, UserUpdateWithoutLearning_sessionsInput>, UserUncheckedUpdateWithoutLearning_sessionsInput>
+  }
+
+  export type ClientUpdateOneRequiredWithoutLearning_sessionsNestedInput = {
+    create?: XOR<ClientCreateWithoutLearning_sessionsInput, ClientUncheckedCreateWithoutLearning_sessionsInput>
+    connectOrCreate?: ClientCreateOrConnectWithoutLearning_sessionsInput
+    upsert?: ClientUpsertWithoutLearning_sessionsInput
+    connect?: ClientWhereUniqueInput
+    update?: XOR<XOR<ClientUpdateToOneWithWhereWithoutLearning_sessionsInput, ClientUpdateWithoutLearning_sessionsInput>, ClientUncheckedUpdateWithoutLearning_sessionsInput>
+  }
+
+  export type LearningTaskUpdateManyWithoutLearning_sessionNestedInput = {
+    create?: XOR<LearningTaskCreateWithoutLearning_sessionInput, LearningTaskUncheckedCreateWithoutLearning_sessionInput> | LearningTaskCreateWithoutLearning_sessionInput[] | LearningTaskUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningTaskCreateOrConnectWithoutLearning_sessionInput | LearningTaskCreateOrConnectWithoutLearning_sessionInput[]
+    upsert?: LearningTaskUpsertWithWhereUniqueWithoutLearning_sessionInput | LearningTaskUpsertWithWhereUniqueWithoutLearning_sessionInput[]
+    createMany?: LearningTaskCreateManyLearning_sessionInputEnvelope
+    set?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+    disconnect?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+    delete?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+    connect?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+    update?: LearningTaskUpdateWithWhereUniqueWithoutLearning_sessionInput | LearningTaskUpdateWithWhereUniqueWithoutLearning_sessionInput[]
+    updateMany?: LearningTaskUpdateManyWithWhereWithoutLearning_sessionInput | LearningTaskUpdateManyWithWhereWithoutLearning_sessionInput[]
+    deleteMany?: LearningTaskScalarWhereInput | LearningTaskScalarWhereInput[]
+  }
+
+  export type LearningProgressUpdateManyWithoutLearning_sessionNestedInput = {
+    create?: XOR<LearningProgressCreateWithoutLearning_sessionInput, LearningProgressUncheckedCreateWithoutLearning_sessionInput> | LearningProgressCreateWithoutLearning_sessionInput[] | LearningProgressUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningProgressCreateOrConnectWithoutLearning_sessionInput | LearningProgressCreateOrConnectWithoutLearning_sessionInput[]
+    upsert?: LearningProgressUpsertWithWhereUniqueWithoutLearning_sessionInput | LearningProgressUpsertWithWhereUniqueWithoutLearning_sessionInput[]
+    createMany?: LearningProgressCreateManyLearning_sessionInputEnvelope
+    set?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+    disconnect?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+    delete?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+    connect?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+    update?: LearningProgressUpdateWithWhereUniqueWithoutLearning_sessionInput | LearningProgressUpdateWithWhereUniqueWithoutLearning_sessionInput[]
+    updateMany?: LearningProgressUpdateManyWithWhereWithoutLearning_sessionInput | LearningProgressUpdateManyWithWhereWithoutLearning_sessionInput[]
+    deleteMany?: LearningProgressScalarWhereInput | LearningProgressScalarWhereInput[]
+  }
+
+  export type LearningChatMessageUpdateManyWithoutLearning_sessionNestedInput = {
+    create?: XOR<LearningChatMessageCreateWithoutLearning_sessionInput, LearningChatMessageUncheckedCreateWithoutLearning_sessionInput> | LearningChatMessageCreateWithoutLearning_sessionInput[] | LearningChatMessageUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningChatMessageCreateOrConnectWithoutLearning_sessionInput | LearningChatMessageCreateOrConnectWithoutLearning_sessionInput[]
+    upsert?: LearningChatMessageUpsertWithWhereUniqueWithoutLearning_sessionInput | LearningChatMessageUpsertWithWhereUniqueWithoutLearning_sessionInput[]
+    createMany?: LearningChatMessageCreateManyLearning_sessionInputEnvelope
+    set?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+    disconnect?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+    delete?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+    connect?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+    update?: LearningChatMessageUpdateWithWhereUniqueWithoutLearning_sessionInput | LearningChatMessageUpdateWithWhereUniqueWithoutLearning_sessionInput[]
+    updateMany?: LearningChatMessageUpdateManyWithWhereWithoutLearning_sessionInput | LearningChatMessageUpdateManyWithWhereWithoutLearning_sessionInput[]
+    deleteMany?: LearningChatMessageScalarWhereInput | LearningChatMessageScalarWhereInput[]
+  }
+
+  export type LearningTaskUncheckedUpdateManyWithoutLearning_sessionNestedInput = {
+    create?: XOR<LearningTaskCreateWithoutLearning_sessionInput, LearningTaskUncheckedCreateWithoutLearning_sessionInput> | LearningTaskCreateWithoutLearning_sessionInput[] | LearningTaskUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningTaskCreateOrConnectWithoutLearning_sessionInput | LearningTaskCreateOrConnectWithoutLearning_sessionInput[]
+    upsert?: LearningTaskUpsertWithWhereUniqueWithoutLearning_sessionInput | LearningTaskUpsertWithWhereUniqueWithoutLearning_sessionInput[]
+    createMany?: LearningTaskCreateManyLearning_sessionInputEnvelope
+    set?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+    disconnect?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+    delete?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+    connect?: LearningTaskWhereUniqueInput | LearningTaskWhereUniqueInput[]
+    update?: LearningTaskUpdateWithWhereUniqueWithoutLearning_sessionInput | LearningTaskUpdateWithWhereUniqueWithoutLearning_sessionInput[]
+    updateMany?: LearningTaskUpdateManyWithWhereWithoutLearning_sessionInput | LearningTaskUpdateManyWithWhereWithoutLearning_sessionInput[]
+    deleteMany?: LearningTaskScalarWhereInput | LearningTaskScalarWhereInput[]
+  }
+
+  export type LearningProgressUncheckedUpdateManyWithoutLearning_sessionNestedInput = {
+    create?: XOR<LearningProgressCreateWithoutLearning_sessionInput, LearningProgressUncheckedCreateWithoutLearning_sessionInput> | LearningProgressCreateWithoutLearning_sessionInput[] | LearningProgressUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningProgressCreateOrConnectWithoutLearning_sessionInput | LearningProgressCreateOrConnectWithoutLearning_sessionInput[]
+    upsert?: LearningProgressUpsertWithWhereUniqueWithoutLearning_sessionInput | LearningProgressUpsertWithWhereUniqueWithoutLearning_sessionInput[]
+    createMany?: LearningProgressCreateManyLearning_sessionInputEnvelope
+    set?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+    disconnect?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+    delete?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+    connect?: LearningProgressWhereUniqueInput | LearningProgressWhereUniqueInput[]
+    update?: LearningProgressUpdateWithWhereUniqueWithoutLearning_sessionInput | LearningProgressUpdateWithWhereUniqueWithoutLearning_sessionInput[]
+    updateMany?: LearningProgressUpdateManyWithWhereWithoutLearning_sessionInput | LearningProgressUpdateManyWithWhereWithoutLearning_sessionInput[]
+    deleteMany?: LearningProgressScalarWhereInput | LearningProgressScalarWhereInput[]
+  }
+
+  export type LearningChatMessageUncheckedUpdateManyWithoutLearning_sessionNestedInput = {
+    create?: XOR<LearningChatMessageCreateWithoutLearning_sessionInput, LearningChatMessageUncheckedCreateWithoutLearning_sessionInput> | LearningChatMessageCreateWithoutLearning_sessionInput[] | LearningChatMessageUncheckedCreateWithoutLearning_sessionInput[]
+    connectOrCreate?: LearningChatMessageCreateOrConnectWithoutLearning_sessionInput | LearningChatMessageCreateOrConnectWithoutLearning_sessionInput[]
+    upsert?: LearningChatMessageUpsertWithWhereUniqueWithoutLearning_sessionInput | LearningChatMessageUpsertWithWhereUniqueWithoutLearning_sessionInput[]
+    createMany?: LearningChatMessageCreateManyLearning_sessionInputEnvelope
+    set?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+    disconnect?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+    delete?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+    connect?: LearningChatMessageWhereUniqueInput | LearningChatMessageWhereUniqueInput[]
+    update?: LearningChatMessageUpdateWithWhereUniqueWithoutLearning_sessionInput | LearningChatMessageUpdateWithWhereUniqueWithoutLearning_sessionInput[]
+    updateMany?: LearningChatMessageUpdateManyWithWhereWithoutLearning_sessionInput | LearningChatMessageUpdateManyWithWhereWithoutLearning_sessionInput[]
+    deleteMany?: LearningChatMessageScalarWhereInput | LearningChatMessageScalarWhereInput[]
+  }
+
+  export type LearningTaskCreateprerequisitesInput = {
+    set: string[]
+  }
+
+  export type LearningSessionCreateNestedOneWithoutTasksInput = {
+    create?: XOR<LearningSessionCreateWithoutTasksInput, LearningSessionUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutTasksInput
+    connect?: LearningSessionWhereUniqueInput
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type LearningTaskUpdateprerequisitesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type LearningSessionUpdateOneRequiredWithoutTasksNestedInput = {
+    create?: XOR<LearningSessionCreateWithoutTasksInput, LearningSessionUncheckedCreateWithoutTasksInput>
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutTasksInput
+    upsert?: LearningSessionUpsertWithoutTasksInput
+    connect?: LearningSessionWhereUniqueInput
+    update?: XOR<XOR<LearningSessionUpdateToOneWithWhereWithoutTasksInput, LearningSessionUpdateWithoutTasksInput>, LearningSessionUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type LearningSessionCreateNestedOneWithoutProgressInput = {
+    create?: XOR<LearningSessionCreateWithoutProgressInput, LearningSessionUncheckedCreateWithoutProgressInput>
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutProgressInput
+    connect?: LearningSessionWhereUniqueInput
+  }
+
+  export type LearningSessionUpdateOneRequiredWithoutProgressNestedInput = {
+    create?: XOR<LearningSessionCreateWithoutProgressInput, LearningSessionUncheckedCreateWithoutProgressInput>
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutProgressInput
+    upsert?: LearningSessionUpsertWithoutProgressInput
+    connect?: LearningSessionWhereUniqueInput
+    update?: XOR<XOR<LearningSessionUpdateToOneWithWhereWithoutProgressInput, LearningSessionUpdateWithoutProgressInput>, LearningSessionUncheckedUpdateWithoutProgressInput>
+  }
+
+  export type LearningSessionCreateNestedOneWithoutChat_messagesInput = {
+    create?: XOR<LearningSessionCreateWithoutChat_messagesInput, LearningSessionUncheckedCreateWithoutChat_messagesInput>
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutChat_messagesInput
+    connect?: LearningSessionWhereUniqueInput
+  }
+
+  export type LearningSessionUpdateOneRequiredWithoutChat_messagesNestedInput = {
+    create?: XOR<LearningSessionCreateWithoutChat_messagesInput, LearningSessionUncheckedCreateWithoutChat_messagesInput>
+    connectOrCreate?: LearningSessionCreateOrConnectWithoutChat_messagesInput
+    upsert?: LearningSessionUpsertWithoutChat_messagesInput
+    connect?: LearningSessionWhereUniqueInput
+    update?: XOR<XOR<LearningSessionUpdateToOneWithWhereWithoutChat_messagesInput, LearningSessionUpdateWithoutChat_messagesInput>, LearningSessionUncheckedUpdateWithoutChat_messagesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -5993,6 +12666,62 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type ClientCreateWithoutUserInput = {
     id?: string
     name: string
@@ -6000,7 +12729,14 @@ export namespace Prisma {
     email?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
     projects?: ProjectCreateNestedManyWithoutClientInput
+    learning_sessions?: LearningSessionCreateNestedManyWithoutClientInput
   }
 
   export type ClientUncheckedCreateWithoutUserInput = {
@@ -6010,7 +12746,14 @@ export namespace Prisma {
     email?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
     projects?: ProjectUncheckedCreateNestedManyWithoutClientInput
+    learning_sessions?: LearningSessionUncheckedCreateNestedManyWithoutClientInput
   }
 
   export type ClientCreateOrConnectWithoutUserInput = {
@@ -6073,6 +12816,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LearningSessionCreateWithoutUserInput = {
+    id?: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    client: ClientCreateNestedOneWithoutLearning_sessionsInput
+    tasks?: LearningTaskCreateNestedManyWithoutLearning_sessionInput
+    progress?: LearningProgressCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionUncheckedCreateWithoutUserInput = {
+    id?: string
+    client_id: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    tasks?: LearningTaskUncheckedCreateNestedManyWithoutLearning_sessionInput
+    progress?: LearningProgressUncheckedCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageUncheckedCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionCreateOrConnectWithoutUserInput = {
+    where: LearningSessionWhereUniqueInput
+    create: XOR<LearningSessionCreateWithoutUserInput, LearningSessionUncheckedCreateWithoutUserInput>
+  }
+
+  export type LearningSessionCreateManyUserInputEnvelope = {
+    data: LearningSessionCreateManyUserInput | LearningSessionCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ClientUpsertWithWhereUniqueWithoutUserInput = {
     where: ClientWhereUniqueInput
     update: XOR<ClientUpdateWithoutUserInput, ClientUncheckedUpdateWithoutUserInput>
@@ -6100,6 +12881,12 @@ export namespace Prisma {
     user_id?: StringFilter<"Client"> | string
     created_at?: DateTimeFilter<"Client"> | Date | string
     updated_at?: DateTimeFilter<"Client"> | Date | string
+    scraped_content?: StringNullableFilter<"Client"> | string | null
+    scraped_pages?: IntNullableFilter<"Client"> | number | null
+    scraped_chars?: IntNullableFilter<"Client"> | number | null
+    scraped_words?: IntNullableFilter<"Client"> | number | null
+    scraped_at?: DateTimeNullableFilter<"Client"> | Date | string | null
+    scraped_url?: StringNullableFilter<"Client"> | string | null
   }
 
   export type ProjectUpsertWithWhereUniqueWithoutUserInput = {
@@ -6142,6 +12929,37 @@ export namespace Prisma {
     video_type?: StringNullableFilter<"Project"> | string | null
   }
 
+  export type LearningSessionUpsertWithWhereUniqueWithoutUserInput = {
+    where: LearningSessionWhereUniqueInput
+    update: XOR<LearningSessionUpdateWithoutUserInput, LearningSessionUncheckedUpdateWithoutUserInput>
+    create: XOR<LearningSessionCreateWithoutUserInput, LearningSessionUncheckedCreateWithoutUserInput>
+  }
+
+  export type LearningSessionUpdateWithWhereUniqueWithoutUserInput = {
+    where: LearningSessionWhereUniqueInput
+    data: XOR<LearningSessionUpdateWithoutUserInput, LearningSessionUncheckedUpdateWithoutUserInput>
+  }
+
+  export type LearningSessionUpdateManyWithWhereWithoutUserInput = {
+    where: LearningSessionScalarWhereInput
+    data: XOR<LearningSessionUpdateManyMutationInput, LearningSessionUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type LearningSessionScalarWhereInput = {
+    AND?: LearningSessionScalarWhereInput | LearningSessionScalarWhereInput[]
+    OR?: LearningSessionScalarWhereInput[]
+    NOT?: LearningSessionScalarWhereInput | LearningSessionScalarWhereInput[]
+    id?: StringFilter<"LearningSession"> | string
+    client_id?: StringFilter<"LearningSession"> | string
+    user_id?: StringFilter<"LearningSession"> | string
+    software_name?: StringFilter<"LearningSession"> | string
+    documentation_summary?: StringNullableFilter<"LearningSession"> | string | null
+    current_phase?: StringFilter<"LearningSession"> | string
+    completion_percentage?: FloatFilter<"LearningSession"> | number
+    created_at?: DateTimeFilter<"LearningSession"> | Date | string
+    updated_at?: DateTimeFilter<"LearningSession"> | Date | string
+  }
+
   export type UserCreateWithoutClientsInput = {
     id?: string
     email: string
@@ -6150,6 +12968,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     projects?: ProjectCreateNestedManyWithoutUserInput
+    learning_sessions?: LearningSessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutClientsInput = {
@@ -6160,6 +12979,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    learning_sessions?: LearningSessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutClientsInput = {
@@ -6217,6 +13037,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LearningSessionCreateWithoutClientInput = {
+    id?: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutLearning_sessionsInput
+    tasks?: LearningTaskCreateNestedManyWithoutLearning_sessionInput
+    progress?: LearningProgressCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionUncheckedCreateWithoutClientInput = {
+    id?: string
+    user_id: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    tasks?: LearningTaskUncheckedCreateNestedManyWithoutLearning_sessionInput
+    progress?: LearningProgressUncheckedCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageUncheckedCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionCreateOrConnectWithoutClientInput = {
+    where: LearningSessionWhereUniqueInput
+    create: XOR<LearningSessionCreateWithoutClientInput, LearningSessionUncheckedCreateWithoutClientInput>
+  }
+
+  export type LearningSessionCreateManyClientInputEnvelope = {
+    data: LearningSessionCreateManyClientInput | LearningSessionCreateManyClientInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutClientsInput = {
     update: XOR<UserUpdateWithoutClientsInput, UserUncheckedUpdateWithoutClientsInput>
     create: XOR<UserCreateWithoutClientsInput, UserUncheckedCreateWithoutClientsInput>
@@ -6236,6 +13094,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     projects?: ProjectUpdateManyWithoutUserNestedInput
+    learning_sessions?: LearningSessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutClientsInput = {
@@ -6246,6 +13105,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    learning_sessions?: LearningSessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithWhereUniqueWithoutClientInput = {
@@ -6264,6 +13124,22 @@ export namespace Prisma {
     data: XOR<ProjectUpdateManyMutationInput, ProjectUncheckedUpdateManyWithoutClientInput>
   }
 
+  export type LearningSessionUpsertWithWhereUniqueWithoutClientInput = {
+    where: LearningSessionWhereUniqueInput
+    update: XOR<LearningSessionUpdateWithoutClientInput, LearningSessionUncheckedUpdateWithoutClientInput>
+    create: XOR<LearningSessionCreateWithoutClientInput, LearningSessionUncheckedCreateWithoutClientInput>
+  }
+
+  export type LearningSessionUpdateWithWhereUniqueWithoutClientInput = {
+    where: LearningSessionWhereUniqueInput
+    data: XOR<LearningSessionUpdateWithoutClientInput, LearningSessionUncheckedUpdateWithoutClientInput>
+  }
+
+  export type LearningSessionUpdateManyWithWhereWithoutClientInput = {
+    where: LearningSessionScalarWhereInput
+    data: XOR<LearningSessionUpdateManyMutationInput, LearningSessionUncheckedUpdateManyWithoutClientInput>
+  }
+
   export type UserCreateWithoutProjectsInput = {
     id?: string
     email: string
@@ -6272,6 +13148,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     clients?: ClientCreateNestedManyWithoutUserInput
+    learning_sessions?: LearningSessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProjectsInput = {
@@ -6282,6 +13159,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     clients?: ClientUncheckedCreateNestedManyWithoutUserInput
+    learning_sessions?: LearningSessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProjectsInput = {
@@ -6296,7 +13174,14 @@ export namespace Prisma {
     email?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
     user: UserCreateNestedOneWithoutClientsInput
+    learning_sessions?: LearningSessionCreateNestedManyWithoutClientInput
   }
 
   export type ClientUncheckedCreateWithoutProjectsInput = {
@@ -6307,6 +13192,13 @@ export namespace Prisma {
     user_id: string
     created_at?: Date | string
     updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
+    learning_sessions?: LearningSessionUncheckedCreateNestedManyWithoutClientInput
   }
 
   export type ClientCreateOrConnectWithoutProjectsInput = {
@@ -6333,6 +13225,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     clients?: ClientUpdateManyWithoutUserNestedInput
+    learning_sessions?: LearningSessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProjectsInput = {
@@ -6343,6 +13236,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     clients?: ClientUncheckedUpdateManyWithoutUserNestedInput
+    learning_sessions?: LearningSessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ClientUpsertWithoutProjectsInput = {
@@ -6363,7 +13257,14 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutClientsNestedInput
+    learning_sessions?: LearningSessionUpdateManyWithoutClientNestedInput
   }
 
   export type ClientUncheckedUpdateWithoutProjectsInput = {
@@ -6374,6 +13275,559 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
+    learning_sessions?: LearningSessionUncheckedUpdateManyWithoutClientNestedInput
+  }
+
+  export type UserCreateWithoutLearning_sessionsInput = {
+    id?: string
+    email: string
+    password: string
+    name?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    clients?: ClientCreateNestedManyWithoutUserInput
+    projects?: ProjectCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutLearning_sessionsInput = {
+    id?: string
+    email: string
+    password: string
+    name?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    clients?: ClientUncheckedCreateNestedManyWithoutUserInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutLearning_sessionsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutLearning_sessionsInput, UserUncheckedCreateWithoutLearning_sessionsInput>
+  }
+
+  export type ClientCreateWithoutLearning_sessionsInput = {
+    id?: string
+    name: string
+    company: string
+    email?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
+    user: UserCreateNestedOneWithoutClientsInput
+    projects?: ProjectCreateNestedManyWithoutClientInput
+  }
+
+  export type ClientUncheckedCreateWithoutLearning_sessionsInput = {
+    id?: string
+    name: string
+    company: string
+    email?: string | null
+    user_id: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
+    projects?: ProjectUncheckedCreateNestedManyWithoutClientInput
+  }
+
+  export type ClientCreateOrConnectWithoutLearning_sessionsInput = {
+    where: ClientWhereUniqueInput
+    create: XOR<ClientCreateWithoutLearning_sessionsInput, ClientUncheckedCreateWithoutLearning_sessionsInput>
+  }
+
+  export type LearningTaskCreateWithoutLearning_sessionInput = {
+    id?: string
+    title: string
+    description: string
+    instructions: string
+    category: string
+    difficulty_level?: number
+    estimated_minutes?: number | null
+    prerequisites?: LearningTaskCreateprerequisitesInput | string[]
+    is_completed?: boolean
+    completed_at?: Date | string | null
+    user_notes?: string | null
+    created_at?: Date | string
+  }
+
+  export type LearningTaskUncheckedCreateWithoutLearning_sessionInput = {
+    id?: string
+    title: string
+    description: string
+    instructions: string
+    category: string
+    difficulty_level?: number
+    estimated_minutes?: number | null
+    prerequisites?: LearningTaskCreateprerequisitesInput | string[]
+    is_completed?: boolean
+    completed_at?: Date | string | null
+    user_notes?: string | null
+    created_at?: Date | string
+  }
+
+  export type LearningTaskCreateOrConnectWithoutLearning_sessionInput = {
+    where: LearningTaskWhereUniqueInput
+    create: XOR<LearningTaskCreateWithoutLearning_sessionInput, LearningTaskUncheckedCreateWithoutLearning_sessionInput>
+  }
+
+  export type LearningTaskCreateManyLearning_sessionInputEnvelope = {
+    data: LearningTaskCreateManyLearning_sessionInput | LearningTaskCreateManyLearning_sessionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LearningProgressCreateWithoutLearning_sessionInput = {
+    id?: string
+    category: string
+    mastery_level?: number
+    tasks_completed?: number
+    total_tasks?: number
+    last_activity?: Date | string
+  }
+
+  export type LearningProgressUncheckedCreateWithoutLearning_sessionInput = {
+    id?: string
+    category: string
+    mastery_level?: number
+    tasks_completed?: number
+    total_tasks?: number
+    last_activity?: Date | string
+  }
+
+  export type LearningProgressCreateOrConnectWithoutLearning_sessionInput = {
+    where: LearningProgressWhereUniqueInput
+    create: XOR<LearningProgressCreateWithoutLearning_sessionInput, LearningProgressUncheckedCreateWithoutLearning_sessionInput>
+  }
+
+  export type LearningProgressCreateManyLearning_sessionInputEnvelope = {
+    data: LearningProgressCreateManyLearning_sessionInput | LearningProgressCreateManyLearning_sessionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LearningChatMessageCreateWithoutLearning_sessionInput = {
+    id?: string
+    role: string
+    content: string
+    message_type?: string
+    created_at?: Date | string
+  }
+
+  export type LearningChatMessageUncheckedCreateWithoutLearning_sessionInput = {
+    id?: string
+    role: string
+    content: string
+    message_type?: string
+    created_at?: Date | string
+  }
+
+  export type LearningChatMessageCreateOrConnectWithoutLearning_sessionInput = {
+    where: LearningChatMessageWhereUniqueInput
+    create: XOR<LearningChatMessageCreateWithoutLearning_sessionInput, LearningChatMessageUncheckedCreateWithoutLearning_sessionInput>
+  }
+
+  export type LearningChatMessageCreateManyLearning_sessionInputEnvelope = {
+    data: LearningChatMessageCreateManyLearning_sessionInput | LearningChatMessageCreateManyLearning_sessionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutLearning_sessionsInput = {
+    update: XOR<UserUpdateWithoutLearning_sessionsInput, UserUncheckedUpdateWithoutLearning_sessionsInput>
+    create: XOR<UserCreateWithoutLearning_sessionsInput, UserUncheckedCreateWithoutLearning_sessionsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutLearning_sessionsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutLearning_sessionsInput, UserUncheckedUpdateWithoutLearning_sessionsInput>
+  }
+
+  export type UserUpdateWithoutLearning_sessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    clients?: ClientUpdateManyWithoutUserNestedInput
+    projects?: ProjectUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutLearning_sessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    clients?: ClientUncheckedUpdateManyWithoutUserNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type ClientUpsertWithoutLearning_sessionsInput = {
+    update: XOR<ClientUpdateWithoutLearning_sessionsInput, ClientUncheckedUpdateWithoutLearning_sessionsInput>
+    create: XOR<ClientCreateWithoutLearning_sessionsInput, ClientUncheckedCreateWithoutLearning_sessionsInput>
+    where?: ClientWhereInput
+  }
+
+  export type ClientUpdateToOneWithWhereWithoutLearning_sessionsInput = {
+    where?: ClientWhereInput
+    data: XOR<ClientUpdateWithoutLearning_sessionsInput, ClientUncheckedUpdateWithoutLearning_sessionsInput>
+  }
+
+  export type ClientUpdateWithoutLearning_sessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    company?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
+    user?: UserUpdateOneRequiredWithoutClientsNestedInput
+    projects?: ProjectUpdateManyWithoutClientNestedInput
+  }
+
+  export type ClientUncheckedUpdateWithoutLearning_sessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    company?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    user_id?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
+    projects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
+  }
+
+  export type LearningTaskUpsertWithWhereUniqueWithoutLearning_sessionInput = {
+    where: LearningTaskWhereUniqueInput
+    update: XOR<LearningTaskUpdateWithoutLearning_sessionInput, LearningTaskUncheckedUpdateWithoutLearning_sessionInput>
+    create: XOR<LearningTaskCreateWithoutLearning_sessionInput, LearningTaskUncheckedCreateWithoutLearning_sessionInput>
+  }
+
+  export type LearningTaskUpdateWithWhereUniqueWithoutLearning_sessionInput = {
+    where: LearningTaskWhereUniqueInput
+    data: XOR<LearningTaskUpdateWithoutLearning_sessionInput, LearningTaskUncheckedUpdateWithoutLearning_sessionInput>
+  }
+
+  export type LearningTaskUpdateManyWithWhereWithoutLearning_sessionInput = {
+    where: LearningTaskScalarWhereInput
+    data: XOR<LearningTaskUpdateManyMutationInput, LearningTaskUncheckedUpdateManyWithoutLearning_sessionInput>
+  }
+
+  export type LearningTaskScalarWhereInput = {
+    AND?: LearningTaskScalarWhereInput | LearningTaskScalarWhereInput[]
+    OR?: LearningTaskScalarWhereInput[]
+    NOT?: LearningTaskScalarWhereInput | LearningTaskScalarWhereInput[]
+    id?: StringFilter<"LearningTask"> | string
+    learning_session_id?: StringFilter<"LearningTask"> | string
+    title?: StringFilter<"LearningTask"> | string
+    description?: StringFilter<"LearningTask"> | string
+    instructions?: StringFilter<"LearningTask"> | string
+    category?: StringFilter<"LearningTask"> | string
+    difficulty_level?: IntFilter<"LearningTask"> | number
+    estimated_minutes?: IntNullableFilter<"LearningTask"> | number | null
+    prerequisites?: StringNullableListFilter<"LearningTask">
+    is_completed?: BoolFilter<"LearningTask"> | boolean
+    completed_at?: DateTimeNullableFilter<"LearningTask"> | Date | string | null
+    user_notes?: StringNullableFilter<"LearningTask"> | string | null
+    created_at?: DateTimeFilter<"LearningTask"> | Date | string
+  }
+
+  export type LearningProgressUpsertWithWhereUniqueWithoutLearning_sessionInput = {
+    where: LearningProgressWhereUniqueInput
+    update: XOR<LearningProgressUpdateWithoutLearning_sessionInput, LearningProgressUncheckedUpdateWithoutLearning_sessionInput>
+    create: XOR<LearningProgressCreateWithoutLearning_sessionInput, LearningProgressUncheckedCreateWithoutLearning_sessionInput>
+  }
+
+  export type LearningProgressUpdateWithWhereUniqueWithoutLearning_sessionInput = {
+    where: LearningProgressWhereUniqueInput
+    data: XOR<LearningProgressUpdateWithoutLearning_sessionInput, LearningProgressUncheckedUpdateWithoutLearning_sessionInput>
+  }
+
+  export type LearningProgressUpdateManyWithWhereWithoutLearning_sessionInput = {
+    where: LearningProgressScalarWhereInput
+    data: XOR<LearningProgressUpdateManyMutationInput, LearningProgressUncheckedUpdateManyWithoutLearning_sessionInput>
+  }
+
+  export type LearningProgressScalarWhereInput = {
+    AND?: LearningProgressScalarWhereInput | LearningProgressScalarWhereInput[]
+    OR?: LearningProgressScalarWhereInput[]
+    NOT?: LearningProgressScalarWhereInput | LearningProgressScalarWhereInput[]
+    id?: StringFilter<"LearningProgress"> | string
+    learning_session_id?: StringFilter<"LearningProgress"> | string
+    category?: StringFilter<"LearningProgress"> | string
+    mastery_level?: FloatFilter<"LearningProgress"> | number
+    tasks_completed?: IntFilter<"LearningProgress"> | number
+    total_tasks?: IntFilter<"LearningProgress"> | number
+    last_activity?: DateTimeFilter<"LearningProgress"> | Date | string
+  }
+
+  export type LearningChatMessageUpsertWithWhereUniqueWithoutLearning_sessionInput = {
+    where: LearningChatMessageWhereUniqueInput
+    update: XOR<LearningChatMessageUpdateWithoutLearning_sessionInput, LearningChatMessageUncheckedUpdateWithoutLearning_sessionInput>
+    create: XOR<LearningChatMessageCreateWithoutLearning_sessionInput, LearningChatMessageUncheckedCreateWithoutLearning_sessionInput>
+  }
+
+  export type LearningChatMessageUpdateWithWhereUniqueWithoutLearning_sessionInput = {
+    where: LearningChatMessageWhereUniqueInput
+    data: XOR<LearningChatMessageUpdateWithoutLearning_sessionInput, LearningChatMessageUncheckedUpdateWithoutLearning_sessionInput>
+  }
+
+  export type LearningChatMessageUpdateManyWithWhereWithoutLearning_sessionInput = {
+    where: LearningChatMessageScalarWhereInput
+    data: XOR<LearningChatMessageUpdateManyMutationInput, LearningChatMessageUncheckedUpdateManyWithoutLearning_sessionInput>
+  }
+
+  export type LearningChatMessageScalarWhereInput = {
+    AND?: LearningChatMessageScalarWhereInput | LearningChatMessageScalarWhereInput[]
+    OR?: LearningChatMessageScalarWhereInput[]
+    NOT?: LearningChatMessageScalarWhereInput | LearningChatMessageScalarWhereInput[]
+    id?: StringFilter<"LearningChatMessage"> | string
+    learning_session_id?: StringFilter<"LearningChatMessage"> | string
+    role?: StringFilter<"LearningChatMessage"> | string
+    content?: StringFilter<"LearningChatMessage"> | string
+    message_type?: StringFilter<"LearningChatMessage"> | string
+    created_at?: DateTimeFilter<"LearningChatMessage"> | Date | string
+  }
+
+  export type LearningSessionCreateWithoutTasksInput = {
+    id?: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutLearning_sessionsInput
+    client: ClientCreateNestedOneWithoutLearning_sessionsInput
+    progress?: LearningProgressCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionUncheckedCreateWithoutTasksInput = {
+    id?: string
+    client_id: string
+    user_id: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    progress?: LearningProgressUncheckedCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageUncheckedCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionCreateOrConnectWithoutTasksInput = {
+    where: LearningSessionWhereUniqueInput
+    create: XOR<LearningSessionCreateWithoutTasksInput, LearningSessionUncheckedCreateWithoutTasksInput>
+  }
+
+  export type LearningSessionUpsertWithoutTasksInput = {
+    update: XOR<LearningSessionUpdateWithoutTasksInput, LearningSessionUncheckedUpdateWithoutTasksInput>
+    create: XOR<LearningSessionCreateWithoutTasksInput, LearningSessionUncheckedCreateWithoutTasksInput>
+    where?: LearningSessionWhereInput
+  }
+
+  export type LearningSessionUpdateToOneWithWhereWithoutTasksInput = {
+    where?: LearningSessionWhereInput
+    data: XOR<LearningSessionUpdateWithoutTasksInput, LearningSessionUncheckedUpdateWithoutTasksInput>
+  }
+
+  export type LearningSessionUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    client?: ClientUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    progress?: LearningProgressUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionUncheckedUpdateWithoutTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    client_id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    progress?: LearningProgressUncheckedUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUncheckedUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionCreateWithoutProgressInput = {
+    id?: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutLearning_sessionsInput
+    client: ClientCreateNestedOneWithoutLearning_sessionsInput
+    tasks?: LearningTaskCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionUncheckedCreateWithoutProgressInput = {
+    id?: string
+    client_id: string
+    user_id: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    tasks?: LearningTaskUncheckedCreateNestedManyWithoutLearning_sessionInput
+    chat_messages?: LearningChatMessageUncheckedCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionCreateOrConnectWithoutProgressInput = {
+    where: LearningSessionWhereUniqueInput
+    create: XOR<LearningSessionCreateWithoutProgressInput, LearningSessionUncheckedCreateWithoutProgressInput>
+  }
+
+  export type LearningSessionUpsertWithoutProgressInput = {
+    update: XOR<LearningSessionUpdateWithoutProgressInput, LearningSessionUncheckedUpdateWithoutProgressInput>
+    create: XOR<LearningSessionCreateWithoutProgressInput, LearningSessionUncheckedCreateWithoutProgressInput>
+    where?: LearningSessionWhereInput
+  }
+
+  export type LearningSessionUpdateToOneWithWhereWithoutProgressInput = {
+    where?: LearningSessionWhereInput
+    data: XOR<LearningSessionUpdateWithoutProgressInput, LearningSessionUncheckedUpdateWithoutProgressInput>
+  }
+
+  export type LearningSessionUpdateWithoutProgressInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    client?: ClientUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    tasks?: LearningTaskUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionUncheckedUpdateWithoutProgressInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    client_id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: LearningTaskUncheckedUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUncheckedUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionCreateWithoutChat_messagesInput = {
+    id?: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutLearning_sessionsInput
+    client: ClientCreateNestedOneWithoutLearning_sessionsInput
+    tasks?: LearningTaskCreateNestedManyWithoutLearning_sessionInput
+    progress?: LearningProgressCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionUncheckedCreateWithoutChat_messagesInput = {
+    id?: string
+    client_id: string
+    user_id: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    tasks?: LearningTaskUncheckedCreateNestedManyWithoutLearning_sessionInput
+    progress?: LearningProgressUncheckedCreateNestedManyWithoutLearning_sessionInput
+  }
+
+  export type LearningSessionCreateOrConnectWithoutChat_messagesInput = {
+    where: LearningSessionWhereUniqueInput
+    create: XOR<LearningSessionCreateWithoutChat_messagesInput, LearningSessionUncheckedCreateWithoutChat_messagesInput>
+  }
+
+  export type LearningSessionUpsertWithoutChat_messagesInput = {
+    update: XOR<LearningSessionUpdateWithoutChat_messagesInput, LearningSessionUncheckedUpdateWithoutChat_messagesInput>
+    create: XOR<LearningSessionCreateWithoutChat_messagesInput, LearningSessionUncheckedCreateWithoutChat_messagesInput>
+    where?: LearningSessionWhereInput
+  }
+
+  export type LearningSessionUpdateToOneWithWhereWithoutChat_messagesInput = {
+    where?: LearningSessionWhereInput
+    data: XOR<LearningSessionUpdateWithoutChat_messagesInput, LearningSessionUncheckedUpdateWithoutChat_messagesInput>
+  }
+
+  export type LearningSessionUpdateWithoutChat_messagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    client?: ClientUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    tasks?: LearningTaskUpdateManyWithoutLearning_sessionNestedInput
+    progress?: LearningProgressUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionUncheckedUpdateWithoutChat_messagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    client_id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: LearningTaskUncheckedUpdateManyWithoutLearning_sessionNestedInput
+    progress?: LearningProgressUncheckedUpdateManyWithoutLearning_sessionNestedInput
   }
 
   export type ClientCreateManyUserInput = {
@@ -6383,6 +13837,12 @@ export namespace Prisma {
     email?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    scraped_content?: string | null
+    scraped_pages?: number | null
+    scraped_chars?: number | null
+    scraped_words?: number | null
+    scraped_at?: Date | string | null
+    scraped_url?: string | null
   }
 
   export type ProjectCreateManyUserInput = {
@@ -6405,6 +13865,17 @@ export namespace Prisma {
     video_type?: string | null
   }
 
+  export type LearningSessionCreateManyUserInput = {
+    id?: string
+    client_id: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
   export type ClientUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -6412,7 +13883,14 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
     projects?: ProjectUpdateManyWithoutClientNestedInput
+    learning_sessions?: LearningSessionUpdateManyWithoutClientNestedInput
   }
 
   export type ClientUncheckedUpdateWithoutUserInput = {
@@ -6422,7 +13900,14 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
     projects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
+    learning_sessions?: LearningSessionUncheckedUpdateManyWithoutClientNestedInput
   }
 
   export type ClientUncheckedUpdateManyWithoutUserInput = {
@@ -6432,6 +13917,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraped_content?: NullableStringFieldUpdateOperationsInput | string | null
+    scraped_pages?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_words?: NullableIntFieldUpdateOperationsInput | number | null
+    scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ProjectUpdateWithoutUserInput = {
@@ -6494,6 +13985,45 @@ export namespace Prisma {
     video_type?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
+  export type LearningSessionUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    client?: ClientUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    tasks?: LearningTaskUpdateManyWithoutLearning_sessionNestedInput
+    progress?: LearningProgressUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    client_id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: LearningTaskUncheckedUpdateManyWithoutLearning_sessionNestedInput
+    progress?: LearningProgressUncheckedUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUncheckedUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    client_id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ProjectCreateManyClientInput = {
     id?: string
     title: string
@@ -6512,6 +14042,17 @@ export namespace Prisma {
     scraped_at?: Date | string | null
     scraped_url?: string | null
     video_type?: string | null
+  }
+
+  export type LearningSessionCreateManyClientInput = {
+    id?: string
+    user_id: string
+    software_name: string
+    documentation_summary?: string | null
+    current_phase?: string
+    completion_percentage?: number
+    created_at?: Date | string
+    updated_at?: Date | string
   }
 
   export type ProjectUpdateWithoutClientInput = {
@@ -6572,6 +14113,173 @@ export namespace Prisma {
     scraped_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     scraped_url?: NullableStringFieldUpdateOperationsInput | string | null
     video_type?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type LearningSessionUpdateWithoutClientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutLearning_sessionsNestedInput
+    tasks?: LearningTaskUpdateManyWithoutLearning_sessionNestedInput
+    progress?: LearningProgressUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionUncheckedUpdateWithoutClientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tasks?: LearningTaskUncheckedUpdateManyWithoutLearning_sessionNestedInput
+    progress?: LearningProgressUncheckedUpdateManyWithoutLearning_sessionNestedInput
+    chat_messages?: LearningChatMessageUncheckedUpdateManyWithoutLearning_sessionNestedInput
+  }
+
+  export type LearningSessionUncheckedUpdateManyWithoutClientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    software_name?: StringFieldUpdateOperationsInput | string
+    documentation_summary?: NullableStringFieldUpdateOperationsInput | string | null
+    current_phase?: StringFieldUpdateOperationsInput | string
+    completion_percentage?: FloatFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningTaskCreateManyLearning_sessionInput = {
+    id?: string
+    title: string
+    description: string
+    instructions: string
+    category: string
+    difficulty_level?: number
+    estimated_minutes?: number | null
+    prerequisites?: LearningTaskCreateprerequisitesInput | string[]
+    is_completed?: boolean
+    completed_at?: Date | string | null
+    user_notes?: string | null
+    created_at?: Date | string
+  }
+
+  export type LearningProgressCreateManyLearning_sessionInput = {
+    id?: string
+    category: string
+    mastery_level?: number
+    tasks_completed?: number
+    total_tasks?: number
+    last_activity?: Date | string
+  }
+
+  export type LearningChatMessageCreateManyLearning_sessionInput = {
+    id?: string
+    role: string
+    content: string
+    message_type?: string
+    created_at?: Date | string
+  }
+
+  export type LearningTaskUpdateWithoutLearning_sessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    difficulty_level?: IntFieldUpdateOperationsInput | number
+    estimated_minutes?: NullableIntFieldUpdateOperationsInput | number | null
+    prerequisites?: LearningTaskUpdateprerequisitesInput | string[]
+    is_completed?: BoolFieldUpdateOperationsInput | boolean
+    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningTaskUncheckedUpdateWithoutLearning_sessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    difficulty_level?: IntFieldUpdateOperationsInput | number
+    estimated_minutes?: NullableIntFieldUpdateOperationsInput | number | null
+    prerequisites?: LearningTaskUpdateprerequisitesInput | string[]
+    is_completed?: BoolFieldUpdateOperationsInput | boolean
+    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningTaskUncheckedUpdateManyWithoutLearning_sessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    difficulty_level?: IntFieldUpdateOperationsInput | number
+    estimated_minutes?: NullableIntFieldUpdateOperationsInput | number | null
+    prerequisites?: LearningTaskUpdateprerequisitesInput | string[]
+    is_completed?: BoolFieldUpdateOperationsInput | boolean
+    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user_notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningProgressUpdateWithoutLearning_sessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    mastery_level?: FloatFieldUpdateOperationsInput | number
+    tasks_completed?: IntFieldUpdateOperationsInput | number
+    total_tasks?: IntFieldUpdateOperationsInput | number
+    last_activity?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningProgressUncheckedUpdateWithoutLearning_sessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    mastery_level?: FloatFieldUpdateOperationsInput | number
+    tasks_completed?: IntFieldUpdateOperationsInput | number
+    total_tasks?: IntFieldUpdateOperationsInput | number
+    last_activity?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningProgressUncheckedUpdateManyWithoutLearning_sessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    mastery_level?: FloatFieldUpdateOperationsInput | number
+    tasks_completed?: IntFieldUpdateOperationsInput | number
+    total_tasks?: IntFieldUpdateOperationsInput | number
+    last_activity?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningChatMessageUpdateWithoutLearning_sessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    message_type?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningChatMessageUncheckedUpdateWithoutLearning_sessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    message_type?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LearningChatMessageUncheckedUpdateManyWithoutLearning_sessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    message_type?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

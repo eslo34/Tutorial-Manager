@@ -3,7 +3,7 @@ export function validateEnv() {
   const requiredEnvVars = [
     'DATABASE_URL',
     'NEXTAUTH_SECRET',
-    'GEMINI_API_KEY'
+    'GPT_API_KEY'
   ]
 
   const optionalEnvVars = [
@@ -31,7 +31,7 @@ export const env = {
   DATABASE_URL: process.env.DATABASE_URL || 'postgresql://placeholder',
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'placeholder-secret',
   NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
-  GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'placeholder-key',
+  GPT_API_KEY: process.env.GPT_API_KEY || 'placeholder-key',
   GOOGLE_SEARCH_API_KEY: process.env.GOOGLE_SEARCH_API_KEY || '', // Optional for web search
   GOOGLE_SEARCH_ENGINE_ID: process.env.GOOGLE_SEARCH_ENGINE_ID || '' // Optional for web search
 } 

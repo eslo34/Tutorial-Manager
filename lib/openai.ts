@@ -2,7 +2,7 @@ export interface ScriptGenerationRequest {
   prompt: string;
   userRequest: string;
   documentationContent: string;
-  videoType?: 'tutorial' | 'other';
+  videoType?: 'tutorial';
 }
 
 export interface ScriptGenerationResponse {
@@ -39,4 +39,4 @@ export async function generateScript(request: ScriptGenerationRequest): Promise<
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
   }
-} 
+}

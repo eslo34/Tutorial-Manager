@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { Client, Project } from '@/lib/types';
 
 import { crawlDocumentation, CrawlResponse, getContentSummary, formatContentForAI, aggregateContent } from '@/lib/crawler';
-import { getPromptTemplate, getVideoTypeLabel, getVideoTypeDescription } from '@/lib/prompt-templates';
-import { generateScript } from '@/lib/gemini';
+import { getPromptTemplate } from '@/lib/prompt-templates';
+import { generateScript } from '@/lib/openai';
 import { VideoType } from '@/lib/types';
-import { Plus, Users, X, LogOut, FileText, ArrowLeft, Search, Trash2 } from 'lucide-react';
+import { Plus, Users, X, LogOut, FileText, ArrowLeft, Search, Trash2, BookOpen, PenTool } from 'lucide-react';
 import AuthForm from '@/components/AuthForm';
+import LearningChat from '@/components/LearningChat';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -21,10 +22,17 @@ export default function Dashboard() {
   const [currentView, setCurrentView] = useState<'clients' | 'projects' | 'project-detail' | 'script-maintenance'>('clients');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  const [clientMode, setClientMode] = useState<'projects' | 'learning'>('projects');
   const [clientForm, setClientForm] = useState({
     name: '',
-    description: ''
+    description: '',
+    documentationUrl: '',
+    specificUrls: ''
   });
+  const [clientCrawlMode, setClientCrawlMode] = useState<'crawl' | 'specific'>('crawl');
+  const [clientCrawling, setClientCrawling] = useState(false);
+  const [clientCrawlResults, setClientCrawlResults] = useState<CrawlResponse | null>(null);
   const [projectForm, setProjectForm] = useState({
     title: '',
     description: '',
@@ -53,6 +61,18 @@ export default function Dashboard() {
   const [updateResults, setUpdateResults] = useState<any>(null);
   const [scriptWithOverlays, setScriptWithOverlays] = useState<string>('');
   const [activeOverlays, setActiveOverlays] = useState<any[]>([]);
+
+  // Partial regeneration states
+  const [selectedText, setSelectedText] = useState('');
+  const [selectionStart, setSelectionStart] = useState(0);
+  const [selectionEnd, setSelectionEnd] = useState(0);
+  const [isPartiallyRegenerating, setIsPartiallyRegenerating] = useState(false);
+  const [showRegenerateButton, setShowRegenerateButton] = useState(false);
+  const [regenerationComplete, setRegenerationComplete] = useState(false);
+
+  // Refs for scroll synchronization
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   // Debug effect to track crawling state changes
   useEffect(() => {
@@ -94,25 +114,82 @@ export default function Dashboard() {
     }
   };
 
+  const handleClientCrawlDocumentation = async () => {
+    if (clientCrawlMode === 'crawl' && !clientForm.documentationUrl.trim()) return;
+    if (clientCrawlMode === 'specific' && !clientForm.specificUrls.trim()) return;
+    
+    setClientCrawling(true);
+    setClientCrawlResults(null);
+    
+    try {
+      let results: CrawlResponse;
+      
+      if (clientCrawlMode === 'crawl') {
+        results = await crawlDocumentation(clientForm.documentationUrl, 50);
+      } else {
+        const urlList = clientForm.specificUrls
+          .split('\n')
+          .map(url => url.trim())
+          .filter(url => url.length > 0 && url.startsWith('http'));
+        
+        const response = await fetch('/api/scrape-specific', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ urls: urlList }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        results = await response.json();
+      }
+      
+      setClientCrawlResults(results);
+    } catch (error) {
+      console.error('Client crawling failed:', error);
+    }
+    
+    setClientCrawling(false);
+  };
+
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientForm.name.trim() || !clientForm.description.trim()) return;
     
     try {
+      // Prepare client data
+      const clientData: any = {
+        name: clientForm.name.trim(),
+        company: clientForm.description.trim(),
+        email: ''
+      };
+
+      // Add scraped documentation if available
+      if (clientCrawlResults?.success && clientCrawlResults.totalContent) {
+        const summary = getContentSummary(clientCrawlResults);
+        clientData.scrapedContent = clientCrawlResults.totalContent;
+        clientData.scrapedPages = clientCrawlResults.pages.length;
+        clientData.scrapedChars = summary.totalCharacters;
+        clientData.scrapedWords = summary.totalWords;
+        clientData.scrapedUrl = clientCrawlMode === 'crawl' ? clientForm.documentationUrl : 'Multiple specific URLs';
+        clientData.scrapedAt = new Date().toISOString();
+      }
+
       const response = await fetch('/api/clients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: clientForm.name.trim(),
-          company: clientForm.description.trim(),
-          email: ''
-        })
+        body: JSON.stringify(clientData)
       });
 
       if (response.ok) {
         const data = await response.json();
         setClients(prev => [...prev, data.client]);
-        setClientForm({ name: '', description: '' });
+        setClientForm({ name: '', description: '', documentationUrl: '', specificUrls: '' });
+        setClientCrawlResults(null);
+        setClientCrawlMode('crawl');
         setShowClientModal(false);
       }
     } catch (error) {
@@ -299,11 +376,13 @@ export default function Dashboard() {
   const handleBackToClients = () => {
     setCurrentView('clients');
     setSelectedClient(null);
+    setClientMode('projects'); // Reset to projects mode
   };
 
   const handleBackToProjects = () => {
     setCurrentView('projects');
     setSelectedProject(null);
+
     // Clear project detail form data
     setDocumentationUrl('');
     setSpecificUrls('');
@@ -448,9 +527,8 @@ export default function Dashboard() {
   };
 
   const handleGenerateScript = async () => {
-    // For tutorial projects, crawling is required. For other projects, it's optional
-    const requiresCrawling = selectedProject?.videoType === 'tutorial';
-    if (requiresCrawling && !crawlResults?.success) return;
+    // Crawling is required for script generation
+    if (!crawlResults?.success) return;
     if (!prompt.trim() || !userRequest.trim()) return;
     
     console.log('🤖 Starting script generation...');
@@ -458,7 +536,7 @@ export default function Dashboard() {
     setGeneratedScript('🤖 Generating script with Gemini AI...\n\nPlease wait while we create your professional video script based on the crawled documentation.');
     
     try {
-      // Use stored scraped content if available, otherwise use current crawl results, or empty for 'other' projects
+      // Use stored scraped content if available, otherwise use current crawl results
       let documentationContent: string = '';
       if (selectedProject?.scrapedContent) {
         console.log('📄 Using stored scraped content from database');
@@ -468,9 +546,6 @@ export default function Dashboard() {
       } else if (crawlResults?.success && crawlResults) {
         console.log('📄 Using current crawl results');
         documentationContent = aggregateContent(crawlResults);
-      } else if (selectedProject?.videoType === 'other') {
-        console.log('📄 No documentation required for "other" project - will use web search only');
-        documentationContent = '';
       }
 
       const result = await generateScript({
@@ -587,6 +662,139 @@ export default function Dashboard() {
     console.log('🏁 Script modification finished');
   };
 
+  const handlePartialRegenerate = async () => {
+    if (!selectedProject?.script || !modificationRequest.trim() || !selectedText) return;
+    
+    console.log('🔄 Starting partial script regeneration...');
+    setIsPartiallyRegenerating(true);
+    setShowRegenerateButton(false);
+    
+    let result: any = null;
+    try {
+      const currentScript = editableScript || selectedProject.script;
+      
+      // Get context around the selection (200 chars before and after)
+      const beforeContext = currentScript.substring(Math.max(0, selectionStart - 200), selectionStart);
+      const afterContext = currentScript.substring(selectionEnd, Math.min(currentScript.length, selectionEnd + 200));
+      
+      const response = await fetch('/api/regenerate-partial', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: selectedProject.id,
+          selectedText: selectedText,
+          beforeContext: beforeContext,
+          afterContext: afterContext,
+          selectionStart: selectionStart,
+          selectionEnd: selectionEnd,
+          modificationRequest: modificationRequest,
+          documentationContent: selectedProject.scrapedContent || ''
+        }),
+      });
+
+      result = await response.json();
+
+      if (result.success) {
+        console.log('✅ Partial regeneration completed successfully');
+        
+        // Update the editable script with the new complete script
+        setEditableScript(result.newCompleteScript);
+        setHasUnsavedChanges(true);
+        setModificationRequest('');
+        
+        // Update selection to match the actual regenerated text
+        const regeneratedLength = result.regeneratedText.length;
+        const newSelectionEnd = selectionStart + regeneratedLength;
+        
+        // Update selection state to match the newly regenerated portion
+        setSelectedText(result.regeneratedText);
+        setSelectionEnd(newSelectionEnd);
+        
+        // Show completion state briefly
+        setIsPartiallyRegenerating(false);
+        setRegenerationComplete(true);
+        
+        console.log('🔄 Regenerated portion:', result.regeneratedText.substring(0, 100) + '...');
+        console.log('📏 Original length:', selectionEnd - selectionStart, '→ New length:', regeneratedLength);
+        
+        // Clear selection after showing completion for 2 seconds
+        setTimeout(() => {
+          setRegenerationComplete(false);
+          setSelectedText('');
+          setSelectionStart(0);
+          setSelectionEnd(0);
+          setShowRegenerateButton(false);
+        }, 2000);
+      } else {
+        console.error('❌ Partial regeneration failed:', result.error);
+        alert('❌ Partial regeneration failed: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Partial regeneration error:', error);
+      alert('❌ Error during partial regeneration. Please try again.');
+    } finally {
+      if (!result?.success) {
+        setIsPartiallyRegenerating(false);
+      }
+    }
+  };
+
+  const renderTextWithHighlight = (text: string) => {
+    if (!text) return '';
+    
+    // Escape HTML to prevent XSS
+    const escapeHtml = (unsafe: string) => {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+        .replace(/\n/g, "<br>");
+    };
+    
+    // If no selection or not in regenerating states, return plain text
+    if (!selectedText || selectionStart === selectionEnd || (!isPartiallyRegenerating && !regenerationComplete)) {
+      return escapeHtml(text);
+    }
+    
+    const before = escapeHtml(text.substring(0, selectionStart));
+    const selected = escapeHtml(text.substring(selectionStart, selectionEnd));
+    const after = escapeHtml(text.substring(selectionEnd));
+    
+    if (isPartiallyRegenerating) {
+      // Blue highlight with pulsing animation during regeneration
+      return `${before}<span style="background-color: #3b82f6; color: #3b82f6; padding: 0; border-radius: 3px; animation: pulse 1.5s infinite;">${selected}</span>${after}`;
+    } else if (regenerationComplete) {
+      // Green highlight when complete
+      return `${before}<span style="background-color: #10b981; color: #10b981; padding: 0; border-radius: 3px;">${selected}</span>${after}`;
+    }
+    
+    return escapeHtml(text);
+  };
+
+  const handleTextSelection = (event: React.SyntheticEvent<HTMLTextAreaElement>) => {
+    const textarea = event.currentTarget;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    if (start !== end && !generatedScript) { // Only allow selection when not showing generated script
+      const selectedPortion = textarea.value.substring(start, end);
+      setSelectedText(selectedPortion);
+      setSelectionStart(start);
+      setSelectionEnd(end);
+      setShowRegenerateButton(true);
+      console.log('📝 Text selected:', selectedPortion.substring(0, 50) + '...');
+    } else {
+      setSelectedText('');
+      setSelectionStart(0);
+      setSelectionEnd(0);
+      setShowRegenerateButton(false);
+    }
+  };
+
   const handleManualScriptSave = async () => {
     if (!selectedProject || !editableScript.trim()) return;
     
@@ -696,11 +904,17 @@ export default function Dashboard() {
 
       const updateData = await response.json();
       console.log('📋 Update check completed:', updateData);
+      console.log('🔍 Analysis object:', updateData.analysis);
+      console.log('📊 Outdated sections:', updateData.analysis?.outdated_sections);
+      console.log('📊 Outdated sections length:', updateData.analysis?.outdated_sections?.length);
       setUpdateResults(updateData);
       
       // Initialize the script with overlays if updates were found
       if (updateData.success && updateData.analysis.outdated_sections?.length > 0) {
+        console.log('✅ Initializing overlays with', updateData.analysis.outdated_sections.length, 'sections');
         setTimeout(() => initializeScriptWithOverlays(), 100);
+      } else {
+        console.log('❌ Not initializing overlays. Success:', updateData.success, 'Sections:', updateData.analysis?.outdated_sections?.length);
       }
 
     } catch (error) {
@@ -715,19 +929,24 @@ export default function Dashboard() {
   };
 
   const handleAcceptSuggestion = (suggestionIndex: number) => {
-    if (!updateResults?.analysis?.outdated_sections || !selectedProject?.script) return;
+    if (!activeOverlays[suggestionIndex] || !selectedProject?.script) return;
     
-    const suggestion = updateResults.analysis.outdated_sections[suggestionIndex];
+    const suggestion = activeOverlays[suggestionIndex];
     
-    // Update the script by replacing the original text with the suggested replacement
-    const updatedScript = scriptWithOverlays.replace(suggestion.original_text, suggestion.suggested_replacement);
+    // Use the actual matched text from fuzzy matching
+    const textToReplace = suggestion.actualMatchedText || suggestion.original_text;
+    
+    console.log(`🔄 Replacing: "${textToReplace.substring(0, 50)}..." with: "${suggestion.suggested_replacement.substring(0, 50)}..."`);
+    
+    // Update the script by replacing the actual matched text with the suggested replacement
+    const updatedScript = scriptWithOverlays.replace(textToReplace, suggestion.suggested_replacement);
     setScriptWithOverlays(updatedScript);
     
     // Remove this suggestion from active overlays
     const updatedOverlays = activeOverlays.filter((_, index) => index !== suggestionIndex);
     setActiveOverlays(updatedOverlays);
     
-    // Update the project script in the database
+    // Update the project script in the database and main editor immediately
     updateProjectScript(updatedScript);
     
     console.log(`✅ Accepted suggestion ${suggestionIndex + 1}`);
@@ -759,6 +978,10 @@ export default function Dashboard() {
       if (response.ok) {
         // Update the local project state
         setSelectedProject(prev => prev ? { ...prev, script: newScript } : null);
+        // Update the editable script state so main editor shows changes
+        setEditableScript(newScript);
+        // Clear unsaved changes flag since we just saved
+        setHasUnsavedChanges(false);
         console.log('✅ Script updated in database');
       }
     } catch (error) {
@@ -766,11 +989,107 @@ export default function Dashboard() {
     }
   };
 
+  // Helper function to normalize text for better matching
+  const normalizeText = (text: string) => {
+    return text
+      // Normalize all quote types to standard double quotes
+      .replace(/[""''`]/g, '"')
+      .replace(/\\"/g, '"')
+      // Normalize whitespace
+      .replace(/\s+/g, ' ')
+      .trim()
+      // Remove common formatting differences
+      .replace(/\u00A0/g, ' ') // Non-breaking spaces
+      .toLowerCase();
+  };
+
   const initializeScriptWithOverlays = () => {
     if (!selectedProject?.script || !updateResults?.analysis?.outdated_sections) return;
     
+    console.log('🔍 Preprocessing overlays with enhanced fuzzy matching...');
+    const preprocessedOverlays = updateResults.analysis.outdated_sections.map((section: any, index: number) => {
+      const script = selectedProject.script!; // We already checked it exists above
+      let textIndex = script.indexOf(section.original_text);
+      let actualMatchedText = section.original_text;
+      
+      if (textIndex === -1) {
+        console.log(`🔍 Exact match failed for section ${index}, trying enhanced fuzzy matching...`);
+        
+        // First try: Direct normalized comparison
+        const normalizedAiText = normalizeText(section.original_text);
+        const sentences = script.split(/[.!?]/);
+        
+        // Look for normalized exact matches first
+        let bestMatch = '';
+        let bestScore = 0;
+        let matchType = '';
+        
+        sentences.forEach(sentence => {
+          const fullSentence = sentence.trim();
+          if (fullSentence.length < 10) return; // Skip very short sentences
+          
+          const normalizedSentence = normalizeText(fullSentence);
+          
+          // Check for normalized exact match (90%+ similarity after normalization)
+          if (normalizedSentence === normalizedAiText) {
+            bestMatch = fullSentence;
+            bestScore = 1.0;
+            matchType = 'normalized-exact';
+            return;
+          }
+          
+          // Check for high similarity (contains most of the normalized text)
+          if (normalizedSentence.includes(normalizedAiText) || normalizedAiText.includes(normalizedSentence)) {
+            const similarity = normalizedAiText.length > normalizedSentence.length 
+              ? normalizedSentence.length / normalizedAiText.length
+              : normalizedAiText.length / normalizedSentence.length;
+            
+            if (similarity > 0.8 && similarity > bestScore) {
+              bestMatch = fullSentence;
+              bestScore = similarity;
+              matchType = 'high-similarity';
+            }
+          }
+        });
+        
+        // If normalized matching failed, fall back to keyword matching
+        if (!bestMatch) {
+          const keywords = section.original_text.split(' ').filter((word: string) => 
+            word.length > 3 && !['the', 'and', 'for', 'that', 'this', 'with', 'from', 'they', 'will', 'have', 'been'].includes(word.toLowerCase())
+          );
+          
+          if (keywords.length > 0) {
+            sentences.forEach(sentence => {
+              const matchingKeywords = keywords.filter((keyword: string) => 
+                normalizeText(sentence).includes(normalizeText(keyword))
+              );
+              const score = matchingKeywords.length / keywords.length;
+              
+              if (score > 0.4 && score > bestScore && sentence.trim().length > 20) {
+                bestScore = score;
+                bestMatch = sentence.trim();
+                matchType = 'keyword';
+              }
+            });
+          }
+        }
+        
+        if (bestMatch) {
+          actualMatchedText = bestMatch;
+          console.log(`🎯 ${matchType} match ${index} (score: ${bestScore.toFixed(2)}): "${section.original_text.substring(0, 40)}..." → "${bestMatch.substring(0, 40)}..."`);
+        } else {
+          console.log(`❌ No match found for section ${index}: "${section.original_text.substring(0, 50)}..."`);
+        }
+      }
+      
+      return {
+        ...section,
+        actualMatchedText: actualMatchedText // Store the actual text we'll replace
+      };
+    });
+    
     setScriptWithOverlays(selectedProject.script);
-    setActiveOverlays(updateResults.analysis.outdated_sections);
+    setActiveOverlays(preprocessedOverlays);
   };
 
   // Component to render script with interactive overlays
@@ -795,10 +1114,17 @@ export default function Dashboard() {
       // Sort overlays by their position in the script
       const sortedOverlays = [...overlays]
         .map((overlay, index) => ({ ...overlay, originalIndex: index }))
-        .sort((a, b) => script.indexOf(a.original_text) - script.indexOf(b.original_text));
+        .sort((a, b) => {
+          const aIndex = script.indexOf(a.original_text);
+          const bIndex = script.indexOf(b.original_text);
+          // If exact match fails, put at end for now (fuzzy matching will handle positioning)
+          return (aIndex === -1 ? Infinity : aIndex) - (bIndex === -1 ? Infinity : bIndex);
+        });
 
       sortedOverlays.forEach((overlay) => {
-        const textIndex = script.indexOf(overlay.original_text, lastIndex);
+        // Use the preprocessed actualMatchedText if available, otherwise fallback to original_text
+        const actualText = overlay.actualMatchedText || overlay.original_text;
+        const textIndex = script.indexOf(actualText, lastIndex);
         
         if (textIndex !== -1) {
           // Add text before the highlight
@@ -822,11 +1148,11 @@ export default function Dashboard() {
               onClick={() => setSelectedOverlay(overlay.originalIndex)}
               title={`Click to review: ${overlay.reason}`}
             >
-              {overlay.original_text}
+              {actualText}
             </span>
           );
 
-          lastIndex = textIndex + overlay.original_text.length;
+          lastIndex = textIndex + actualText.length;
         }
       });
 
@@ -1070,8 +1396,55 @@ export default function Dashboard() {
             )}
           </div>
         ) : currentView === 'projects' ? (
-          // Projects View
+          // Client View (Projects + Learning)
           <div className="h-full flex flex-col">
+            {/* Mode Selection Tabs - Only show if client has documentation */}
+            {selectedClient?.scrapedContent && (
+              <div className="flex-shrink-0 mb-6">
+                <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+                  <button
+                    onClick={() => setClientMode('projects')}
+                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      clientMode === 'projects'
+                        ? 'bg-white text-primary-700 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Projects
+                  </button>
+                  <button
+                    onClick={() => setClientMode('learning')}
+                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      clientMode === 'learning'
+                        ? 'bg-white text-primary-700 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Learn Software
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  {clientMode === 'projects' 
+                    ? 'Manage individual tutorial projects' 
+                    : 'Learn the software with AI guidance'
+                  }
+                </p>
+              </div>
+            )}
+
+            {clientMode === 'learning' && selectedClient?.scrapedContent ? (
+              // Learning Mode
+              <div className="flex-1 min-h-0">
+                <LearningChat 
+                  projectId={selectedClient.id} // Using client ID instead of project ID
+                  softwareName={selectedClient.company || 'Software'}
+                />
+              </div>
+            ) : (
+              // Projects Mode
+              <div className="h-full flex flex-col">
             {selectedClient && getClientProjects(selectedClient.id).length === 0 ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
@@ -1116,7 +1489,7 @@ export default function Dashboard() {
                         </div>
                         <div className="ml-3 flex-1">
                           <span className="text-xs text-primary-600 font-medium">
-                            {getVideoTypeLabel(project.videoType)}
+                            📚 Tutorial
                           </span>
                         </div>
                       </div>
@@ -1141,6 +1514,8 @@ export default function Dashboard() {
                   </div>
                 ))}
                 </div>
+              </div>
+            )}
               </div>
             )}
           </div>
@@ -1299,18 +1674,7 @@ export default function Dashboard() {
                      Documentation Scraping
                    </label>
                    
-                   {/* Optional crawling notice for 'other' projects */}
-                   {selectedProject?.videoType === 'other' && (
-                     <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                       <div className="flex items-center mb-1">
-                         <span className="text-sm font-medium text-blue-800">💡 Optional for this project type</span>
-                       </div>
-                       <p className="text-xs text-blue-700">
-                         For "Other" projects, documentation crawling is optional since the AI will search the web for current information. 
-                         You can skip to script generation or add specific company documentation if needed.
-                       </p>
-                     </div>
-                   )}
+
                    
                    {/* Mode Toggle */}
                    <div className="mb-4">
@@ -1497,19 +1861,7 @@ https://docs.example.com/api-reference`}
                        </button>
                      </div>
 
-                     <div className="pt-2">
-                       <button 
-                         onClick={() => {
-                           if (confirm('Are you sure you want to generate a completely new script? This will replace the existing script.')) {
-                             setSelectedProject(prev => prev ? { ...prev, script: undefined } : null);
-                             setModificationRequest('');
-                           }
-                         }}
-                         className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 font-medium text-sm"
-                       >
-                         Generate New Script Instead
-                       </button>
-                     </div>
+ 
                    </>
                  ) : (
                    /* Original Script Generation Mode */
@@ -1547,12 +1899,12 @@ https://docs.example.com/api-reference`}
                            console.log('🔘 Generate button clicked, generating state:', generating);
                            handleGenerateScript();
                          }}
-                         disabled={
-                           (selectedProject?.videoType === 'tutorial' && !crawlResults?.success) || 
-                           !prompt.trim() || 
-                           !userRequest.trim() || 
-                           generating
-                         }
+                                                 disabled={
+                          !crawlResults?.success || 
+                          !prompt.trim() || 
+                          !userRequest.trim() || 
+                          generating
+                        }
                          className="w-full bg-primary-600 text-white py-4 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
                        >
                          {generating ? (
@@ -1598,50 +1950,175 @@ https://docs.example.com/api-reference`}
                    )}
                  </div>
                  
-                 {generatedScript || selectedProject?.script || editableScript ? (
-                   <textarea
-                     value={generatedScript || editableScript}
-                     onChange={(e) => {
-                       if (!generatedScript) {
-                         // Only allow editing if not showing a freshly generated script
-                         handleScriptChange(e.target.value);
-                       }
-                     }}
-                     className={`${
-                       generatedScript 
-                         ? 'bg-blue-50 border-blue-200' 
-                         : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                     } text-gray-900 p-6 rounded-lg border flex-1 resize-none font-sans leading-relaxed text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200`}
-                     placeholder={
-                       generatedScript 
-                         ? "✨ Fresh AI result - will become editable in a moment..." 
-                         : (selectedProject?.script ? "Edit your script here..." : "Generated script will appear here...")
-                     }
-                     readOnly={!!generatedScript}
-                   />
-                 ) : (
+                                 {generatedScript || selectedProject?.script || editableScript ? (
+                  <div className="flex-1 flex flex-col">
+                    <div className="relative flex-1 min-h-0">
+                      {/* Background overlay for highlighting */}
+                      <div
+                        ref={overlayRef}
+                        className="absolute inset-0 p-6 rounded-lg border border-transparent text-transparent pointer-events-none font-sans leading-relaxed text-sm whitespace-pre-wrap overflow-y-auto z-0"
+                        style={{
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word'
+                        }}
+                        dangerouslySetInnerHTML={{
+                          __html: renderTextWithHighlight(generatedScript || editableScript || '')
+                        }}
+                      />
+                      
+                      {/* Add pulse animation styles */}
+                      <style jsx>{`
+                        @keyframes pulse {
+                          0%, 100% { opacity: 1; }
+                          50% { opacity: 0.7; }
+                        }
+                      `}</style>
+                      
+                      {/* Main textarea */}
+                      <textarea
+                        ref={textareaRef}
+                        value={generatedScript || editableScript}
+                        onChange={(e) => {
+                          if (!generatedScript) {
+                            // Only allow editing if not showing a freshly generated script
+                            handleScriptChange(e.target.value);
+                          }
+                        }}
+                        onScroll={(e) => {
+                          // Sync overlay scroll with textarea scroll
+                          if (overlayRef.current) {
+                            overlayRef.current.scrollTop = e.currentTarget.scrollTop;
+                            overlayRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                          }
+                        }}
+                        onSelect={handleTextSelection}
+                        onMouseUp={handleTextSelection}
+                        onKeyUp={handleTextSelection}
+                        className={`${
+                          generatedScript 
+                            ? 'bg-blue-50 border-blue-200' 
+                            : 'bg-transparent border-gray-200 hover:border-gray-300'
+                        } text-gray-900 p-6 rounded-lg border absolute inset-0 w-full h-full resize-none font-sans leading-relaxed text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 z-10`}
+                        style={{ background: generatedScript ? undefined : 'rgba(249, 250, 251, 0.8)' }}
+                        placeholder={
+                          generatedScript 
+                            ? "✨ Fresh AI result - will become editable in a moment..." 
+                            : isPartiallyRegenerating
+                              ? "🔄 Regenerating selected text..."
+                              : (selectedProject?.script ? "Edit your script here..." : "Generated script will appear here...")
+                        }
+                        readOnly={!!generatedScript || isPartiallyRegenerating}
+                      />
+                    </div>
+                    
+                    {/* Partial Regeneration Controls */}
+                    {(showRegenerateButton || isPartiallyRegenerating || regenerationComplete) && selectedText && !generatedScript && (
+                      <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="text-sm font-medium mb-1">
+                              {isPartiallyRegenerating ? (
+                                <span className="text-blue-900">🔄 Regenerating Text:</span>
+                              ) : regenerationComplete ? (
+                                <span className="text-green-900">✅ Regeneration Complete!</span>
+                              ) : (
+                                <span className="text-blue-900">📝 Selected: {selectedText.length} characters</span>
+                              )}
+                            </div>
+                            <div className={`text-xs p-3 rounded max-h-20 overflow-y-auto transition-all duration-300 ${
+                              isPartiallyRegenerating 
+                                ? 'bg-blue-500 text-white animate-pulse border-2 border-blue-300' 
+                                : regenerationComplete
+                                  ? 'bg-green-500 text-white border-2 border-green-300'
+                                  : 'text-blue-700 bg-blue-100'
+                            }`}>
+                              "{selectedText.length > 100 ? selectedText.substring(0, 100) + '...' : selectedText}"
+                            </div>
+                            {isPartiallyRegenerating && (
+                              <div className="text-xs text-blue-600 mt-1 flex items-center">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                                This text is being regenerated...
+                              </div>
+                            )}
+                            {regenerationComplete && (
+                              <div className="text-xs text-green-600 mt-1 flex items-center">
+                                <div className="text-green-500 mr-2">✓</div>
+                                This text has been successfully regenerated!
+                              </div>
+                            )}
+                          </div>
+                          {!isPartiallyRegenerating && (
+                            <button
+                              onClick={() => {
+                                setShowRegenerateButton(false);
+                                setSelectedText('');
+                                setSelectionStart(0);
+                                setSelectionEnd(0);
+                                setRegenerationComplete(false);
+                              }}
+                              className="ml-3 text-blue-400 hover:text-blue-600 text-sm"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                        
+                        {!isPartiallyRegenerating && !regenerationComplete && (
+                          <>
+                            <textarea
+                              value={modificationRequest}
+                              onChange={(e) => setModificationRequest(e.target.value)}
+                              className="w-full px-3 py-2 border border-blue-300 rounded text-sm resize-none"
+                              rows={3}
+                              placeholder="Describe how you'd like this selected text to be changed..."
+                            />
+                            
+                            <div className="flex gap-2 mt-3">
+                              <button
+                                onClick={handlePartialRegenerate}
+                                disabled={!modificationRequest.trim()}
+                                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                              >
+                                🔄 Regenerate Selection
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowRegenerateButton(false);
+                                  setSelectedText('');
+                                  setSelectionStart(0);
+                                  setSelectionEnd(0);
+                                  setRegenerationComplete(false);
+                                }}
+                                className="px-4 py-2 border border-blue-300 text-blue-600 rounded text-sm hover:bg-blue-50 transition-colors duration-200"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </>
+                        )}
+                        
+                        {isPartiallyRegenerating && (
+                          <div className="text-center py-4">
+                            <div className="inline-flex items-center text-blue-600 text-sm font-medium">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-3"></div>
+                              AI is regenerating your selected text...
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
                    <div className="bg-gray-50 text-gray-500 p-6 rounded-lg border border-gray-200 overflow-y-auto flex-1 font-sans">
                      Generated script will appear here...
                      <br /><br />
                      Steps:
-                     {selectedProject?.videoType === 'other' ? (
-                       <>
-                         <br />1. Describe what the video should cover
-                         <br />2. Click "Generate Script with Gemini AI"
-                         <br />3. Optional: Add documentation if needed
-                         <br /><br />
-                         💡 For "Other" projects, the AI will search the web for current information!
-                       </>
-                     ) : (
-                       <>
-                         <br />1. Enter documentation URL
-                         <br />2. Click "Crawl" to discover all pages
-                         <br />3. Describe what the tutorial should teach
-                         <br />4. Click "Generate Script with Gemini AI"
-                         <br /><br />
-                         💡 Tip: Be specific about what you want to teach!
-                       </>
-                     )}
+                     <br />1. Enter documentation URL
+                     <br />2. Click "Crawl" to discover all pages
+                     <br />3. Describe what the tutorial should teach
+                     <br />4. Click "Generate Script with Gemini AI"
+                     <br /><br />
+                     💡 Tip: Be specific about what you want to teach!
                    </div>
                  )}
                  
@@ -1664,8 +2141,8 @@ https://docs.example.com/api-reference`}
                    </div>
                  )}
                </div>
+              </div>
             </div>
-          </div>
         )}
       </main>
 
@@ -1694,24 +2171,142 @@ https://docs.example.com/api-reference`}
                   value={clientForm.name}
                   onChange={(e) => setClientForm(prev => ({ ...prev, name: e.target.value }))}
                   className="input-field"
-                  placeholder="John Doe"
+                  placeholder="Acme Corp"
                   required
                 />
               </div>
               
-              <div className="mb-6">
+              <div className="mb-4">
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                  Description *
+                  Company Description *
                 </label>
                 <textarea
                   id="description"
                   value={clientForm.description}
                   onChange={(e) => setClientForm(prev => ({ ...prev, description: e.target.value }))}
                   className="input-field resize-none"
-                  placeholder="Describe this client or project..."
-                  rows={3}
+                  placeholder="Describe this company..."
+                  rows={2}
                   required
                 />
+              </div>
+
+              {/* Documentation Scraping Section */}
+              <div className="mb-4 border-t pt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Company Documentation (Optional)
+                </label>
+                <p className="text-xs text-gray-600 mb-4">
+                  Scrape their documentation to enable AI-powered learning for their software
+                </p>
+                
+                {/* Crawl Mode Selection */}
+                <div className="mb-4">
+                  <div className="flex space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="crawl"
+                        checked={clientCrawlMode === 'crawl'}
+                        onChange={(e) => setClientCrawlMode(e.target.value as 'crawl' | 'specific')}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">Crawl from URL</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="specific"
+                        checked={clientCrawlMode === 'specific'}
+                        onChange={(e) => setClientCrawlMode(e.target.value as 'crawl' | 'specific')}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">Specific URLs</span>
+                    </label>
+                  </div>
+                </div>
+
+                {clientCrawlMode === 'crawl' ? (
+                  <div className="mb-3">
+                    <label className="block text-xs text-gray-600 mb-2">
+                      Documentation URL
+                    </label>
+                    <div className="flex space-x-2">
+                      <input
+                        type="url"
+                        value={clientForm.documentationUrl}
+                        onChange={(e) => setClientForm(prev => ({ ...prev, documentationUrl: e.target.value }))}
+                        className="input-field flex-1 text-sm"
+                        placeholder="https://docs.company.com"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleClientCrawlDocumentation}
+                        disabled={clientCrawling || !clientForm.documentationUrl.trim()}
+                        className="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                      >
+                        {clientCrawling ? (
+                          <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
+                        ) : (
+                          <Search className="w-3 h-3 mr-1" />
+                        )}
+                        {clientCrawling ? 'Crawling...' : 'Crawl'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mb-3">
+                    <label className="block text-xs text-gray-600 mb-2">
+                      Specific URLs (one per line)
+                    </label>
+                    <div className="space-y-2">
+                      <textarea
+                        value={clientForm.specificUrls}
+                        onChange={(e) => setClientForm(prev => ({ ...prev, specificUrls: e.target.value }))}
+                        className="input-field resize-none text-sm"
+                        rows={3}
+                        placeholder={`https://docs.company.com/getting-started
+https://docs.company.com/user-guide`}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleClientCrawlDocumentation}
+                        disabled={clientCrawling || !clientForm.specificUrls.trim()}
+                        className="w-full px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      >
+                        {clientCrawling ? (
+                          <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
+                        ) : (
+                          <Search className="w-3 h-3 mr-1" />
+                        )}
+                        {clientCrawling ? 'Scraping...' : 'Scrape URLs'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Crawl Results Summary */}
+                {clientCrawlResults && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                    {clientCrawlResults.success ? (
+                      <div className="text-sm text-blue-700">
+                        ✅ Successfully {clientCrawlMode === 'crawl' ? 'crawled' : 'scraped'} {clientCrawlResults.pages.length} pages
+                        {(() => {
+                          const summary = getContentSummary(clientCrawlResults);
+                          return (
+                            <div className="mt-1 text-xs text-blue-600">
+                              📊 {summary.totalCharacters.toLocaleString()} characters • {summary.totalWords.toLocaleString()} words
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-red-600">
+                        ❌ Scraping failed: {clientCrawlResults.error}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               
               <div className="flex justify-end space-x-3">
@@ -1779,24 +2374,7 @@ https://docs.example.com/api-reference`}
                 />
               </div>
 
-              <div className="mb-6">
-                <label htmlFor="videoType" className="block text-sm font-medium text-gray-700 mb-2">
-                  Video Type *
-                </label>
-                <select
-                  id="videoType"
-                  value={projectForm.videoType}
-                  onChange={(e) => setProjectForm(prev => ({ ...prev, videoType: e.target.value as VideoType }))}
-                  className="input-field"
-                  required
-                >
-                  <option value="tutorial">{getVideoTypeLabel('tutorial')}</option>
-                  <option value="other">{getVideoTypeLabel('other')}</option>
-                </select>
-                <p className="mt-1 text-xs text-gray-500">
-                  {getVideoTypeDescription(projectForm.videoType)}
-                </p>
-              </div>
+
               
               <div className="flex justify-end space-x-3">
                 <button

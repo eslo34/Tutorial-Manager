@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
@@ -58,17 +58,27 @@ ${documentationContent.substring(0, 50000)}
 
 Please provide the complete modified script:`;
 
-    // Initialize Gemini AI and generate the modified script
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Initialize OpenAI and generate the modified script
+    const openai = new OpenAI({
+      apiKey: process.env.GPT_API_KEY || '',
+    });
 
-    console.log('Generating modified script with Gemini...');
+    console.log('Generating modified script with GPT-5...');
     console.log('Prompt length:', modificationPrompt.length);
 
-    // Generate content
-    const result = await model.generateContent(modificationPrompt);
-    const response = await result.response;
-    const modifiedScript = response.text();
+    // Generate content with GPT-5
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5",
+      messages: [
+        {
+          role: "user",
+          content: modificationPrompt
+        }
+      ],
+      max_completion_tokens: 4096,
+    });
+
+    const modifiedScript = completion.choices[0]?.message?.content || '';
 
     console.log('Script modified successfully');
 
