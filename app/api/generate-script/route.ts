@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Initialize OpenAI GPT-5
+    // Initialize OpenAI GPT-4 (more reliable than GPT-5 for script generation)
     const apiKey = process.env.GPT_API_KEY;
     console.log('🔑 API Key present:', !!apiKey);
     console.log('🔑 API Key length:', apiKey?.length || 0);
@@ -32,8 +32,6 @@ export async function POST(request: NextRequest) {
       apiKey: apiKey,
     });
 
-
-
     // Format the complete prompt
     let fullPrompt = `${prompt}
 
@@ -44,14 +42,14 @@ User request: ${userRequest}`;
 
 Documentation: ${documentationContent}`;
 
-    console.log('\n🤖 Generating script with GPT-5...');
+    console.log('\n🤖 Generating script with GPT-4...');
     console.log('📊 Total prompt length:', fullPrompt.length, 'characters');
     console.log('🎬 Video type:', videoType);
     console.log('⏳ Processing...\n');
 
-    // Generate content with GPT-5
+    // Generate content with GPT-4 (more reliable for script generation)
     const completion = await openai.chat.completions.create({
-      model: "gpt-5", // Using the flagship GPT-5 model for maximum script quality
+      model: "gpt-4", // Using GPT-4 for reliable script generation
       messages: [
         {
           role: "user",
@@ -66,7 +64,7 @@ Documentation: ${documentationContent}`;
     console.log('\n✅ Script generated successfully!');
     console.log('📊 Generated script length:', generatedScript.length, 'characters');
     console.log('📝 Script preview (first 200 chars):', generatedScript.substring(0, 200) + '...');
-    console.log('🎬 GPT-5 script generation complete!\n');
+    console.log('🎬 GPT-4 script generation complete!\n');
 
     return NextResponse.json({
       success: true,
