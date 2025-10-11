@@ -42,29 +42,47 @@ User request: ${userRequest}`;
 
 Documentation: ${documentationContent}`;
 
-    console.log('\n🤖 Generating script with GPT-4o (latest available model)...');
+    console.log('\n🤖 Generating script with GPT models...');
     console.log('📊 Total prompt length:', fullPrompt.length, 'characters');
     console.log('🎬 Video type:', videoType);
     console.log('⏳ Processing...\n');
 
-    // Generate content with GPT-4o (latest available model)
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // Using the latest available GPT-4o model
-      messages: [
-        {
-          role: "user",
-          content: fullPrompt
+    let completion;
+    let modelUsed = "unknown";
+    const modelsToTry = ["gpt-4o", "gpt-4-turbo", "gpt-4"];
+
+    for (const model of modelsToTry) {
+      try {
+        console.log(`🔄 Attempting ${model}...`);
+        completion = await openai.chat.completions.create({
+          model: model,
+          messages: [
+            {
+              role: "user",
+              content: fullPrompt
+            }
+          ],
+          max_completion_tokens: 4096,
+        });
+        modelUsed = model;
+        console.log(`✅ ${model} successful!`);
+        break;
+      } catch (modelError) {
+        console.log(`❌ ${model} failed:`, modelError?.message || modelError);
+        if (model === modelsToTry[modelsToTry.length - 1]) {
+          // If this was the last model to try, throw the error
+          throw modelError;
         }
-      ],
-      max_completion_tokens: 4096,
-    });
+        // Otherwise, continue to the next model
+      }
+    }
 
     const generatedScript = completion.choices[0]?.message?.content || '';
 
     console.log('\n✅ Script generated successfully!');
     console.log('📊 Generated script length:', generatedScript.length, 'characters');
     console.log('📝 Script preview (first 200 chars):', generatedScript.substring(0, 200) + '...');
-    console.log('🎬 GPT-4o script generation complete!\n');
+    console.log(`🎬 ${modelUsed.toUpperCase()} script generation complete!\n`);
 
     return NextResponse.json({
       success: true,
@@ -79,15 +97,31 @@ Documentation: ${documentationContent}`;
 
   } catch (error) {
     console.error('Script generation error:', error);
+    console.error('Error type:', typeof error);
+    console.error('Error name:', error?.constructor?.name);
     
     let errorMessage = 'Failed to generate script';
+    let errorDetails = {};
+    
     if (error instanceof Error) {
       errorMessage = error.message;
+      errorDetails = {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.substring(0, 500) // Truncate stack trace
+      };
     }
+    
+    // Log additional context for debugging
+    console.error('Environment:', process.env.NODE_ENV);
+    console.error('API Key present:', !!process.env.GPT_API_KEY);
+    console.error('Full error details:', errorDetails);
 
     return NextResponse.json({
       success: false,
-      error: errorMessage
+      error: errorMessage,
+      details: errorDetails,
+      environment: process.env.NODE_ENV
     }, { status: 500 });
   }
 } 
