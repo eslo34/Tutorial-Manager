@@ -42,14 +42,14 @@ User request: ${userRequest}`;
 
 Documentation: ${documentationContent}`;
 
-    console.log('\n🤖 Generating script with GPT-5...');
+    console.log('\n🤖 Generating script with GPT-4o (latest available model)...');
     console.log('📊 Total prompt length:', fullPrompt.length, 'characters');
     console.log('🎬 Video type:', videoType);
     console.log('⏳ Processing...\n');
 
-    // Generate content with GPT-5 (latest model)
+    // Generate content with GPT-4o (latest available model)
     const completion = await openai.chat.completions.create({
-      model: "gpt-5", // Using the latest GPT-5 model
+      model: "gpt-4o", // Using the latest available GPT-4o model
       messages: [
         {
           role: "user",
@@ -64,7 +64,7 @@ Documentation: ${documentationContent}`;
     console.log('\n✅ Script generated successfully!');
     console.log('📊 Generated script length:', generatedScript.length, 'characters');
     console.log('📝 Script preview (first 200 chars):', generatedScript.substring(0, 200) + '...');
-    console.log('🎬 GPT-5 script generation complete!\n');
+    console.log('🎬 GPT-4o script generation complete!\n');
 
     return NextResponse.json({
       success: true,
