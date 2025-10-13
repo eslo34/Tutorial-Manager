@@ -68,7 +68,8 @@ Documentation: ${documentationContent}`;
         console.log(`✅ ${model} successful!`);
         break;
       } catch (modelError) {
-        console.log(`❌ ${model} failed:`, modelError?.message || modelError);
+        const errorMessage = modelError instanceof Error ? modelError.message : String(modelError);
+        console.log(`❌ ${model} failed:`, errorMessage);
         if (model === modelsToTry[modelsToTry.length - 1]) {
           // If this was the last model to try, throw the error
           throw modelError;
