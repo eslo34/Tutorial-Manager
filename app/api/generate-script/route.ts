@@ -47,7 +47,7 @@ Documentation: ${documentationContent}`;
     console.log('🎬 Video type:', videoType);
     console.log('⏳ Processing...\n');
 
-    let completion;
+    let completion: any = null;
     let modelUsed = "unknown";
     const modelsToTry = ["gpt-5", "gpt-4o", "gpt-4-turbo", "gpt-4"];
 
@@ -76,6 +76,10 @@ Documentation: ${documentationContent}`;
         }
         // Otherwise, continue to the next model
       }
+    }
+
+    if (!completion) {
+      throw new Error('All AI models failed to generate script');
     }
 
     const generatedScript = completion.choices[0]?.message?.content || '';
