@@ -49,7 +49,7 @@ Documentation: ${documentationContent}`;
 
     let completion: any = null;
     let modelUsed = "unknown";
-    const modelsToTry = ["gpt-5-mini-2025-08-07", "gpt-5", "gpt-4o", "gpt-4-turbo", "gpt-4"];
+    const modelsToTry = ["gpt-5", "gpt-4o", "gpt-4-turbo", "gpt-4"];
 
     for (const model of modelsToTry) {
       try {
