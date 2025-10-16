@@ -79,17 +79,36 @@ Please provide ONLY the regenerated replacement text for the selected portion (n
     console.log('📍 Selection position:', selectionStart, 'to', selectionEnd);
     console.log('🎯 Modification request:', modificationRequest);
 
-    // Generate the regenerated portion with GPT-5
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5",
-      messages: [
-        {
-          role: "user",
-          content: partialRegenerationPrompt
+    // Generate the regenerated portion with model fallback
+    let completion: any = null;
+    const modelsToTry = ["gpt-5-mini-2025-08-07", "gpt-5", "gpt-4o", "gpt-4-turbo", "gpt-4"];
+    
+    for (const model of modelsToTry) {
+      try {
+        console.log(`🔄 Attempting partial regeneration with ${model}...`);
+        completion = await openai.chat.completions.create({
+          model: model,
+          messages: [
+            {
+              role: "user",
+              content: partialRegenerationPrompt
+            }
+          ],
+          max_completion_tokens: 2048,
+        });
+        console.log(`✅ Partial regeneration successful with ${model}`);
+        break;
+      } catch (modelError) {
+        console.log(`❌ ${model} failed:`, modelError instanceof Error ? modelError.message : 'Unknown error');
+        if (model === modelsToTry[modelsToTry.length - 1]) {
+          throw new Error(`All models failed. Last error: ${modelError instanceof Error ? modelError.message : 'Unknown error'}`);
         }
-      ],
-      max_completion_tokens: 2048,
-    });
+      }
+    }
+    
+    if (!completion) {
+      throw new Error('No model successfully generated partial regeneration');
+    }
 
     const regeneratedText = completion.choices[0]?.message?.content || '';
 
