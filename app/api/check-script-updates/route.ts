@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import OpenAI from 'openai'
 
+export const maxDuration = 60
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -90,25 +92,38 @@ Return JSON with this exact format:
 
     console.log('📏 Final prompt length:', updateCheckPrompt.length)
     
-    let completion
-    try {
-      // Note: Using GPT-4 instead of GPT-5 because GPT-5 returns empty {} responses 
-      // for older script formats, while GPT-4 handles them perfectly
-      completion = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "user",
-            content: updateCheckPrompt
-          }
-        ],
-        max_completion_tokens: 2048,
-      });
-    } catch (openaiError: any) {
-      console.error('❌ OpenAI API error:', openaiError.message || openaiError)
+    // Try models in order; json_object mode forces a parseable response
+    let completion: any = null
+    const modelsToTry = ["gpt-5-mini-2025-08-07", "gpt-5", "gpt-4o"]
+    for (const model of modelsToTry) {
+      try {
+        completion = await openai.chat.completions.create({
+          model,
+          messages: [
+            {
+              role: "user",
+              content: updateCheckPrompt
+            }
+          ],
+          max_completion_tokens: 4096,
+          response_format: { type: "json_object" },
+        });
+        if (completion.choices[0]?.message?.content?.trim()) break
+        completion = null
+      } catch (openaiError: any) {
+        console.error(`❌ ${model} failed:`, openaiError.message || openaiError)
+        if (model === modelsToTry[modelsToTry.length - 1]) {
+          return NextResponse.json({
+            success: false,
+            error: `OpenAI API error: ${openaiError.message || 'Unknown error'}`
+          }, { status: 500 })
+        }
+      }
+    }
+    if (!completion) {
       return NextResponse.json({
         success: false,
-        error: `OpenAI API error: ${openaiError.message || 'Unknown error'}`
+        error: 'All AI models failed to analyze the script'
       }, { status: 500 })
     }
 

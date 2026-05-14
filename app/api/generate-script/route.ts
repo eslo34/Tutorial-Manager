@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import OpenAI from 'openai';
+
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { prompt, userRequest, documentationContent, videoType = 'tutorial' } = await request.json();
     
     if (!prompt || !userRequest) {
@@ -20,10 +29,6 @@ export async function POST(request: NextRequest) {
 
     // Initialize OpenAI GPT-5 (latest model)
     const apiKey = process.env.GPT_API_KEY;
-    console.log('🔑 API Key present:', !!apiKey);
-    console.log('🔑 API Key length:', apiKey?.length || 0);
-    console.log('🔑 API Key starts with:', apiKey?.substring(0, 10) || 'none');
-    
     if (!apiKey) {
       throw new Error('GPT_API_KEY not found in environment variables');
     }
@@ -49,7 +54,7 @@ Documentation: ${documentationContent}`;
 
     let completion: any = null;
     let modelUsed = "unknown";
-    const modelsToTry = ["gpt-5-mini-2025-08-07", "gpt-5", "gpt-4o", "gpt-4-turbo", "gpt-4"];
+    const modelsToTry = ["gpt-5-mini-2025-08-07", "gpt-5", "gpt-4o"];
 
     for (const model of modelsToTry) {
       try {
@@ -62,8 +67,11 @@ Documentation: ${documentationContent}`;
               content: fullPrompt
             }
           ],
-          max_completion_tokens: 4096,
+          max_completion_tokens: 8192,
         });
+        if (!completion.choices[0]?.message?.content?.trim()) {
+          throw new Error(`${model} returned an empty response`);
+        }
         modelUsed = model;
         console.log(`✅ ${model} successful!`);
         break;

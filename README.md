@@ -50,7 +50,7 @@ npm run dev
 ✅ Prisma ORM with Neon PostgreSQL database  
 ✅ NextAuth.js authentication system  
 ✅ Documentation scraping (crawl all pages or specific URLs)  
-✅ AI script generation with Google Gemini  
+✅ AI script generation with OpenAI GPT models  
 ✅ **NEW**: Google Docs-style script maintenance with red overlays  
 ✅ Real-time suggestion acceptance/decline system  
 ✅ Database persistence and auto-save functionality  
@@ -61,7 +61,7 @@ npm run dev
 - **Framework**: Next.js 14 with App Router and TypeScript
 - **Database**: Neon PostgreSQL with Prisma ORM
 - **Authentication**: NextAuth.js with email/password
-- **AI Integration**: Google Gemini 1.5 Flash
+- **AI Integration**: OpenAI GPT models
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 - **Deployment**: Vercel with environment variables

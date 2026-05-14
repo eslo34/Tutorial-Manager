@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import OpenAI from 'openai';
 import { prisma } from '@/lib/prisma';
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -63,20 +65,35 @@ Please provide the complete modified script:`;
       apiKey: process.env.GPT_API_KEY || '',
     });
 
-    console.log('Generating modified script with GPT-5...');
+    console.log('Generating modified script...');
     console.log('Prompt length:', modificationPrompt.length);
 
-    // Generate content with GPT-5
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5",
-      messages: [
-        {
-          role: "user",
-          content: modificationPrompt
-        }
-      ],
-      max_completion_tokens: 4096,
-    });
+    // Generate content with model fallback
+    let completion: any = null;
+    const modelsToTry = ["gpt-5-mini-2025-08-07", "gpt-5", "gpt-4o"];
+    for (const model of modelsToTry) {
+      try {
+        completion = await openai.chat.completions.create({
+          model,
+          messages: [
+            {
+              role: "user",
+              content: modificationPrompt
+            }
+          ],
+          max_completion_tokens: 8192,
+        });
+        if (completion.choices[0]?.message?.content?.trim()) break;
+        completion = null;
+      } catch (modelError) {
+        console.log(`❌ ${model} failed:`, modelError instanceof Error ? modelError.message : 'Unknown error');
+        if (model === modelsToTry[modelsToTry.length - 1]) throw modelError;
+      }
+    }
+
+    if (!completion) {
+      throw new Error('All AI models failed to modify the script');
+    }
 
     const modifiedScript = completion.choices[0]?.message?.content || '';
 

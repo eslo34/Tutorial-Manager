@@ -533,7 +533,7 @@ export default function Dashboard() {
     
     console.log('🤖 Starting script generation...');
     setGenerating(true);
-    setGeneratedScript('🤖 Generating script with Gemini AI...\n\nPlease wait while we create your professional video script based on the crawled documentation.');
+    setGeneratedScript('🤖 Generating script with AI...\n\nPlease wait while we create your professional video script based on the crawled documentation.');
     
     try {
       // Use stored scraped content if available, otherwise use current crawl results
@@ -558,15 +558,10 @@ export default function Dashboard() {
       console.log('📝 Script generation completed:', result.success);
 
       if (result.success && result.script) {
-        setGeneratedScript(result.script);
+        setGeneratedScript('');
         setEditableScript(result.script);
         setHasUnsavedChanges(false);
-        
-        // Clear generatedScript after a short delay to allow manual editing
-        setTimeout(() => {
-          setGeneratedScript('');
-        }, 2000); // Show the result for 2 seconds, then allow editing
-        
+
         // Save the generated script to the project via API
         if (selectedProject) {
           try {
@@ -639,17 +634,12 @@ export default function Dashboard() {
       console.log('📝 Script modification completed:', data.success);
 
       if (data.success && data.script) {
-        setGeneratedScript(data.script);
+        setGeneratedScript('');
         setEditableScript(data.script);
         setHasUnsavedChanges(false);
         // Update the selected project with the new script
         setSelectedProject(prev => prev ? { ...prev, script: data.script } : null);
         console.log('✅ Script modified and updated successfully');
-        
-        // Clear generatedScript after a short delay to allow manual editing
-        setTimeout(() => {
-          setGeneratedScript('');
-        }, 2000); // Show the result for 2 seconds, then allow editing
       } else {
         setGeneratedScript(`❌ Script modification failed: ${data.error || 'Unknown error'}\n\nPlease check your request and try again.`);
       }
@@ -684,6 +674,7 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           projectId: selectedProject.id,
+          currentScript: currentScript,
           selectedText: selectedText,
           beforeContext: beforeContext,
           afterContext: afterContext,
@@ -698,10 +689,12 @@ export default function Dashboard() {
 
       if (result.success) {
         console.log('✅ Partial regeneration completed successfully');
-        
-        // Update the editable script with the new complete script
+
+        // Update the editable script with the new complete script.
+        // The API persists this splice, so there are no unsaved changes.
         setEditableScript(result.newCompleteScript);
-        setHasUnsavedChanges(true);
+        setSelectedProject(prev => prev ? { ...prev, script: result.newCompleteScript } : null);
+        setHasUnsavedChanges(false);
         setModificationRequest('');
         
         // Update selection to match the actual regenerated text
@@ -932,14 +925,44 @@ export default function Dashboard() {
     if (!activeOverlays[suggestionIndex] || !selectedProject?.script) return;
     
     const suggestion = activeOverlays[suggestionIndex];
-    
+
     // Use the actual matched text from fuzzy matching
     const textToReplace = suggestion.actualMatchedText || suggestion.original_text;
-    
-    console.log(`🔄 Replacing: "${textToReplace.substring(0, 50)}..." with: "${suggestion.suggested_replacement.substring(0, 50)}..."`);
-    
-    // Update the script by replacing the actual matched text with the suggested replacement
-    const updatedScript = scriptWithOverlays.replace(textToReplace, suggestion.suggested_replacement);
+
+    // Locate which occurrence of textToReplace this overlay refers to, using the
+    // same left-to-right walk the renderer uses. A blind .replace() would always
+    // hit the FIRST occurrence and corrupt the script when a sentence repeats.
+    const sortedOverlays = activeOverlays
+      .map((o, i) => ({ o, i }))
+      .sort((a, b) => {
+        const ai = scriptWithOverlays.indexOf(a.o.actualMatchedText || a.o.original_text);
+        const bi = scriptWithOverlays.indexOf(b.o.actualMatchedText || b.o.original_text);
+        return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
+      });
+
+    let cursor = 0;
+    let matchStart = -1;
+    for (const { o, i } of sortedOverlays) {
+      const t = o.actualMatchedText || o.original_text;
+      const idx = scriptWithOverlays.indexOf(t, cursor);
+      if (idx === -1) continue;
+      if (i === suggestionIndex) { matchStart = idx; break; }
+      cursor = idx + t.length;
+    }
+
+    // Fallback to first match if the positional walk couldn't place it
+    if (matchStart === -1) matchStart = scriptWithOverlays.indexOf(textToReplace);
+    if (matchStart === -1) {
+      console.warn('Could not locate suggestion text in script; skipping');
+      return;
+    }
+
+    console.log(`🔄 Replacing at index ${matchStart}: "${textToReplace.substring(0, 50)}..." with: "${suggestion.suggested_replacement.substring(0, 50)}..."`);
+
+    const updatedScript =
+      scriptWithOverlays.substring(0, matchStart) +
+      suggestion.suggested_replacement +
+      scriptWithOverlays.substring(matchStart + textToReplace.length);
     setScriptWithOverlays(updatedScript);
     
     // Remove this suggestion from active overlays
@@ -1913,7 +1936,7 @@ https://docs.example.com/api-reference`}
                              Generating Script...
                            </>
                          ) : (
-                           'Generate Script with Gemini AI'
+                           'Generate Script with AI'
                          )}
                        </button>
                      </div>
@@ -2116,7 +2139,7 @@ https://docs.example.com/api-reference`}
                      <br />1. Enter documentation URL
                      <br />2. Click "Crawl" to discover all pages
                      <br />3. Describe what the tutorial should teach
-                     <br />4. Click "Generate Script with Gemini AI"
+                     <br />4. Click "Generate Script with AI"
                      <br /><br />
                      💡 Tip: Be specific about what you want to teach!
                    </div>

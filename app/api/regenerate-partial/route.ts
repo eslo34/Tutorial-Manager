@@ -1,29 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import OpenAI from 'openai';
 import { prisma } from '@/lib/prisma';
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
-    const { 
-      projectId, 
-      selectedText, 
-      beforeContext, 
-      afterContext, 
-      selectionStart, 
-      selectionEnd, 
-      modificationRequest, 
-      documentationContent 
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const {
+      projectId,
+      selectedText,
+      beforeContext,
+      afterContext,
+      selectionStart,
+      selectionEnd,
+      modificationRequest,
+      documentationContent,
+      currentScript
     } = await request.json();
 
     if (!projectId || !selectedText || !modificationRequest) {
-      return NextResponse.json({ 
-        error: 'Missing required fields: projectId, selectedText, modificationRequest' 
+      return NextResponse.json({
+        error: 'Missing required fields: projectId, selectedText, modificationRequest'
       }, { status: 400 });
     }
 
-    // Get the current project to access the full script and video type
-    const project = await prisma.project.findUnique({
-      where: { id: projectId }
+    // Get the current project to verify ownership and access video type
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, user_id: session.user.id }
     });
 
     if (!project) {
@@ -81,8 +91,8 @@ Please provide ONLY the regenerated replacement text for the selected portion (n
 
     // Generate the regenerated portion with model fallback
     let completion: any = null;
-    const modelsToTry = ["gpt-5-mini-2025-08-07", "gpt-5", "gpt-4o", "gpt-4-turbo", "gpt-4"];
-    
+    const modelsToTry = ["gpt-5-mini-2025-08-07", "gpt-5", "gpt-4o"];
+
     for (const model of modelsToTry) {
       try {
         console.log(`🔄 Attempting partial regeneration with ${model}...`);
@@ -94,8 +104,11 @@ Please provide ONLY the regenerated replacement text for the selected portion (n
               content: partialRegenerationPrompt
             }
           ],
-          max_completion_tokens: 2048,
+          max_completion_tokens: 4096,
         });
+        if (!completion.choices[0]?.message?.content?.trim()) {
+          throw new Error(`${model} returned an empty response`);
+        }
         console.log(`✅ Partial regeneration successful with ${model}`);
         break;
       } catch (modelError) {
@@ -116,11 +129,14 @@ Please provide ONLY the regenerated replacement text for the selected portion (n
     console.log('📊 Regenerated text length:', regeneratedText.length, 'characters');
     console.log('📝 Regenerated preview:', regeneratedText.substring(0, 100) + '...');
 
-    // Construct the new complete script
-    const originalScript = project.script || '';
-    const newScript = originalScript.substring(0, selectionStart) + 
-                     regeneratedText + 
-                     originalScript.substring(selectionEnd);
+    // Splice the regenerated text into the script the user currently has open.
+    // Falls back to the saved script only if the client didn't send the live version.
+    const baseScript = typeof currentScript === 'string' && currentScript.length > 0
+      ? currentScript
+      : (project.script || '');
+    const newScript = baseScript.substring(0, selectionStart) +
+                     regeneratedText +
+                     baseScript.substring(selectionEnd);
 
     // Save the updated script to the database
     await prisma.project.update({

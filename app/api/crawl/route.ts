@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+
+export const maxDuration = 60;
 
 interface CrawlResult {
   url: string;
@@ -16,8 +20,13 @@ interface CrawlResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { startUrl, maxPages = 50 } = await request.json();
-    
+
     if (!startUrl) {
       return NextResponse.json({ error: 'Start URL is required' }, { status: 400 });
     }
@@ -195,72 +204,78 @@ export async function POST(request: NextRequest) {
     console.log(`Base domain: ${baseDomain}`);
     console.log(`Documentation base path: ${baseDocPath}`);
 
-    while (toVisit.length > 0 && results.length < maxPages) {
-      const currentUrl = toVisit.shift()!;
-      
-      if (visited.has(currentUrl)) continue;
-      visited.add(currentUrl);
+    const CONCURRENCY = 8;
+    const REQUEST_HEADERS = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Accept-Encoding': 'gzip, deflate',
+      'Connection': 'keep-alive',
+      'Upgrade-Insecure-Requests': '1'
+    };
 
+    const fetchPage = async (currentUrl: string): Promise<CrawlResult | null> => {
       try {
-        console.log(`Crawling: ${currentUrl}`);
-        
         const response = await fetch(currentUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1'
-          }
+          headers: REQUEST_HEADERS,
+          signal: AbortSignal.timeout(15000)
         });
 
         if (!response.ok) {
           console.log(`Failed to fetch ${currentUrl}: ${response.status} ${response.statusText}`);
-          continue;
+          return null;
         }
 
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('text/html')) {
           console.log(`Skipping non-HTML content: ${currentUrl}`);
-          continue;
+          return null;
         }
 
         const html = await response.text();
-        
+
         if (html.length < 100) {
           console.log(`Skipping page with minimal content: ${currentUrl}`);
-          continue;
+          return null;
         }
 
         const { title, content } = extractContent(html);
         const links = extractLinks(html, currentUrl);
+        console.log(`✓ Crawled: ${title} (${content.length} chars, ${links.length} links found)`);
+        return { url: currentUrl, title, content, links };
+      } catch (error) {
+        console.error(`Error crawling ${currentUrl}:`, error);
+        return null;
+      }
+    };
+
+    // Crawl in concurrent waves until we run out of links or hit maxPages
+    while (toVisit.length > 0 && results.length < maxPages) {
+      const batch: string[] = [];
+      while (batch.length < CONCURRENCY && toVisit.length > 0) {
+        const url = toVisit.shift()!;
+        if (visited.has(url)) continue;
+        visited.add(url);
+        batch.push(url);
+      }
+      if (batch.length === 0) break;
+
+      const batchResults = await Promise.all(batch.map(fetchPage));
+
+      for (const page of batchResults) {
+        if (!page) continue;
 
         // Only store pages with meaningful content
-        if (content.length > 50) {
-          results.push({
-            url: currentUrl,
-            title,
-            content,
-            links
-          });
-
-          console.log(`✓ Crawled: ${title} (${content.length} chars, ${links.length} links found)`);
+        if (page.content.length > 50 && results.length < maxPages) {
+          results.push(page);
         }
 
-        // Add new links to visit queue
-        for (const link of links) {
+        // Add newly discovered links to the queue
+        for (const link of page.links) {
           if (!visited.has(link) && !toVisit.includes(link)) {
             toVisit.push(link);
           }
         }
-
-        // Rate limiting - be respectful
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-      } catch (error) {
-        console.error(`Error crawling ${currentUrl}:`, error);
-        continue;
       }
     }
 
