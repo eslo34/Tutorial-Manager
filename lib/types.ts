@@ -12,6 +12,9 @@ export interface Client {
   scrapedWords?: number;
   scrapedAt?: Date;
   scrapedUrl?: string;
+  // Daily doc-monitoring
+  monitoringEnabled?: boolean;
+  monitoringRootUrl?: string;
 }
 
 export interface Project {
@@ -33,6 +36,8 @@ export interface Project {
   scrapedUrl?: string;
   createdAt: Date;
   updatedAt: Date;
+  // Daily doc-monitoring — count of pending suggested edits awaiting review
+  pendingEditsCount?: number;
 }
 
 export type ProjectStatus = 'planning' | 'crawling' | 'generating' | 'completed' | 'on-hold';

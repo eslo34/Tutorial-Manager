@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import OpenAI from 'openai';
 import { prisma } from '@/lib/prisma';
+import { generateWithFallback, SONNET, HAIKU } from '@/lib/anthropic';
 
 export const maxDuration = 60;
+
+const MODIFY_SYSTEM_PROMPT = `You are an expert video script editor. Your task is to modify an existing video script based on specific user requests.
+
+IMPORTANT INSTRUCTIONS:
+1. You will receive the CURRENT SCRIPT and a MODIFICATION REQUEST
+2. Make ONLY the changes requested by the user
+3. Maintain the overall structure, tone, and style of the original script
+4. Keep all parts that weren't requested to be changed EXACTLY the same
+5. If documentation content is provided, use it to ensure accuracy of any new or modified content
+6. Return the COMPLETE modified script, not just the changed parts
+
+Respond with only the complete modified script — no preamble, no explanations.`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,9 +28,9 @@ export async function POST(request: NextRequest) {
     const { projectId, currentScript, modificationRequest, documentationContent } = await request.json();
 
     if (!projectId || !currentScript || !modificationRequest) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Missing required fields: projectId, currentScript, and modificationRequest are required' 
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required fields: projectId, currentScript, and modificationRequest are required'
       }, { status: 400 });
     }
 
@@ -36,88 +48,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 });
     }
 
-    // Create a specialized prompt for script modification
-    const modificationPrompt = `You are an expert video script editor. Your task is to modify an existing video script based on specific user requests.
+    console.log('Generating modified script...');
 
-IMPORTANT INSTRUCTIONS:
-1. You will receive the CURRENT SCRIPT and a MODIFICATION REQUEST
-2. Make ONLY the changes requested by the user
-3. Maintain the overall structure, tone, and style of the original script
-4. Keep all parts that weren't requested to be changed EXACTLY the same
-5. If documentation content is provided, use it to ensure accuracy of any new or modified content
-6. Return the COMPLETE modified script, not just the changed parts
-
-CURRENT SCRIPT:
-${currentScript}
-
-MODIFICATION REQUEST:
-${modificationRequest}
-
-${documentationContent ? `
-DOCUMENTATION CONTENT (use for reference if needed):
-${documentationContent.substring(0, 50000)}
-` : ''}
-
-Please provide the complete modified script:`;
-
-    // Initialize OpenAI and generate the modified script
-    const openai = new OpenAI({
-      apiKey: process.env.GPT_API_KEY || '',
+    const content: Array<{ type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }> = [];
+    if (documentationContent) {
+      content.push({
+        type: 'text',
+        text: `DOCUMENTATION CONTENT (use for reference if needed):\n${documentationContent.substring(0, 50000)}`,
+        cache_control: { type: 'ephemeral' },
+      });
+    }
+    content.push({
+      type: 'text',
+      text: `CURRENT SCRIPT:\n${currentScript}\n\nMODIFICATION REQUEST:\n${modificationRequest}`,
     });
 
-    console.log('Generating modified script...');
-    console.log('Prompt length:', modificationPrompt.length);
-
-    // Generate content with model fallback
-    let completion: any = null;
-    const modelsToTry = ["gpt-5-mini-2025-08-07", "gpt-5", "gpt-4o"];
-    for (const model of modelsToTry) {
-      try {
-        completion = await openai.chat.completions.create({
-          model,
-          messages: [
-            {
-              role: "user",
-              content: modificationPrompt
-            }
-          ],
-          max_completion_tokens: 8192,
-        });
-        if (completion.choices[0]?.message?.content?.trim()) break;
-        completion = null;
-      } catch (modelError) {
-        console.log(`❌ ${model} failed:`, modelError instanceof Error ? modelError.message : 'Unknown error');
-        if (model === modelsToTry[modelsToTry.length - 1]) throw modelError;
-      }
-    }
-
-    if (!completion) {
-      throw new Error('All AI models failed to modify the script');
-    }
-
-    const modifiedScript = completion.choices[0]?.message?.content || '';
+    const { text: modifiedScript } = await generateWithFallback({
+      system: MODIFY_SYSTEM_PROMPT,
+      content,
+      maxTokens: 8192,
+      models: [SONNET, HAIKU],
+    });
 
     console.log('Script modified successfully');
 
     // Save the modified script to the database
     await prisma.project.update({
       where: { id: projectId },
-      data: { 
+      data: {
         script: modifiedScript,
         updated_at: new Date()
       }
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      script: modifiedScript 
+    return NextResponse.json({
+      success: true,
+      script: modifiedScript
     });
 
   } catch (error) {
     console.error('Script modification error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Internal server error' 
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Internal server error'
     }, { status: 500 });
   }
-} 
+}

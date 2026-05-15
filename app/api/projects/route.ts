@@ -13,7 +13,12 @@ export async function GET(request: NextRequest) {
 
     const projects = await prisma.project.findMany({
       where: { user_id: session.user.id },
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
+      include: {
+        _count: {
+          select: { pending_edits: { where: { status: 'pending' } } },
+        },
+      },
     })
 
     // Transform snake_case to camelCase for frontend
@@ -35,6 +40,7 @@ export async function GET(request: NextRequest) {
       scrapedUrl: project.scraped_url,
       createdAt: project.created_at,
       updatedAt: project.updated_at,
+      pendingEditsCount: project._count.pending_edits,
     }))
 
     return NextResponse.json({ projects: transformedProjects })

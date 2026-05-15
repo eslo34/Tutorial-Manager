@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
       scrapedWords: client.scraped_words,
       scrapedAt: client.scraped_at,
       scrapedUrl: client.scraped_url,
+      monitoringEnabled: client.monitoring_enabled,
+      monitoringRootUrl: client.monitoring_root_url,
     }))
 
     return NextResponse.json({ clients: transformedClients })
@@ -98,6 +100,8 @@ export async function POST(request: NextRequest) {
       scrapedWords: client.scraped_words,
       scrapedAt: client.scraped_at,
       scrapedUrl: client.scraped_url,
+      monitoringEnabled: client.monitoring_enabled,
+      monitoringRootUrl: client.monitoring_root_url,
     }
 
     return NextResponse.json({ client: transformedClient })

@@ -46,12 +46,18 @@ model Client {
   scraped_words       Int?
   scraped_at          DateTime?
   scraped_url         String?
-  
+
+  // Daily doc-monitoring
+  monitoring_enabled  Boolean   @default(false)
+  monitoring_root_url String?
+
   // Relations
   user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   projects   Project[]
   learning_sessions   LearningSession[]
-  
+  snapshots           DocPageSnapshot[]
+  check_runs          CheckRun[]
+
   @@map("clients")
 }
 
@@ -80,7 +86,8 @@ model Project {
   // Relations
   user                User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
   client              Client         @relation(fields: [client_id], references: [id], onDelete: Cascade)
-  
+  pending_edits       PendingScriptEdit[]
+
   @@map("projects")
 }
 
@@ -154,4 +161,72 @@ model LearningChatMessage {
   learning_session      LearningSession @relation(fields: [learning_session_id], references: [id], onDelete: Cascade)
   
   @@map("learning_chat_messages")
+}
+
+// Snapshot of a single watched documentation page. The daily cron re-fetches
+// each row's URL, compares the content hash, and only runs the AI pipeline
+// when the hash differs.
+model DocPageSnapshot {
+  id              String   @id @default(cuid())
+  client_id       String
+  url             String
+  title           String
+  content_text    String
+  content_hash    String
+  last_checked_at DateTime @default(now())
+  last_changed_at DateTime @default(now())
+  created_at      DateTime @default(now())
+
+  client          Client              @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  pending_edits   PendingScriptEdit[]
+
+  @@unique([client_id, url])
+  @@index([client_id])
+  @@map("doc_page_snapshots")
+}
+
+// A persisted suggested edit awaiting user accept/decline. Produced by the
+// cron pipeline; consumed by the existing ScriptWithOverlays UI.
+// Note: actual_matched_text is intentionally NOT persisted — the client-side
+// fuzzy matcher recomputes it at render time so it stays correct if the script
+// gets edited between detection and review.
+model PendingScriptEdit {
+  id                    String    @id @default(cuid())
+  project_id            String
+  source_url            String
+  source_snapshot_id    String?
+  original_text         String
+  suggested_replacement String
+  reason                String
+  severity              String    // critical | moderate | minor
+  category              String    // missing_step | wrong_ui_element | incorrect_sequence | missing_detail
+  status                String    @default("pending") // pending | accepted | declined
+  detected_at           DateTime  @default(now())
+  resolved_at           DateTime?
+
+  project         Project          @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  source_snapshot DocPageSnapshot? @relation(fields: [source_snapshot_id], references: [id], onDelete: SetNull)
+
+  @@index([project_id, status])
+  @@map("pending_script_edits")
+}
+
+// Audit log of cron runs (one per client per run). Used for detecting silent
+// failures and skipping re-entrant runs.
+model CheckRun {
+  id             String    @id @default(cuid())
+  client_id      String
+  started_at     DateTime  @default(now())
+  finished_at    DateTime?
+  status         String    // running | success | partial | error
+  pages_checked  Int       @default(0)
+  pages_changed  Int       @default(0)
+  pages_trivial  Int       @default(0)
+  edits_proposed Int       @default(0)
+  error_message  String?
+
+  client Client @relation(fields: [client_id], references: [id], onDelete: Cascade)
+
+  @@index([client_id, started_at(sort: Desc)])
+  @@map("check_runs")
 }

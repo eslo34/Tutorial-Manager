@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import OpenAI from 'openai';
+import { generateWithFallback, SONNET, HAIKU } from '@/lib/anthropic';
 
 // GET: Fetch learning tasks for a session
 export async function GET(request: NextRequest) {
@@ -89,12 +89,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate learning tasks using AI
-    const taskGenerationPrompt = `Based on the following documentation for ${learningSession.software_name}, generate a comprehensive learning task list for a ${userExperience} level user.
+    const taskGenerationSystem = `You are an expert software trainer who creates practical learning exercises. Always respond with valid JSON only — no markdown fences, no commentary.`;
 
-DOCUMENTATION:
-${learningSession.client.scraped_content ? 
-  learningSession.client.scraped_content.slice(0, 8000) : 
-  'Limited documentation available'}
+    const taskGenerationRequest = `Based on the provided documentation for ${learningSession.software_name}, generate a comprehensive learning task list for a ${userExperience} level user.
 
 EXISTING TASKS: ${learningSession.tasks.length} tasks already created
 
@@ -126,22 +123,25 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Generate tasks that will help someone become proficient with ${learningSession.software_name}.`;
 
-    const openai = new OpenAI({
-      apiKey: process.env.GPT_API_KEY,
-    });
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'system', content: 'You are an expert software trainer who creates practical learning exercises. Always respond with valid JSON.' },
-        { role: 'user', content: taskGenerationPrompt }
+    const { text: response } = await generateWithFallback({
+      system: taskGenerationSystem,
+      content: [
+        {
+          type: 'text',
+          text: `DOCUMENTATION:\n${learningSession.client.scraped_content
+            ? learningSession.client.scraped_content.slice(0, 8000)
+            : 'Limited documentation available'}`,
+          cache_control: { type: 'ephemeral' },
+        },
+        {
+          type: 'text',
+          text: taskGenerationRequest,
+        },
       ],
-      temperature: 0.7,
-      max_tokens: 2000
+      maxTokens: 2000,
+      models: [SONNET, HAIKU],
     });
 
-    const response = completion.choices[0]?.message?.content;
-    
     if (!response) {
       throw new Error('No response from AI');
     }

@@ -74,6 +74,15 @@ export default function Dashboard() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
+  // Monitoring setup modal
+  const [showMonitoringModal, setShowMonitoringModal] = useState(false);
+  const [monitoringRootUrl, setMonitoringRootUrl] = useState('');
+  const [seedingMonitoring, setSeedingMonitoring] = useState(false);
+  const [monitoringMessage, setMonitoringMessage] = useState<string | null>(null);
+
+  // Deep-link processing guard — fires once after initial data load
+  const deepLinkProcessedRef = useRef(false);
+
   // Debug effect to track crawling state changes
   useEffect(() => {
     console.log('🔍 Crawling state changed to:', crawling);
@@ -93,6 +102,38 @@ export default function Dashboard() {
       setProjects([]);
     }
   }, [session]);
+
+  // Deep-link: if the URL has ?projectId=…, navigate straight to that project
+  // once clients + projects have loaded. Used by digest email links.
+  useEffect(() => {
+    if (deepLinkProcessedRef.current) return;
+    if (clients.length === 0 || projects.length === 0) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const targetProjectId = params.get('projectId');
+    if (!targetProjectId) {
+      deepLinkProcessedRef.current = true;
+      return;
+    }
+
+    const project = projects.find(p => p.id === targetProjectId);
+    if (!project) {
+      deepLinkProcessedRef.current = true;
+      return;
+    }
+    const client = clients.find(c => c.id === project.clientId);
+    if (!client) {
+      deepLinkProcessedRef.current = true;
+      return;
+    }
+
+    setSelectedClient(client);
+    setSelectedProject(project);
+    setCurrentView('project-detail');
+    deepLinkProcessedRef.current = true;
+    // Clean the URL so refresh doesn't re-navigate
+    window.history.replaceState({}, '', window.location.pathname);
+  }, [clients, projects]);
 
   const loadUserData = async () => {
     try {
@@ -287,6 +328,43 @@ export default function Dashboard() {
     setCurrentView('projects');
   };
 
+  const handleSetupMonitoring = async () => {
+    if (!selectedClient || !monitoringRootUrl.trim()) return;
+    setSeedingMonitoring(true);
+    setMonitoringMessage(null);
+    try {
+      const response = await fetch(`/api/clients/${selectedClient.id}/setup-monitoring`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rootUrl: monitoringRootUrl.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setMonitoringMessage(`❌ ${data.error || 'Failed to set up monitoring'}`);
+        return;
+      }
+      // Optimistically update the selected client
+      const updated: Client = {
+        ...selectedClient,
+        monitoringEnabled: true,
+        monitoringRootUrl: monitoringRootUrl.trim(),
+      };
+      setSelectedClient(updated);
+      setClients(prev => prev.map(c => (c.id === updated.id ? updated : c)));
+      setMonitoringMessage(`✅ Seeded ${data.pagesSeeded} pages. Daily monitoring is now active.`);
+      setTimeout(() => {
+        setShowMonitoringModal(false);
+        setMonitoringMessage(null);
+        setMonitoringRootUrl('');
+      }, 2500);
+    } catch (error) {
+      console.error('Setup monitoring error:', error);
+      setMonitoringMessage(`❌ ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setSeedingMonitoring(false);
+    }
+  };
+
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
     setCurrentView('project-detail');
@@ -372,6 +450,27 @@ export default function Dashboard() {
 
     loadProjectData();
   }, [selectedProject?.id, currentView]);
+
+  // When entering Script Maintenance, auto-load any persisted suggested edits
+  // produced by the daily cron so they appear in the existing overlay UI
+  // without the user having to manually re-run "Check Updates".
+  useEffect(() => {
+    if (currentView !== 'script-maintenance' || !selectedProject?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/pending-edits?projectId=${selectedProject.id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !data.overlays || data.overlays.length === 0) return;
+        initializeScriptWithOverlays(data.overlays);
+      } catch (e) {
+        console.error('Failed to load persisted overlays:', e);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentView, selectedProject?.id]);
 
   const handleBackToClients = () => {
     setCurrentView('clients');
@@ -905,7 +1004,7 @@ export default function Dashboard() {
       // Initialize the script with overlays if updates were found
       if (updateData.success && updateData.analysis.outdated_sections?.length > 0) {
         console.log('✅ Initializing overlays with', updateData.analysis.outdated_sections.length, 'sections');
-        setTimeout(() => initializeScriptWithOverlays(), 100);
+        setTimeout(() => initializeScriptWithOverlays(updateData.analysis.outdated_sections), 100);
       } else {
         console.log('❌ Not initializing overlays. Success:', updateData.success, 'Sections:', updateData.analysis?.outdated_sections?.length);
       }
@@ -971,15 +1070,36 @@ export default function Dashboard() {
     
     // Update the project script in the database and main editor immediately
     updateProjectScript(updatedScript);
-    
+
+    // If this overlay came from the persisted cron flow (has a DB id), also
+    // flip its row to 'accepted' so it stops appearing on next load.
+    if (suggestion.id) {
+      fetch('/api/pending-edits', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ editId: suggestion.id, action: 'accept' }),
+      }).catch(e => console.error('Failed to mark accepted:', e));
+    }
+
     console.log(`✅ Accepted suggestion ${suggestionIndex + 1}`);
   };
 
   const handleDeclineSuggestion = (suggestionIndex: number) => {
+    const suggestion = activeOverlays[suggestionIndex];
     // Just remove the overlay without changing the script
     const updatedOverlays = activeOverlays.filter((_, index) => index !== suggestionIndex);
     setActiveOverlays(updatedOverlays);
-    
+
+    // If this overlay came from the persisted cron flow, mark it declined in
+    // the DB so it doesn't reappear.
+    if (suggestion?.id) {
+      fetch('/api/pending-edits', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ editId: suggestion.id, action: 'decline' }),
+      }).catch(e => console.error('Failed to mark declined:', e));
+    }
+
     console.log(`❌ Declined suggestion ${suggestionIndex + 1}`);
   };
 
@@ -1026,11 +1146,11 @@ export default function Dashboard() {
       .toLowerCase();
   };
 
-  const initializeScriptWithOverlays = () => {
-    if (!selectedProject?.script || !updateResults?.analysis?.outdated_sections) return;
-    
+  const initializeScriptWithOverlays = (rawOverlays: any[]) => {
+    if (!selectedProject?.script || !rawOverlays || rawOverlays.length === 0) return;
+
     console.log('🔍 Preprocessing overlays with enhanced fuzzy matching...');
-    const preprocessedOverlays = updateResults.analysis.outdated_sections.map((section: any, index: number) => {
+    const preprocessedOverlays = rawOverlays.map((section: any, index: number) => {
       const script = selectedProject.script!; // We already checked it exists above
       let textIndex = script.indexOf(section.original_text);
       let actualMatchedText = section.original_text;
@@ -1333,20 +1453,40 @@ export default function Dashboard() {
                 </button>
               )}
               {currentView === 'projects' && (
-                <button 
-                  onClick={() => setShowProjectModal(true)}
-                  className="bg-white text-primary-600 px-6 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Project
-                </button>
+                <>
+                  {selectedClient && (
+                    <button
+                      onClick={() => {
+                        setMonitoringRootUrl(selectedClient.monitoringRootUrl || selectedClient.scrapedUrl || '');
+                        setMonitoringMessage(null);
+                        setShowMonitoringModal(true);
+                      }}
+                      className="bg-white text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center text-sm"
+                      title={selectedClient.monitoringEnabled ? 'Re-seed daily monitoring' : 'Set up daily monitoring'}
+                    >
+                      {selectedClient.monitoringEnabled ? '🔁 Monitoring active' : '🛰️ Set up monitoring'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowProjectModal(true)}
+                    className="bg-white text-primary-600 px-6 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Project
+                  </button>
+                </>
               )}
               {currentView === 'project-detail' && selectedProject?.script && (
-                <button 
+                <button
                   onClick={handleOpenScriptMaintenance}
                   className="bg-white text-primary-600 px-6 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center"
                 >
                   🔍 Check Updates
+                  {selectedProject?.pendingEditsCount && selectedProject.pendingEditsCount > 0 ? (
+                    <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-orange-500 rounded-full">
+                      {selectedProject.pendingEditsCount}
+                    </span>
+                  ) : null}
                 </button>
               )}
               
@@ -1514,6 +1654,11 @@ export default function Dashboard() {
                           <span className="text-xs text-primary-600 font-medium">
                             📚 Tutorial
                           </span>
+                          {project.pendingEditsCount && project.pendingEditsCount > 0 ? (
+                            <span className="ml-2 text-xs bg-orange-100 text-orange-800 font-medium px-2 py-0.5 rounded">
+                              ⚠️ {project.pendingEditsCount} pending
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">{project.title}</h3>
@@ -2348,6 +2493,80 @@ https://docs.company.com/user-guide`}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Monitoring Setup Modal */}
+      {showMonitoringModal && selectedClient && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {selectedClient.monitoringEnabled ? 'Re-seed monitoring' : 'Set up daily monitoring'}
+              </h2>
+              <button
+                onClick={() => {
+                  if (seedingMonitoring) return;
+                  setShowMonitoringModal(false);
+                  setMonitoringMessage(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <p className="text-sm text-gray-600 mb-4">
+                Each day at 06:00 UTC the system re-fetches every page under this URL,
+                detects meaningful changes, and queues suggested script edits for the affected videos.
+              </p>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Docs root URL
+              </label>
+              <input
+                type="url"
+                value={monitoringRootUrl}
+                onChange={(e) => setMonitoringRootUrl(e.target.value)}
+                placeholder="https://docs.example.com"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                disabled={seedingMonitoring}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Will crawl up to 50 pages and store one snapshot per page. Re-running just refreshes.
+              </p>
+
+              {monitoringMessage && (
+                <div className="mt-4 text-sm p-3 rounded bg-gray-50 border border-gray-200">
+                  {monitoringMessage}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (seedingMonitoring) return;
+                    setShowMonitoringModal(false);
+                    setMonitoringMessage(null);
+                  }}
+                  disabled={seedingMonitoring}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSetupMonitoring}
+                  disabled={seedingMonitoring || !monitoringRootUrl.trim()}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 flex items-center"
+                >
+                  {seedingMonitoring && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>}
+                  {seedingMonitoring ? 'Crawling...' : (selectedClient.monitoringEnabled ? 'Re-seed' : 'Set up monitoring')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

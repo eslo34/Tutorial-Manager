@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import OpenAI from 'openai';
+import { generateWithFallback, SONNET, HAIKU } from '@/lib/anthropic';
+import type Anthropic from '@anthropic-ai/sdk';
 
 // GET: Fetch chat messages for a learning session
 export async function GET(request: NextRequest) {
@@ -97,48 +98,61 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Prepare context for AI
-    const recentMessages = learningSession.chat_messages
+    // Prepare context for AI. Anthropic only accepts user/assistant roles and
+    // the conversation must start with a user turn, so drop anything else.
+    const recentMessages: Anthropic.MessageParam[] = learningSession.chat_messages
+      .slice()
       .reverse()
+      .filter(msg => msg.role === 'user' || msg.role === 'assistant')
       .map(msg => ({
-        role: msg.role as 'user' | 'assistant' | 'system',
+        role: msg.role as 'user' | 'assistant',
         content: msg.content
       }));
+    while (recentMessages.length > 0 && recentMessages[0].role === 'assistant') {
+      recentMessages.shift();
+    }
 
     const completedTasks = learningSession.tasks.filter(task => task.is_completed);
     const pendingTasks = learningSession.tasks.filter(task => !task.is_completed);
 
-    const systemPrompt = `You are helping a tutorial scriptwriter who needs to learn ${learningSession.software_name} so they can create high-quality tutorial videos about it. They need to understand the software deeply enough to explain it clearly to others and create comprehensive, accurate video scripts.
+    const systemInstructions = `You are helping a tutorial scriptwriter who needs to learn ${learningSession.software_name} so they can create high-quality tutorial videos about it. They need to understand the software deeply enough to explain it clearly to others and create comprehensive, accurate video scripts.
 
 Your goal is to help them understand not just how to use the software, but why certain features exist, what problems they solve, and how they fit into typical workflows. This will help them create better, more insightful tutorials.
 
 Important: Take things slow and step-by-step. Assume they're new to this software and need detailed explanations. Don't skip steps or assume prior knowledge. Break down complex processes into smaller, manageable pieces. Explain what they should expect to see at each step and where exactly they should look or click.
 
-Available documentation: ${learningSession.client.scraped_content ? 
-  `Here's the relevant documentation content: ${learningSession.client.scraped_content.slice(0, 10000)}` 
-  : 'No documentation has been scraped yet for this client.'}
+Respond in plain text only, like you're having a casual conversation with a colleague. No markdown formatting, no special symbols, no structured task formats. Focus on helping them understand the software from a tutorial creator's perspective, but go slowly and be very detailed.`;
 
-Respond in plain text only, like you're having a casual conversation with a colleague. No markdown formatting, no special symbols, no structured task formats. Focus on helping them understand the software from a tutorial creator's perspective, but go slowly and be very detailed.
+    // The documentation is the largest, most stable part of the prompt, so it
+    // sits in its own cached block — repeat questions in the same session reuse it.
+    const systemBlocks: Anthropic.TextBlockParam[] = [
+      { type: 'text', text: systemInstructions },
+      {
+        type: 'text',
+        text: learningSession.client.scraped_content
+          ? `Available documentation:\n${learningSession.client.scraped_content.slice(0, 10000)}`
+          : 'No documentation has been scraped yet for this client.',
+        cache_control: { type: 'ephemeral' },
+      },
+    ];
 
-Their question: "${message}"`;
-
-    // Get AI response
-    const openai = new OpenAI({
-      apiKey: process.env.GPT_API_KEY,
-    });
-    
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...recentMessages,
-        { role: 'user', content: message }
-      ],
-      temperature: 0.7,
-      max_tokens: 1000
-    });
-
-    const aiResponse = completion.choices[0]?.message?.content || 'I apologize, but I cannot process your request right now.';
+    // Conversational chat — Haiku leads for snappy responses, Sonnet as fallback.
+    let aiResponse: string;
+    try {
+      const result = await generateWithFallback({
+        system: systemBlocks,
+        messages: [
+          ...recentMessages,
+          { role: 'user', content: message },
+        ],
+        maxTokens: 1000,
+        models: [HAIKU, SONNET],
+      });
+      aiResponse = result.text;
+    } catch (aiError) {
+      console.error('AI response error:', aiError);
+      aiResponse = 'I apologize, but I cannot process your request right now.';
+    }
 
     // Save AI response
     const assistantMessage = await prisma.learningChatMessage.create({

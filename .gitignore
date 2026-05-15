@@ -98,3 +98,9 @@ Thumbs.db
 # Prisma
 prisma/migrations/
 lib/generated/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
+
+# Claude Code project-local state
+.claude/
