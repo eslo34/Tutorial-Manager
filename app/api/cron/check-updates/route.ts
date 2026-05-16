@@ -59,12 +59,17 @@ async function handle(request: NextRequest) {
       );
     }
 
+    // Propagate `?force=1` to scan-client so the test harness can bypass the
+    // Haiku gate end-to-end.
+    const forceSuffix =
+      new URL(request.url).searchParams.get('force') === '1' ? '&force=1' : '';
+
     // Two clients max in v1 — awaiting is fine inside the 60s budget. Each
     // scan-client has its own 60s budget; this entry function returns once all
     // scans return their fan-out summary.
     const results = await Promise.allSettled(
       clients.map((c) =>
-        fetch(`${baseUrl}/api/cron/scan-client?clientId=${encodeURIComponent(c.id)}`, {
+        fetch(`${baseUrl}/api/cron/scan-client?clientId=${encodeURIComponent(c.id)}${forceSuffix}`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${cronSecret}` },
         }).then((r) => r.json())

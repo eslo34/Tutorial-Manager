@@ -120,9 +120,18 @@ export async function POST(request: NextRequest) {
     }
 
     // ----- Step 3: Haiku gate — drop trivial prose changes -----
+    // `?force=1` bypasses the gate. Used by the test harness so a simulated
+    // change is guaranteed to exercise the Sonnet + email path. Auth is still
+    // required (bearer token at top of handler), so this isn't a back door.
+    const force = new URL(request.url).searchParams.get('force') === '1';
     const nonTrivial: typeof changed = [];
     let pagesTrivial = 0;
     for (const c of changed) {
+      if (force) {
+        console.log(`⚙️ force=1 — bypassing Haiku gate for ${c.snapshot.url}`);
+        nonTrivial.push(c);
+        continue;
+      }
       const verdict = await gateChangeForRelevance({
         pageUrl: c.snapshot.url,
         pageTitle: c.page.title,

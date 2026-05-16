@@ -57,13 +57,14 @@ async function findClientByNameOrId(key) {
   return byName[0];
 }
 
-async function triggerCron() {
+async function triggerCron(extraQuery = '') {
   const baseUrl = getUrlOverride() || process.env.NEXT_PUBLIC_BASE_URL;
   const secret = process.env.CRON_SECRET;
   if (!baseUrl) throw new Error('Set NEXT_PUBLIC_BASE_URL in .env.local or pass --url <URL>');
   if (!secret) throw new Error('CRON_SECRET not set in .env.local');
 
-  const url = `${baseUrl.replace(/\/+$/, '')}/api/cron/check-updates`;
+  const qs = extraQuery ? `?${extraQuery}` : '';
+  const url = `${baseUrl.replace(/\/+$/, '')}/api/cron/check-updates${qs}`;
   console.log(`→ POST ${url}`);
   const res = await fetch(url, {
     method: 'POST',
@@ -208,8 +209,8 @@ async function simulate(clientKey) {
   console.log(`  Snapshot: ${snapshot.title}`);
   console.log(`            → prepended a "legacy workflow" paragraph to stored content`);
   console.log(`  Originals saved to ${STATE_FILE}\n`);
-  console.log(`Triggering cron…\n`);
-  await triggerCron();
+  console.log(`Triggering cron with ?force=1 (bypasses Haiku gate so Sonnet runs)…\n`);
+  await triggerCron('force=1');
   console.log('\n──────────────────────────────────────────');
   console.log('Watch your inbox for the digest email.');
   console.log('When done reviewing in the app, run:');
