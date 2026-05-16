@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ skipped: 'No script on project' });
     }
 
-    const sections = await auditScriptAgainstPage({
+    const { sections } = await auditScriptAgainstPage({
       pageUrl: snapshot.url,
       pageTitle: snapshot.title,
       pageContent: snapshot.content_text,

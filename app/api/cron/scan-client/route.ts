@@ -151,7 +151,19 @@ export async function POST(request: NextRequest) {
       source_url: string;
       source_snapshot_id: string;
     }
+    interface DebugAudit {
+      projectId: string;
+      projectTitle: string;
+      snapshotUrl: string;
+      snapshotTitle: string;
+      sectionsCount: number;
+      bySeverity: Record<string, number>;
+      sections: OutdatedSection[];
+      parseError: string | null;
+      rawTextPreview: string;
+    }
     const proposedEdits: ProposedEdit[] = [];
+    const debugAudits: DebugAudit[] = [];
     const overflowQueue: Array<{ projectId: string; snapshotId: string }> = [];
     const deadline = Date.now() + TIME_BUDGET_MS;
 
@@ -170,12 +182,32 @@ export async function POST(request: NextRequest) {
           overflowQueue.push({ projectId: project.id, snapshotId: c.snapshot.id });
           continue;
         }
-        const sections = await auditScriptAgainstPage({
+        const { sections, rawText, parseError } = await auditScriptAgainstPage({
           pageUrl: c.snapshot.url,
           pageTitle: c.page.title,
           pageContent: c.page.content,
           script: project.script,
         });
+
+        // When ?force=1, capture full audit details so the test harness can
+        // see exactly what Sonnet returned (including minor severities that
+        // would normally be filtered out).
+        if (force) {
+          const bySeverity: Record<string, number> = {};
+          for (const s of sections) bySeverity[s.severity] = (bySeverity[s.severity] || 0) + 1;
+          debugAudits.push({
+            projectId: project.id,
+            projectTitle: project.title,
+            snapshotUrl: c.snapshot.url,
+            snapshotTitle: c.page.title,
+            sectionsCount: sections.length,
+            bySeverity,
+            sections,
+            parseError: parseError || null,
+            rawTextPreview: rawText.slice(0, 1500),
+          });
+        }
+
         // Filter out 'minor' severity — too noisy for an automated alert.
         const significant = sections.filter(
           (s) => s.severity === 'critical' || s.severity === 'moderate'
@@ -288,6 +320,7 @@ export async function POST(request: NextRequest) {
       pagesTrivial,
       editsProposed: proposedEdits.length,
       overflowQueued: overflowQueue.length,
+      ...(force ? { debug: { audits: debugAudits } } : {}),
     });
   } catch (error) {
     console.error('scan-client failure:', error);

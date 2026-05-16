@@ -66,6 +66,12 @@ export interface OutdatedSection {
   category: string; // missing_step | wrong_ui_element | incorrect_sequence | missing_detail
 }
 
+export interface AuditResult {
+  sections: OutdatedSection[];
+  rawText: string;
+  parseError?: string;
+}
+
 const AUDIT_SYSTEM = `You are an expert video script auditor. You will be given:
 1. A single documentation page that recently changed.
 2. A video tutorial script.
@@ -101,7 +107,8 @@ export async function auditScriptAgainstPage(input: {
   pageTitle: string;
   pageContent: string;
   script: string;
-}): Promise<OutdatedSection[]> {
+}): Promise<AuditResult> {
+  let rawText = '';
   try {
     const { text } = await generateWithFallback({
       system: AUDIT_SYSTEM,
@@ -124,11 +131,19 @@ export async function auditScriptAgainstPage(input: {
       // each script gets its own 60s budget via overflow if needed.
       effort: 'high',
     });
+    rawText = text;
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const parsed = JSON.parse(cleaned) as { outdated_sections?: OutdatedSection[] };
-    return parsed.outdated_sections ?? [];
+    try {
+      const parsed = JSON.parse(cleaned) as { outdated_sections?: OutdatedSection[] };
+      return { sections: parsed.outdated_sections ?? [], rawText };
+    } catch (parseError) {
+      const msg = parseError instanceof Error ? parseError.message : String(parseError);
+      console.error('Failed to parse Sonnet audit JSON:', msg);
+      return { sections: [], rawText, parseError: msg };
+    }
   } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
     console.error('Sonnet audit failed:', error);
-    return [];
+    return { sections: [], rawText, parseError: msg };
   }
 }

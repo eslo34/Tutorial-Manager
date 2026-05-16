@@ -4,9 +4,10 @@
  *
  *   node scripts/test-monitoring.js status                # what's currently in the DB
  *   node scripts/test-monitoring.js trigger               # fire the cron right now (read-only — won't detect changes unless docs really changed)
- *   node scripts/test-monitoring.js simulate "EandoX"     # inject a fake "legacy feature" reference into one snapshot + one script
- *                                                          # → cron will detect, run Sonnet audit, persist edits, send email
- *   node scripts/test-monitoring.js clear "EandoX"        # restore tampered snapshot + project script; delete test-produced edits & check runs
+ *   node scripts/test-monitoring.js simulate "EandoX" [--project "name"]
+ *                                                          # force-audit a project's current script against its best-matching live doc page.
+ *                                                          # No injection — uses script + docs exactly as they are in the DB. Bypasses Haiku gate.
+ *   node scripts/test-monitoring.js clear "EandoX"        # restore tampered snapshot (+ any tampered project scripts from older runs); delete test-produced edits & check runs
  *
  * By default `trigger` hits NEXT_PUBLIC_BASE_URL from .env.local. Override:
  *   node scripts/test-monitoring.js trigger --url https://tutorial-manager.vercel.app
@@ -120,50 +121,79 @@ async function status() {
   }
 }
 
-// A fake UI element name we'll inject into both a doc snapshot and a script.
-// The cron's Haiku gate sees a "removed UI element" in the diff → matters →
-// Sonnet finds the matching reference in the script → outdated → edit emitted.
-const TEST_LEGACY_FEATURE = 'TEST_LEGACY_QUICK_LAUNCHER_BUTTON';
-const FAKE_LEGACY_PARAGRAPH = `[Legacy workflow note] To begin a new project, locate the ${TEST_LEGACY_FEATURE} on the main toolbar and click it. This button initialized the workspace and was the standard workflow before the recent UI overhaul.`;
-const FAKE_SCRIPT_INSERT = `First, locate the ${TEST_LEGACY_FEATURE} on the toolbar and click it to start.`;
+// Pair the project with the snapshot whose title shares the most words —
+// Sonnet's audit bails out when the script's topic doesn't overlap with the
+// doc page, so matching topics is essential for the test to produce edits.
+function tokenizeTitle(title) {
+  return new Set(
+    title
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((w) => w.length > 3)
+  );
+}
 
-function injectIntoScript(script) {
-  // Insert after the first sentence boundary so it doesn't look tacked on.
-  const idx = script.indexOf('. ');
-  if (idx === -1) return script.trim() + '\n\n' + FAKE_SCRIPT_INSERT;
-  return script.slice(0, idx + 2) + FAKE_SCRIPT_INSERT + ' ' + script.slice(idx + 2);
+function findBestSnapshot(snapshots, project) {
+  const projWords = tokenizeTitle(project.title);
+  let best = null;
+  let bestScore = -1;
+  for (const s of snapshots) {
+    const sWords = tokenizeTitle(s.title);
+    let score = 0;
+    for (const w of projWords) if (sWords.has(w)) score += 1;
+    // Tiny tie-breaker preferring longer content (richer doc).
+    score += (s.content_text?.length || 0) / 1_000_000;
+    if (score > bestScore) {
+      bestScore = score;
+      best = s;
+    }
+  }
+  return best;
 }
 
 async function simulate(clientKey) {
   const existing = loadState();
   if (existing.tamperedSnapshots.length > 0 || existing.tamperedProjects.length > 0) {
-    throw new Error('Test state already exists. Run `clear` first.');
+    throw new Error('Test state already exists. Run `clear` first (or manually delete scripts/.test-monitoring-state.json if you want to discard the backup without restoring).');
   }
 
   const client = await findClientByNameOrId(clientKey);
 
-  // Pick the project with the longest script — gives Sonnet more to chew on.
+  // Pick the project. --project "exact title" if supplied; otherwise the
+  // most-recently-updated project with a script (probably the one you just edited).
+  const projectArgIdx = process.argv.indexOf('--project');
+  const projectFilter = projectArgIdx !== -1 ? process.argv[projectArgIdx + 1] : null;
+
   const projects = await prisma.project.findMany({
-    where: { client_id: client.id, script: { not: null } },
-    select: { id: true, title: true, script: true },
+    where: {
+      client_id: client.id,
+      script: { not: null },
+      ...(projectFilter ? { title: projectFilter } : {}),
+    },
+    orderBy: { updated_at: 'desc' },
   });
   if (projects.length === 0) {
-    throw new Error(`No projects with scripts on ${client.name}. Generate at least one first.`);
+    throw new Error(
+      projectFilter
+        ? `No project matching "${projectFilter}" on ${client.name}.`
+        : `No projects with scripts on ${client.name}. Generate at least one first.`
+    );
   }
-  const project = projects.reduce((a, b) =>
-    (b.script || '').length > (a.script || '').length ? b : a
-  );
+  const project = projects[0];
 
-  // Pick the meatiest snapshot.
+  // Match the project to its most topically-relevant doc page.
   const snapshots = await prisma.docPageSnapshot.findMany({ where: { client_id: client.id } });
   if (snapshots.length === 0) {
     throw new Error(`No snapshots for ${client.name} — run "Set up monitoring" first.`);
   }
-  const snapshot = snapshots.reduce((a, b) =>
-    (b.content_text?.length || 0) > (a.content_text?.length || 0) ? b : a
-  );
+  const snapshot = findBestSnapshot(snapshots, project);
+  if (!snapshot) {
+    throw new Error('Could not pick a snapshot for the test.');
+  }
 
-  // Save originals before tampering anything.
+  // Save the original hash so clear() can restore it. We don't modify the
+  // script or the snapshot's content — the audit will run against whatever
+  // you already have in the DB.
   const state = {
     lastTestStartedAt: new Date().toISOString(),
     tamperedSnapshots: [{
@@ -173,49 +203,28 @@ async function simulate(clientKey) {
       originalHash: snapshot.content_hash,
       originalContentText: snapshot.content_text,
     }],
-    tamperedProjects: [{
-      id: project.id,
-      title: project.title,
-      originalScript: project.script,
-    }],
+    tamperedProjects: [],
   };
   saveState(state);
 
-  // 1) Inject a reference to the fake legacy feature into the project script.
-  //    Sonnet should find this when auditing against the (real) fresh doc page
-  //    — the real page has no such feature, so the reference is "outdated".
-  const mutatedScript = injectIntoScript(project.script);
-  await prisma.project.update({
-    where: { id: project.id },
-    data: { script: mutatedScript },
-  });
-
-  // 2) Tamper the snapshot: prepend a "legacy note" paragraph describing that
-  //    same fake feature, and use a junk hash so the cron's pre-filter sees
-  //    a mismatch. diffParagraphs(mutated_stored, real_fresh) will surface the
-  //    legacy paragraph as "removed" → Haiku flags as workflow change.
-  const mutatedContent = FAKE_LEGACY_PARAGRAPH + '\n\n' + snapshot.content_text;
+  // Tamper ONLY the snapshot hash. The cron sees the hash mismatch → treats
+  // this page as "changed" → with ?force=1 it routes straight to Sonnet,
+  // which audits the unchanged real script against the unchanged real docs.
   await prisma.docPageSnapshot.update({
     where: { id: snapshot.id },
-    data: {
-      content_text: mutatedContent,
-      content_hash: 'TEST_FORCED_MISMATCH',
-    },
+    data: { content_hash: 'TEST_FORCED_MISMATCH' },
   });
 
-  console.log(`Tampered for full-pipeline test:`);
+  console.log(`Auditing your current script against the live doc page:`);
   console.log(`  Project:  ${project.title}`);
-  console.log(`            → injected reference to '${TEST_LEGACY_FEATURE}' in the script`);
   console.log(`  Snapshot: ${snapshot.title}`);
-  console.log(`            → prepended a "legacy workflow" paragraph to stored content`);
-  console.log(`  Originals saved to ${STATE_FILE}\n`);
+  console.log(`    (only the snapshot hash was tampered — script and doc content are untouched)\n`);
   console.log(`Triggering cron with ?force=1 (bypasses Haiku gate so Sonnet runs)…\n`);
   await triggerCron('force=1');
   console.log('\n──────────────────────────────────────────');
   console.log('Watch your inbox for the digest email.');
-  console.log('When done reviewing in the app, run:');
+  console.log('When done, run:');
   console.log(`   node scripts/test-monitoring.js clear "${client.name}"`);
-  console.log('to restore the script + snapshot and wipe test-produced edits.');
 }
 
 async function clearForClient(clientKey) {
