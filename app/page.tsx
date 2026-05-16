@@ -83,6 +83,11 @@ export default function Dashboard() {
   // Deep-link processing guard — fires once after initial data load
   const deepLinkProcessedRef = useRef(false);
 
+  // Overlays in the 'accepted' (awaiting-recording) state for the currently
+  // selected project. Loaded in project-detail view so the green highlights
+  // appear behind the script editor itself (not just in Script Maintenance).
+  const [acceptedOverlays, setAcceptedOverlays] = useState<any[]>([]);
+
   // Debug effect to track crawling state changes
   useEffect(() => {
     console.log('🔍 Crawling state changed to:', crawling);
@@ -472,6 +477,28 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentView, selectedProject?.id]);
 
+  // In project-detail, load only the accepted (awaiting-recording) overlays
+  // so the green highlights render behind the script editor textarea.
+  useEffect(() => {
+    if (currentView !== 'project-detail' || !selectedProject?.id) {
+      setAcceptedOverlays([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/pending-edits?projectId=${selectedProject.id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !data.overlays) return;
+        setAcceptedOverlays(data.overlays.filter((o: any) => o.status === 'accepted'));
+      } catch (e) {
+        console.error('Failed to load accepted overlays for project-detail:', e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [currentView, selectedProject?.id]);
+
   const handleBackToClients = () => {
     setCurrentView('clients');
     setSelectedClient(null);
@@ -835,36 +862,66 @@ export default function Dashboard() {
 
   const renderTextWithHighlight = (text: string) => {
     if (!text) return '';
-    
+
     // Escape HTML to prevent XSS
-    const escapeHtml = (unsafe: string) => {
-      return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;")
-        .replace(/\n/g, "<br>");
-    };
-    
-    // If no selection or not in regenerating states, return plain text
-    if (!selectedText || selectionStart === selectionEnd || (!isPartiallyRegenerating && !regenerationComplete)) {
-      return escapeHtml(text);
+    const escapeHtml = (unsafe: string) => unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;")
+      .replace(/\n/g, "<br>");
+
+    // Collect every range we want to highlight. Two kinds:
+    //   - green spans for each 'accepted' (awaiting-recording) overlay
+    //   - the active partial-regen single range (if regenerating)
+    type Range = { start: number; end: number; style: string };
+    const ranges: Range[] = [];
+
+    for (const overlay of acceptedOverlays) {
+      const matchText = overlay.suggested_replacement;
+      if (!matchText) continue;
+      const idx = text.indexOf(matchText);
+      if (idx === -1) continue;
+      ranges.push({
+        start: idx,
+        end: idx + matchText.length,
+        // Pale green bg + green underline; text color stays transparent
+        // (inherited) so the textarea on top renders the real characters.
+        style: 'background-color: #bbf7d0; border-bottom: 2px solid #4ade80; padding: 0; border-radius: 3px;',
+      });
     }
-    
-    const before = escapeHtml(text.substring(0, selectionStart));
-    const selected = escapeHtml(text.substring(selectionStart, selectionEnd));
-    const after = escapeHtml(text.substring(selectionEnd));
-    
-    if (isPartiallyRegenerating) {
-      // Blue highlight with pulsing animation during regeneration
-      return `${before}<span style="background-color: #3b82f6; color: #3b82f6; padding: 0; border-radius: 3px; animation: pulse 1.5s infinite;">${selected}</span>${after}`;
-    } else if (regenerationComplete) {
-      // Green highlight when complete
-      return `${before}<span style="background-color: #10b981; color: #10b981; padding: 0; border-radius: 3px;">${selected}</span>${after}`;
+
+    if (selectedText && selectionStart !== selectionEnd && (isPartiallyRegenerating || regenerationComplete)) {
+      ranges.push({
+        start: selectionStart,
+        end: selectionEnd,
+        style: isPartiallyRegenerating
+          ? 'background-color: #3b82f6; color: #3b82f6; padding: 0; border-radius: 3px; animation: pulse 1.5s infinite;'
+          : 'background-color: #10b981; color: #10b981; padding: 0; border-radius: 3px;',
+      });
     }
-    
-    return escapeHtml(text);
+
+    if (ranges.length === 0) return escapeHtml(text);
+
+    // Sort and drop overlapping ranges (first-by-start-position wins).
+    ranges.sort((a, b) => a.start - b.start);
+    const merged: Range[] = [];
+    for (const r of ranges) {
+      if (merged.length === 0 || r.start >= merged[merged.length - 1].end) {
+        merged.push(r);
+      }
+    }
+
+    let html = '';
+    let cursor = 0;
+    for (const r of merged) {
+      if (r.start > cursor) html += escapeHtml(text.substring(cursor, r.start));
+      html += `<span style="${r.style}">${escapeHtml(text.substring(r.start, r.end))}</span>`;
+      cursor = r.end;
+    }
+    if (cursor < text.length) html += escapeHtml(text.substring(cursor));
+    return html;
   };
 
   const handleTextSelection = (event: React.SyntheticEvent<HTMLTextAreaElement>) => {
@@ -1107,6 +1164,23 @@ export default function Dashboard() {
     }
 
     console.log(`📹 Marked suggestion ${suggestionIndex + 1} as recorded`);
+  };
+
+  // Same as above but for the project-detail view's standalone panel —
+  // operates on `acceptedOverlays` (filtered, project-detail-only) rather
+  // than the script-maintenance `activeOverlays` list.
+  const handleMarkRecordedInDetail = (overlayId: string) => {
+    setAcceptedOverlays(prev => prev.filter(o => o.id !== overlayId));
+    fetch('/api/pending-edits', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ editId: overlayId, action: 'mark_recorded' }),
+    }).catch(e => console.error('Failed to mark recorded:', e));
+    // Keep the project-card / Check Updates badge count in sync.
+    setSelectedProject(prev => prev
+      ? { ...prev, pendingEditsCount: Math.max(0, (prev.pendingEditsCount || 0) - 1) }
+      : null
+    );
   };
 
   const handleDeclineSuggestion = (suggestionIndex: number) => {
@@ -2190,6 +2264,32 @@ https://docs.example.com/api-reference`}
               
                              {/* Right Column - Generated Script */}
                <div className="lg:col-span-3 flex flex-col min-h-0">
+                 {acceptedOverlays.length > 0 && (
+                   <div className="mb-3 bg-yellow-50 border border-yellow-200 rounded p-3 flex-shrink-0">
+                     <div className="text-sm font-medium text-yellow-900 mb-1">
+                       📹 {acceptedOverlays.length} section{acceptedOverlays.length === 1 ? '' : 's'} awaiting re-recording
+                     </div>
+                     <p className="text-xs text-yellow-700 mb-3">
+                       Green-highlighted text below was changed by accepted edits. Click &quot;Mark as Recorded&quot; once you&apos;ve filmed each section.
+                     </p>
+                     <div className="space-y-2 max-h-40 overflow-y-auto">
+                       {acceptedOverlays.map((o) => (
+                         <div key={o.id} className="bg-white border border-yellow-200 rounded p-2">
+                           <div className="text-xs text-gray-700 mb-2 line-clamp-2">
+                             &ldquo;{(o.suggested_replacement || '').slice(0, 200)}{(o.suggested_replacement || '').length > 200 ? '…' : ''}&rdquo;
+                           </div>
+                           <button
+                             onClick={() => handleMarkRecordedInDetail(o.id)}
+                             className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition-colors"
+                           >
+                             📹 Mark as Recorded
+                           </button>
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+
                  <div className="flex items-center justify-between mb-2 flex-shrink-0">
                    <label className="block text-sm font-medium text-gray-700">
                      {selectedProject?.script ? 'Script Editor' : 'Generated Script'}
