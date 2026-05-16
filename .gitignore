@@ -104,3 +104,6 @@ tsconfig.tsbuildinfo
 
 # Claude Code project-local state
 .claude/
+
+# Test-harness state file (tampered snapshot backups during cron testing)
+scripts/.test-monitoring-state.json

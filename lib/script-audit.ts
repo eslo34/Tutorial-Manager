@@ -118,8 +118,11 @@ export async function auditScriptAgainstPage(input: {
           text: `SCRIPT:\n${input.script}`,
         },
       ],
-      maxTokens: 4096,
+      maxTokens: 8192,
       models: [SONNET, HAIKU],
+      // Be thorough — don't miss outdated references; we're not on a hot path,
+      // each script gets its own 60s budget via overflow if needed.
+      effort: 'high',
     });
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const parsed = JSON.parse(cleaned) as { outdated_sections?: OutdatedSection[] };

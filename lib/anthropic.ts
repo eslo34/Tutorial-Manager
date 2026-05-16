@@ -17,6 +17,10 @@ interface GenerateArgs {
   models: string[];
   content?: UserContent;
   messages?: Anthropic.MessageParam[];
+  // Sonnet-only. Defaults to 'medium' — UI flows can dial 'low' for snappiness;
+  // background analysis (e.g. the doc-audit pipeline) should use 'high' so it
+  // doesn't miss anything.
+  effort?: 'low' | 'medium' | 'high';
 }
 
 // Calls the Messages API, trying each model in order until one returns a
@@ -28,6 +32,7 @@ export async function generateWithFallback({
   models,
   content,
   messages,
+  effort = 'medium',
 }: GenerateArgs): Promise<{ text: string; modelUsed: string }> {
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY not found in environment variables');
@@ -48,12 +53,11 @@ export async function generateWithFallback({
         messages: messageList,
       };
 
-      // The effort parameter trades latency for thoroughness on Sonnet 4.6
-      // (it defaults to "high"). Not supported on Haiku 4.5, so only set it
-      // for Sonnet. "medium" is the balance between speed and quality;
-      // dial to "low" if a specific route starts hitting the 60s ceiling.
+      // The effort parameter trades latency for thoroughness on Sonnet 4.6.
+      // Not supported on Haiku 4.5, so only set it for Sonnet. Per-caller
+      // override via the `effort` arg; default 'medium' is the baseline.
       if (model === SONNET) {
-        (params as unknown as Record<string, unknown>).output_config = { effort: 'medium' };
+        (params as unknown as Record<string, unknown>).output_config = { effort };
       }
 
       const message = await anthropic.messages.create(params);
