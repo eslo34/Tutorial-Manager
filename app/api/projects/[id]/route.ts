@@ -15,10 +15,15 @@ export async function GET(
     }
 
     const project = await prisma.project.findFirst({
-      where: { 
+      where: {
         id: params.id,
-        user_id: session.user.id 
-      }
+        user_id: session.user.id
+      },
+      include: {
+        _count: {
+          select: { pending_edits: { where: { status: 'pending' } } },
+        },
+      },
     })
 
     if (!project) {
@@ -44,6 +49,7 @@ export async function GET(
       scrapedUrl: project.scraped_url,
       createdAt: project.created_at,
       updatedAt: project.updated_at,
+      pendingEditsCount: project._count.pending_edits,
     }
 
     return NextResponse.json({ project: transformedProject })

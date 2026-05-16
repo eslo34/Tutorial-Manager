@@ -1774,6 +1774,32 @@ export default function Dashboard() {
                 </button>
               </div>
 
+              {/* Persisted overlays from the daily cron — show whenever there
+                  are pending edits and no manual check is in flight. */}
+              {!updateResults && activeOverlays.length > 0 && selectedProject?.script && (
+                <div className="bg-white rounded-lg shadow-lg p-8">
+                  <div className="p-4 rounded-lg mb-6 bg-yellow-50 border border-yellow-200">
+                    <div className="font-medium text-yellow-800">
+                      ⚠️ {activeOverlays.length} suggested update{activeOverlays.length === 1 ? '' : 's'} from daily monitoring
+                    </div>
+                    <p className="text-sm mt-1 text-yellow-700">
+                      Click on a highlighted section to review and accept or decline the suggestion.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">Script with Update Suggestions</h3>
+                    <div className="bg-gray-50 text-gray-900 p-6 rounded-lg border border-gray-200 relative">
+                      <ScriptWithOverlays
+                        script={scriptWithOverlays || selectedProject.script}
+                        overlays={activeOverlays}
+                        onAccept={handleAcceptSuggestion}
+                        onDecline={handleDeclineSuggestion}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Update Results */}
               {updateResults && (
                 <div className="bg-white rounded-lg shadow-lg p-8">
@@ -1781,8 +1807,8 @@ export default function Dashboard() {
                     <div>
                       {/* Overall Status */}
                       <div className={`p-4 rounded-lg mb-6 ${
-                        updateResults.analysis.overall_status === 'current' 
-                          ? 'bg-green-50 border border-green-200' 
+                        updateResults.analysis.overall_status === 'current'
+                          ? 'bg-green-50 border border-green-200'
                           : 'bg-yellow-50 border border-yellow-200'
                       }`}>
                         <div className={`font-medium ${
