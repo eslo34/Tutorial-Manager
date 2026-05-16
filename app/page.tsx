@@ -1063,16 +1063,23 @@ export default function Dashboard() {
       suggestion.suggested_replacement +
       scriptWithOverlays.substring(matchStart + textToReplace.length);
     setScriptWithOverlays(updatedScript);
-    
-    // Remove this suggestion from active overlays
-    const updatedOverlays = activeOverlays.filter((_, index) => index !== suggestionIndex);
+
+    // Mark this overlay as 'accepted' (instead of removing it). It stays
+    // visible in green so we don't lose track of which sections changed and
+    // still need to be re-recorded. The matcher needs to point at the NEW
+    // text now since the OLD text isn't in the script anymore.
+    const updatedOverlays = activeOverlays.map((o, idx) =>
+      idx === suggestionIndex
+        ? { ...o, status: 'accepted', actualMatchedText: suggestion.suggested_replacement }
+        : o
+    );
     setActiveOverlays(updatedOverlays);
-    
+
     // Update the project script in the database and main editor immediately
     updateProjectScript(updatedScript);
 
     // If this overlay came from the persisted cron flow (has a DB id), also
-    // flip its row to 'accepted' so it stops appearing on next load.
+    // flip its row to 'accepted' so it persists across page loads.
     if (suggestion.id) {
       fetch('/api/pending-edits', {
         method: 'PATCH',
@@ -1081,7 +1088,25 @@ export default function Dashboard() {
       }).catch(e => console.error('Failed to mark accepted:', e));
     }
 
-    console.log(`✅ Accepted suggestion ${suggestionIndex + 1}`);
+    console.log(`✅ Accepted suggestion ${suggestionIndex + 1} (awaiting re-recording)`);
+  };
+
+  // Called when the user has re-recorded the affected video section.
+  // Removes the green overlay and clears the row from the DB.
+  const handleMarkRecorded = (suggestionIndex: number) => {
+    const suggestion = activeOverlays[suggestionIndex];
+    const updatedOverlays = activeOverlays.filter((_, idx) => idx !== suggestionIndex);
+    setActiveOverlays(updatedOverlays);
+
+    if (suggestion?.id) {
+      fetch('/api/pending-edits', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ editId: suggestion.id, action: 'mark_recorded' }),
+      }).catch(e => console.error('Failed to mark recorded:', e));
+    }
+
+    console.log(`📹 Marked suggestion ${suggestionIndex + 1} as recorded`);
   };
 
   const handleDeclineSuggestion = (suggestionIndex: number) => {
@@ -1152,14 +1177,17 @@ export default function Dashboard() {
     console.log('🔍 Preprocessing overlays with enhanced fuzzy matching...');
     const preprocessedOverlays = rawOverlays.map((section: any, index: number) => {
       const script = selectedProject.script!; // We already checked it exists above
-      let textIndex = script.indexOf(section.original_text);
-      let actualMatchedText = section.original_text;
+      // For accepted overlays the script already contains the suggested
+      // replacement; match against THAT so the green highlight still finds it.
+      const targetText: string = section.status === 'accepted' ? section.suggested_replacement : section.original_text;
+      let textIndex = script.indexOf(targetText);
+      let actualMatchedText = targetText;
       
       if (textIndex === -1) {
         console.log(`🔍 Exact match failed for section ${index}, trying enhanced fuzzy matching...`);
         
         // First try: Direct normalized comparison
-        const normalizedAiText = normalizeText(section.original_text);
+        const normalizedAiText = normalizeText(targetText);
         const sentences = script.split(/[.!?]/);
         
         // Look for normalized exact matches first
@@ -1197,7 +1225,7 @@ export default function Dashboard() {
         
         // If normalized matching failed, fall back to keyword matching
         if (!bestMatch) {
-          const keywords = section.original_text.split(' ').filter((word: string) => 
+          const keywords = targetText.split(' ').filter((word: string) => 
             word.length > 3 && !['the', 'and', 'for', 'that', 'this', 'with', 'from', 'they', 'will', 'have', 'been'].includes(word.toLowerCase())
           );
           
@@ -1219,9 +1247,9 @@ export default function Dashboard() {
         
         if (bestMatch) {
           actualMatchedText = bestMatch;
-          console.log(`🎯 ${matchType} match ${index} (score: ${bestScore.toFixed(2)}): "${section.original_text.substring(0, 40)}..." → "${bestMatch.substring(0, 40)}..."`);
+          console.log(`🎯 ${matchType} match ${index} (score: ${bestScore.toFixed(2)}): "${targetText.substring(0, 40)}..." → "${bestMatch.substring(0, 40)}..."`);
         } else {
-          console.log(`❌ No match found for section ${index}: "${section.original_text.substring(0, 50)}..."`);
+          console.log(`❌ No match found for section ${index}: "${targetText.substring(0, 50)}..."`);
         }
       }
       
@@ -1236,11 +1264,12 @@ export default function Dashboard() {
   };
 
   // Component to render script with interactive overlays
-  const ScriptWithOverlays = ({ script, overlays, onAccept, onDecline }: {
+  const ScriptWithOverlays = ({ script, overlays, onAccept, onDecline, onMarkRecorded }: {
     script: string;
     overlays: any[];
     onAccept: (index: number) => void;
     onDecline: (index: number) => void;
+    onMarkRecorded: (index: number) => void;
   }) => {
     const [selectedOverlay, setSelectedOverlay] = useState<number | null>(null);
 
@@ -1284,12 +1313,13 @@ export default function Dashboard() {
             <span
               key={partKey++}
               className={`cursor-pointer transition-colors relative inline ${
+                overlay.status === 'accepted' ? 'bg-green-200 border-b-2 border-green-400 hover:bg-green-300' :
                 overlay.severity === 'critical' ? 'bg-red-200 border-b-2 border-red-400 hover:bg-red-300' :
                 overlay.severity === 'moderate' ? 'bg-yellow-200 border-b-2 border-yellow-400 hover:bg-yellow-300' :
                 'bg-blue-200 border-b-2 border-blue-400 hover:bg-blue-300'
               }`}
               onClick={() => setSelectedOverlay(overlay.originalIndex)}
-              title={`Click to review: ${overlay.reason}`}
+              title={overlay.status === 'accepted' ? `Click to mark as recorded — ${overlay.reason}` : `Click to review — ${overlay.reason}`}
             >
               {actualText}
             </span>
@@ -1320,13 +1350,14 @@ export default function Dashboard() {
               <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    Update Suggestion
+                    {overlays[selectedOverlay].status === 'accepted' ? 'Accepted Update' : 'Update Suggestion'}
                     <span className={`ml-2 text-xs font-medium px-2 py-1 rounded ${
+                      overlays[selectedOverlay].status === 'accepted' ? 'bg-green-200 text-green-800' :
                       overlays[selectedOverlay].severity === 'critical' ? 'bg-red-200 text-red-800' :
                       overlays[selectedOverlay].severity === 'moderate' ? 'bg-yellow-200 text-yellow-800' :
                       'bg-blue-200 text-blue-800'
                     }`}>
-                      {overlays[selectedOverlay].severity.toUpperCase()}
+                      {overlays[selectedOverlay].status === 'accepted' ? 'AWAITING RECORDING' : overlays[selectedOverlay].severity.toUpperCase()}
                     </span>
                   </h3>
                   <button 
@@ -1338,45 +1369,85 @@ export default function Dashboard() {
                 </div>
                 
                 <div className="p-6 space-y-4">
-                  <div>
-                    <h4 className="font-medium text-gray-800 text-sm mb-2">Current (Outdated):</h4>
-                    <div className="bg-red-50 p-3 rounded text-sm text-gray-700 border-l-4 border-red-400">
-                      {overlays[selectedOverlay].original_text}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-800 text-sm mb-2">Why it's outdated:</h4>
-                    <p className="text-sm text-gray-600">{overlays[selectedOverlay].reason}</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-800 text-sm mb-2">Suggested Update:</h4>
-                    <div className="bg-green-50 p-3 rounded text-sm text-gray-700 border-l-4 border-green-400">
-                      {overlays[selectedOverlay].suggested_replacement}
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-3 pt-4">
-                    <button 
-                      onClick={() => {
-                        onAccept(selectedOverlay);
-                        setSelectedOverlay(null);
-                      }}
-                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                    >
-                      ✓ Accept Change
-                    </button>
-                    <button 
-                      onClick={() => {
-                        onDecline(selectedOverlay);
-                        setSelectedOverlay(null);
-                      }}
-                      className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
-                    >
-                      ✗ Decline
-                    </button>
-                  </div>
+                  {overlays[selectedOverlay].status === 'accepted' ? (
+                    <>
+                      <div>
+                        <h4 className="font-medium text-gray-800 text-sm mb-2">Now in script:</h4>
+                        <div className="bg-green-50 p-3 rounded text-sm text-gray-700 border-l-4 border-green-400">
+                          {overlays[selectedOverlay].suggested_replacement}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-medium text-gray-800 text-sm mb-2">Reason for change:</h4>
+                        <p className="text-sm text-gray-600">{overlays[selectedOverlay].reason}</p>
+                      </div>
+
+                      <div className="text-sm text-yellow-800 bg-yellow-50 border border-yellow-200 p-3 rounded">
+                        📹 Once you&apos;ve re-recorded this section, mark it as recorded to clear the green highlight.
+                      </div>
+
+                      <div className="flex gap-3 pt-4">
+                        <button
+                          onClick={() => {
+                            onMarkRecorded(selectedOverlay);
+                            setSelectedOverlay(null);
+                          }}
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                        >
+                          📹 Mark as Recorded
+                        </button>
+                        <button
+                          onClick={() => setSelectedOverlay(null)}
+                          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <h4 className="font-medium text-gray-800 text-sm mb-2">Current (Outdated):</h4>
+                        <div className="bg-red-50 p-3 rounded text-sm text-gray-700 border-l-4 border-red-400">
+                          {overlays[selectedOverlay].original_text}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-medium text-gray-800 text-sm mb-2">Why it&apos;s outdated:</h4>
+                        <p className="text-sm text-gray-600">{overlays[selectedOverlay].reason}</p>
+                      </div>
+
+                      <div>
+                        <h4 className="font-medium text-gray-800 text-sm mb-2">Suggested Update:</h4>
+                        <div className="bg-green-50 p-3 rounded text-sm text-gray-700 border-l-4 border-green-400">
+                          {overlays[selectedOverlay].suggested_replacement}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 pt-4">
+                        <button
+                          onClick={() => {
+                            onAccept(selectedOverlay);
+                            setSelectedOverlay(null);
+                          }}
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                        >
+                          ✓ Accept Change
+                        </button>
+                        <button
+                          onClick={() => {
+                            onDecline(selectedOverlay);
+                            setSelectedOverlay(null);
+                          }}
+                          className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                        >
+                          ✗ Decline
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -1794,6 +1865,7 @@ export default function Dashboard() {
                         overlays={activeOverlays}
                         onAccept={handleAcceptSuggestion}
                         onDecline={handleDeclineSuggestion}
+                        onMarkRecorded={handleMarkRecorded}
                       />
                     </div>
                   </div>
@@ -1836,11 +1908,12 @@ export default function Dashboard() {
                         <div>
                           <h3 className="text-xl font-bold text-gray-800 mb-4">Script with Update Suggestions</h3>
                           <div className="bg-gray-50 text-gray-900 p-6 rounded-lg border border-gray-200 relative">
-                            <ScriptWithOverlays 
+                            <ScriptWithOverlays
                               script={scriptWithOverlays || selectedProject?.script || ''}
                               overlays={activeOverlays}
                               onAccept={handleAcceptSuggestion}
                               onDecline={handleDeclineSuggestion}
+                              onMarkRecorded={handleMarkRecorded}
                             />
                           </div>
                         </div>

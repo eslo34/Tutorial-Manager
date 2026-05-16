@@ -21,7 +21,7 @@ export async function GET(
       },
       include: {
         _count: {
-          select: { pending_edits: { where: { status: 'pending' } } },
+          select: { pending_edits: { where: { status: { in: ['pending', 'accepted'] } } } },
         },
       },
     })

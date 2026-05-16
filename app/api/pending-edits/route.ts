@@ -27,8 +27,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
+    // Pending = waiting for accept/decline. Accepted = applied to script,
+    // awaiting re-recording. Both states render as overlays (red vs green).
     const edits = await prisma.pendingScriptEdit.findMany({
-      where: { project_id: projectId, status: 'pending' },
+      where: { project_id: projectId, status: { in: ['pending', 'accepted'] } },
       orderBy: [{ severity: 'asc' }, { detected_at: 'desc' }],
     });
 
@@ -42,6 +44,7 @@ export async function GET(request: NextRequest) {
       reason: e.reason,
       severity: e.severity,
       category: e.category,
+      status: e.status,
       source_url: e.source_url,
       detected_at: e.detected_at,
     }));
@@ -56,10 +59,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH { editId, action: 'accept' | 'decline' } — records the user's
-// decision. Does NOT mutate the script itself — the frontend's existing
-// handleAcceptSuggestion handles substitution and calls /api/save-script;
-// this route only flips the status.
+// PATCH { editId, action: 'accept' | 'decline' | 'mark_recorded' } —
+// flips the edit's status. The frontend's existing handleAcceptSuggestion
+// handles the actual script substitution and calls /api/save-script;
+// this route only records the decision.
+//
+//   accept        → status = 'accepted' (script updated, awaiting re-recording)
+//   mark_recorded → status = 'recorded' (terminal — re-record done)
+//   decline       → status = 'declined' (terminal — won't apply)
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -68,9 +75,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     const { editId, action } = await request.json();
-    if (!editId || (action !== 'accept' && action !== 'decline')) {
+    const VALID_ACTIONS = ['accept', 'decline', 'mark_recorded'] as const;
+    if (!editId || !VALID_ACTIONS.includes(action)) {
       return NextResponse.json(
-        { error: 'editId and action (accept|decline) required' },
+        { error: 'editId and action (accept|decline|mark_recorded) required' },
         { status: 400 }
       );
     }
@@ -83,10 +91,23 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Edit not found' }, { status: 404 });
     }
 
-    const status = action === 'accept' ? 'accepted' : 'declined';
+    let status: string;
+    let resolved_at: Date | null = null;
+    if (action === 'accept') {
+      status = 'accepted';
+      // Intentionally don't set resolved_at — 'accepted' is an intermediate
+      // state, the row is still active until the user marks it recorded.
+    } else if (action === 'mark_recorded') {
+      status = 'recorded';
+      resolved_at = new Date();
+    } else {
+      status = 'declined';
+      resolved_at = new Date();
+    }
+
     await prisma.pendingScriptEdit.update({
       where: { id: editId },
-      data: { status, resolved_at: new Date() },
+      data: { status, resolved_at },
     });
 
     return NextResponse.json({ id: editId, status });
