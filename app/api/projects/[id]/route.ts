@@ -41,6 +41,7 @@ export async function GET(
       status: project.status,
       script: project.script,
       videoType: project.video_type,
+      sourceType: project.source_type,
       scrapedContent: project.scraped_content,
       scrapedPages: project.scraped_pages,
       scrapedChars: project.scraped_chars,

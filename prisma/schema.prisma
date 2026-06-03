@@ -51,12 +51,20 @@ model Client {
   monitoring_enabled  Boolean   @default(false)
   monitoring_root_url String?
 
+  // Code-repo source (alternative to scraped docs). Files are uploaded from a
+  // local folder or a .zip — no external credentials are ever stored.
+  repo_label     String?    // folder or zip name shown in the UI
+  repo_source    String?    // "folder" | "zip"
+  repo_tree      Json?      // cached flat list of file paths (for the AI's file picker)
+  repo_synced_at DateTime?
+
   // Relations
   user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   projects   Project[]
   learning_sessions   LearningSession[]
   snapshots           DocPageSnapshot[]
   check_runs          CheckRun[]
+  repo_files          RepoFile[]
 
   @@map("clients")
 }
@@ -82,11 +90,16 @@ model Project {
   scraped_at          DateTime?
   scraped_url         String?
   video_type          String?
-  
+
+  // Authoring source: "docs" (crawl documentation) or "code" (uploaded repo +
+  // repo-aware chat). Existing projects default to docs so nothing changes.
+  source_type         String   @default("docs")
+
   // Relations
   user                User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
   client              Client         @relation(fields: [client_id], references: [id], onDelete: Cascade)
   pending_edits       PendingScriptEdit[]
+  script_chat_messages ScriptChatMessage[]
 
   @@map("projects")
 }
@@ -229,4 +242,39 @@ model CheckRun {
 
   @@index([client_id, started_at(sort: Desc)])
   @@map("check_runs")
+}
+
+// A single uploaded source file for a code-based client. Populated by the
+// folder/zip upload flow; read on demand by the script-chat agent's read_files
+// tool. Stored per client so all of that client's code projects share it.
+model RepoFile {
+  id         String   @id @default(cuid())
+  client_id  String
+  path       String
+  content    String
+  size       Int      @default(0)
+  updated_at DateTime @default(now())
+
+  client     Client   @relation(fields: [client_id], references: [id], onDelete: Cascade)
+
+  @@unique([client_id, path])
+  @@index([client_id])
+  @@map("repo_files")
+}
+
+// Per-project chat for code-based script authoring. Mirrors
+// LearningChatMessage but scoped to a project. meta holds non-content metadata
+// (e.g. which files the AI read, whether it wrote a draft this turn).
+model ScriptChatMessage {
+  id         String   @id @default(cuid())
+  project_id String
+  role       String   // user | assistant
+  content    String
+  meta       Json?
+  created_at DateTime @default(now())
+
+  project    Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id])
+  @@map("script_chat_messages")
 }

@@ -15,6 +15,12 @@ export interface Client {
   // Daily doc-monitoring
   monitoringEnabled?: boolean;
   monitoringRootUrl?: string;
+  // Code-repo source
+  repoLabel?: string;
+  repoSource?: 'folder' | 'zip';
+  repoTree?: string[];
+  repoSyncedAt?: Date;
+  repoFileCount?: number;
 }
 
 export interface Project {
@@ -27,6 +33,8 @@ export interface Project {
   status: ProjectStatus;
   script?: string;
   videoType: VideoType;
+  // Authoring source: 'docs' (crawl documentation) or 'code' (uploaded repo + chat)
+  sourceType?: 'docs' | 'code';
   // Scraped content fields
   scrapedContent?: string;
   scrapedPages?: number;
@@ -104,6 +112,16 @@ export interface LearningChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
   messageType: 'chat' | 'task_assignment' | 'progress_update' | 'guidance';
+  createdAt: Date;
+}
+
+// Per-project chat for code-based script authoring
+export interface ScriptChatMessage {
+  id: string;
+  projectId: string;
+  role: 'user' | 'assistant';
+  content: string;
+  meta?: { filesRead?: string[]; wroteDraft?: boolean };
   createdAt: Date;
 }
 

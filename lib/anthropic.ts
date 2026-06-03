@@ -86,3 +86,57 @@ export async function generateWithFallback({
     ? lastError
     : new Error('All AI models failed to generate a response');
 }
+
+interface ToolCallArgs {
+  system: string | Anthropic.TextBlockParam[];
+  messages: Anthropic.MessageParam[];
+  tools: Anthropic.Tool[];
+  maxTokens: number;
+  models: string[];
+  effort?: 'low' | 'medium' | 'high';
+}
+
+// Single tool-enabled Messages call with the same model-fallback behaviour as
+// generateWithFallback. Returns the raw Message so the caller can drive its own
+// agent loop (inspect stop_reason, execute tool_use blocks, feed tool_results
+// back). Each call independently tries the models in order.
+export async function createWithTools({
+  system,
+  messages,
+  tools,
+  maxTokens,
+  models,
+  effort = 'medium',
+}: ToolCallArgs): Promise<Anthropic.Message> {
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY not found in environment variables');
+  }
+
+  let lastError: unknown;
+  for (const model of models) {
+    try {
+      const params: Anthropic.MessageCreateParamsNonStreaming = {
+        model,
+        max_tokens: maxTokens,
+        system,
+        thinking: { type: 'disabled' },
+        messages,
+        tools,
+      };
+      if (model === SONNET) {
+        (params as unknown as Record<string, unknown>).output_config = { effort };
+      }
+      return await anthropic.messages.create(params);
+    } catch (error) {
+      lastError = error;
+      console.log(
+        `❌ ${model} (tools) failed:`,
+        error instanceof Error ? error.message : String(error)
+      );
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('All AI models failed to generate a response');
+}
