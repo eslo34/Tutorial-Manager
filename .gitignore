@@ -113,3 +113,6 @@ mcp-server/backups/
 
 # Local repo/zip upload test artifacts (not source)
 *.zip
+
+# Extracted client source repo (read-only reference for script writing, not source of this app)
+bim-dictionary/
