@@ -107,3 +107,6 @@ tsconfig.tsbuildinfo
 
 # Test-harness state file (tampered snapshot backups during cron testing)
 scripts/.test-monitoring-state.json
+
+# Local MCP server: script-edit backups (rollback copies, machine-local)
+mcp-server/backups/

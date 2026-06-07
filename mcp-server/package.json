@@ -1,0 +1,11 @@
+{
+  "name": "tutorial-scripts-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local MCP server that lets Claude Code read and edit video scripts directly in the Neon database.",
+  "main": "server.mjs",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
