@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { clientId, title, description, documentationUrls, prompt, status, videoType } = await request.json()
+    const { clientId, title, description, documentationUrls, prompt, status, videoType, sourceType } = await request.json()
 
     if (!clientId || !title) {
       return NextResponse.json({ error: 'Client ID and title are required' }, { status: 400 })
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         prompt: prompt || '',
         status: status || 'planning',
         video_type: videoType || 'tutorial',
-        source_type: 'docs',
+        source_type: sourceType === 'code' ? 'code' : 'docs',
         user_id: session.user.id
       }
     })

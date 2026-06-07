@@ -8,7 +8,7 @@ import { crawlDocumentation, CrawlResponse, getContentSummary, formatContentForA
 import { getPromptTemplate } from '@/lib/prompt-templates';
 import { generateScript } from '@/lib/openai';
 import { VideoType } from '@/lib/types';
-import { Plus, Users, X, LogOut, FileText, ArrowLeft, Search, Trash2, BookOpen } from 'lucide-react';
+import { Plus, Users, X, LogOut, FileText, ArrowLeft, Search, Trash2, BookOpen, PenTool } from 'lucide-react';
 import AuthForm from '@/components/AuthForm';
 import LearningChat from '@/components/LearningChat';
 
@@ -38,6 +38,8 @@ export default function Dashboard() {
     description: '',
     videoType: 'tutorial' as VideoType
   });
+  // Authoring source chosen at creation: 'docs' (crawl docs + generate) or 'code' (script-only window)
+  const [projectSourceType, setProjectSourceType] = useState<'docs' | 'code'>('docs');
   const [documentationUrl, setDocumentationUrl] = useState('');
   const [specificUrls, setSpecificUrls] = useState('');
   const [crawlMode, setCrawlMode] = useState<'crawl' | 'specific'>('crawl');
@@ -313,7 +315,8 @@ export default function Dashboard() {
           documentationUrls: [],
           prompt: getPromptTemplate(projectForm.videoType),
           status: 'planning',
-          videoType: projectForm.videoType
+          videoType: projectForm.videoType,
+          sourceType: projectSourceType
         })
       });
 
@@ -321,6 +324,7 @@ export default function Dashboard() {
         const data = await response.json();
         setProjects(prev => [...prev, data.project]);
         setProjectForm({ title: '', description: '', videoType: 'tutorial' });
+        setProjectSourceType('docs');
         setShowProjectModal(false);
       }
     } catch (error) {
@@ -2007,8 +2011,8 @@ export default function Dashboard() {
           // Project Detail View
           <div className="h-full flex flex-col">
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-8 min-h-0">
-                             {/* Left Column - Inputs */}
-               {(
+                             {/* Left Column - Inputs (documentation projects only) */}
+               {selectedProject?.sourceType !== 'code' && (
                <div className="lg:col-span-2 space-y-6 overflow-y-auto px-2">
                  {/* Documentation Scraping Section */}
                  <div className="bg-white p-4 rounded-lg border border-gray-200">
@@ -2264,8 +2268,8 @@ https://docs.example.com/api-reference`}
                </div>
                )}
 
-                             {/* Right Column - Generated Script */}
-               <div className="lg:col-span-3 flex flex-col min-h-0">
+                             {/* Right Column - Generated Script (full width for code projects) */}
+               <div className={`${selectedProject?.sourceType === 'code' ? 'lg:col-span-5' : 'lg:col-span-3'} flex flex-col min-h-0`}>
                  {acceptedOverlays.length > 0 && (
                    <div className="mb-3 bg-yellow-50 border border-yellow-200 rounded p-3 flex-shrink-0">
                      <div className="text-sm font-medium text-yellow-900 mb-1">
@@ -2479,17 +2483,25 @@ https://docs.example.com/api-reference`}
                   </div>
                 ) : (
                    <div className="bg-gray-50 text-gray-500 p-6 rounded-lg border border-gray-200 overflow-y-auto flex-1 font-sans">
-                     <>
-                       Generated script will appear here...
-                       <br /><br />
-                       Steps:
-                       <br />1. Enter documentation URL
-                       <br />2. Click "Crawl" to discover all pages
-                       <br />3. Describe what the tutorial should teach
-                       <br />4. Click "Generate Script with AI"
-                       <br /><br />
-                       💡 Tip: Be specific about what you want to teach!
-                     </>
+                     {selectedProject?.sourceType === 'code' ? (
+                       <>
+                         No script yet.
+                         <br /><br />
+                         This is a code-based project — the script is written and edited directly (e.g. with Claude). It will appear here once added.
+                       </>
+                     ) : (
+                       <>
+                         Generated script will appear here...
+                         <br /><br />
+                         Steps:
+                         <br />1. Enter documentation URL
+                         <br />2. Click "Crawl" to discover all pages
+                         <br />3. Describe what the tutorial should teach
+                         <br />4. Click "Generate Script with AI"
+                         <br /><br />
+                         💡 Tip: Be specific about what you want to teach!
+                       </>
+                     )}
                    </div>
                  )}
                  
@@ -2817,6 +2829,45 @@ https://docs.company.com/user-guide`}
                   rows={3}
                   required
                 />
+              </div>
+
+              {/* Source selector: docs vs code */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Source
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setProjectSourceType('docs')}
+                    className={`text-left p-3 rounded-lg border transition-colors duration-200 ${
+                      projectSourceType === 'docs'
+                        ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center mb-1">
+                      <BookOpen className={`w-4 h-4 mr-2 ${projectSourceType === 'docs' ? 'text-primary-600' : 'text-gray-500'}`} />
+                      <span className="text-sm font-medium text-gray-900">From documentation</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Crawl docs and generate a script.</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProjectSourceType('code')}
+                    className={`text-left p-3 rounded-lg border transition-colors duration-200 ${
+                      projectSourceType === 'code'
+                        ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center mb-1">
+                      <PenTool className={`w-4 h-4 mr-2 ${projectSourceType === 'code' ? 'text-primary-600' : 'text-gray-500'}`} />
+                      <span className="text-sm font-medium text-gray-900">From code</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Just a script window — written/edited directly.</p>
+                  </button>
+                </div>
               </div>
 
               <div className="flex justify-end space-x-3">
