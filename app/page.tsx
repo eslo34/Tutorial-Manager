@@ -8,10 +8,9 @@ import { crawlDocumentation, CrawlResponse, getContentSummary, formatContentForA
 import { getPromptTemplate } from '@/lib/prompt-templates';
 import { generateScript } from '@/lib/openai';
 import { VideoType } from '@/lib/types';
-import { Plus, Users, X, LogOut, FileText, ArrowLeft, Search, Trash2, BookOpen, PenTool } from 'lucide-react';
+import { Plus, Users, X, LogOut, FileText, ArrowLeft, Search, Trash2, BookOpen } from 'lucide-react';
 import AuthForm from '@/components/AuthForm';
 import LearningChat from '@/components/LearningChat';
-import CodeScriptChat from '@/components/CodeScriptChat';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -39,8 +38,6 @@ export default function Dashboard() {
     description: '',
     videoType: 'tutorial' as VideoType
   });
-  // Authoring source chosen at creation: 'docs' (crawl docs) or 'code' (uploaded repo + chat)
-  const [projectSourceType, setProjectSourceType] = useState<'docs' | 'code'>('docs');
   const [documentationUrl, setDocumentationUrl] = useState('');
   const [specificUrls, setSpecificUrls] = useState('');
   const [crawlMode, setCrawlMode] = useState<'crawl' | 'specific'>('crawl');
@@ -316,8 +313,7 @@ export default function Dashboard() {
           documentationUrls: [],
           prompt: getPromptTemplate(projectForm.videoType),
           status: 'planning',
-          videoType: projectForm.videoType,
-          sourceType: projectSourceType
+          videoType: projectForm.videoType
         })
       });
 
@@ -325,7 +321,6 @@ export default function Dashboard() {
         const data = await response.json();
         setProjects(prev => [...prev, data.project]);
         setProjectForm({ title: '', description: '', videoType: 'tutorial' });
-        setProjectSourceType('docs');
         setShowProjectModal(false);
       }
     } catch (error) {
@@ -984,17 +979,6 @@ export default function Dashboard() {
     }
     
     setSavingScript(false);
-  };
-
-  // Called when the code-mode chat writes a draft via the write_script tool.
-  // The server already persisted it to the project, so we just reflect it in
-  // the editor (editable, not in the read-only "fresh AI" state) and in state.
-  const handleChatScriptDraft = (script: string) => {
-    setGeneratedScript('');
-    setEditableScript(script);
-    setHasUnsavedChanges(false);
-    setSelectedProject(prev => (prev ? { ...prev, script, status: 'completed' } : prev));
-    setProjects(prev => prev.map(p => (p.id === selectedProject?.id ? { ...p, script } : p)));
   };
 
   const handleScriptChange = (newScript: string) => {
@@ -2024,18 +2008,7 @@ export default function Dashboard() {
           <div className="h-full flex flex-col">
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-8 min-h-0">
                              {/* Left Column - Inputs */}
-               {selectedProject?.sourceType === 'code' ? (
-               /* Code mode: repo-aware chat replaces the docs/generate panel */
-               <div className="lg:col-span-2 min-h-0">
-                 <CodeScriptChat
-                   projectId={selectedProject.id}
-                   clientId={selectedProject.clientId}
-                   clientName={selectedClient?.name || 'this product'}
-                   currentScript={editableScript || generatedScript || selectedProject.script || ''}
-                   onScriptDraft={handleChatScriptDraft}
-                 />
-               </div>
-               ) : (
+               {(
                <div className="lg:col-span-2 space-y-6 overflow-y-auto px-2">
                  {/* Documentation Scraping Section */}
                  <div className="bg-white p-4 rounded-lg border border-gray-200">
@@ -2506,31 +2479,17 @@ https://docs.example.com/api-reference`}
                   </div>
                 ) : (
                    <div className="bg-gray-50 text-gray-500 p-6 rounded-lg border border-gray-200 overflow-y-auto flex-1 font-sans">
-                     {selectedProject?.sourceType === 'code' ? (
-                       <>
-                         Your script will appear here...
-                         <br /><br />
-                         Steps:
-                         <br />1. Connect the code (folder or .zip) in the chat panel
-                         <br />2. Tell Claude what the video should cover
-                         <br />3. Discuss and refine in the chat
-                         <br />4. Ask Claude to draft it — the script lands here
-                         <br /><br />
-                         💡 The chat is for discussion; the script is only ever written here.
-                       </>
-                     ) : (
-                       <>
-                         Generated script will appear here...
-                         <br /><br />
-                         Steps:
-                         <br />1. Enter documentation URL
-                         <br />2. Click "Crawl" to discover all pages
-                         <br />3. Describe what the tutorial should teach
-                         <br />4. Click "Generate Script with AI"
-                         <br /><br />
-                         💡 Tip: Be specific about what you want to teach!
-                       </>
-                     )}
+                     <>
+                       Generated script will appear here...
+                       <br /><br />
+                       Steps:
+                       <br />1. Enter documentation URL
+                       <br />2. Click "Crawl" to discover all pages
+                       <br />3. Describe what the tutorial should teach
+                       <br />4. Click "Generate Script with AI"
+                       <br /><br />
+                       💡 Tip: Be specific about what you want to teach!
+                     </>
                    </div>
                  )}
                  
@@ -2858,45 +2817,6 @@ https://docs.company.com/user-guide`}
                   rows={3}
                   required
                 />
-              </div>
-
-              {/* Source selector: docs vs code */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Source
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setProjectSourceType('docs')}
-                    className={`text-left p-3 rounded-lg border transition-colors duration-200 ${
-                      projectSourceType === 'docs'
-                        ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center mb-1">
-                      <BookOpen className={`w-4 h-4 mr-2 ${projectSourceType === 'docs' ? 'text-primary-600' : 'text-gray-500'}`} />
-                      <span className="text-sm font-medium text-gray-900">From documentation</span>
-                    </div>
-                    <p className="text-xs text-gray-500">Crawl docs and generate a script.</p>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProjectSourceType('code')}
-                    className={`text-left p-3 rounded-lg border transition-colors duration-200 ${
-                      projectSourceType === 'code'
-                        ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center mb-1">
-                      <PenTool className={`w-4 h-4 mr-2 ${projectSourceType === 'code' ? 'text-primary-600' : 'text-gray-500'}`} />
-                      <span className="text-sm font-medium text-gray-900">From code</span>
-                    </div>
-                    <p className="text-xs text-gray-500">Chat with Claude over the uploaded repo.</p>
-                  </button>
-                </div>
               </div>
 
               <div className="flex justify-end space-x-3">
