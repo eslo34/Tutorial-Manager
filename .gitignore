@@ -110,3 +110,6 @@ scripts/.test-monitoring-state.json
 
 # Local MCP server: script-edit backups (rollback copies, machine-local)
 mcp-server/backups/
+
+# Local repo/zip upload test artifacts (not source)
+*.zip
