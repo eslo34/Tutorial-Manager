@@ -27,6 +27,35 @@ unzip -q bim-dictionary.zip -d .
 **Always ground the script in the real code** — open the relevant files and
 confirm how a feature actually works before describing it. Don't guess.
 
+## House voice
+
+OpenDictionary scripts use a **modern/conversational** narrator — warm, direct,
+confident but human (think Linear / Stripe / Vercel explainer tone). Avoid both
+extremes: no stiff corporate voiceover ("In this video we will explore…"), and
+no YouTuby gimmicks — especially rhetorical-question hooks ("Here's a question…
+the answer is…"). Open by stating the value or stakes plainly, then walk through
+it. Lead warm, stay assured.
+
+**No marketing yap — but the line matters.** The test isn't "does it state a
+benefit," it's *does it explain how the platform actually works?* Keep lines that
+tie a value to a real mechanism — they're describing behaviour, not selling. Cut
+the pure slogans: the punchy editorial taglines that just assert the thing is good
+without adding any mechanical understanding.
+
+Keep (these describe how the process/platform works):
+- "It's what lets every team downstream trust your data." — names the real effect
+  of the mechanism.
+- "And that's the safety net." — labels what the just-shown behaviour gives you.
+
+Cut (pure slogan / sales summary, no mechanism):
+- "So it has to mean something."
+- "That's traceability you can stand behind."
+- "Your dictionary isn't just current; it's accountable."
+- "Nothing overwritten. Nothing lost. Just a clear, honest history…"
+
+When in doubt: if removing the sentence would lose an actual explanation of how
+the platform behaves, keep it. If it only removes a feel-good flourish, cut it.
+
 ## How the workflow works now
 
 There is **no in-app chat** anymore. You (Claude Code) edit the actual video
