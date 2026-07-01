@@ -168,7 +168,7 @@ export default function LearningChat({ projectId, softwareName }: LearningChatPr
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)] flex flex-col max-h-screen">
+    <div className="bg-white rounded-xl shadow-lg h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)] flex flex-col max-h-screen">
       {/* Header */}
       <div className="border-b border-gray-200 p-3 flex-shrink-0">
         <h3 className="text-base font-semibold text-gray-900">Learn {softwareName}</h3>

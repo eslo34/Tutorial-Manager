@@ -8,7 +8,7 @@ import { crawlDocumentation, CrawlResponse, getContentSummary, formatContentForA
 import { getPromptTemplate } from '@/lib/prompt-templates';
 import { generateScript } from '@/lib/openai';
 import { VideoType } from '@/lib/types';
-import { Plus, Users, X, LogOut, FileText, ArrowLeft, Search, Trash2, BookOpen, PenTool } from 'lucide-react';
+import { Plus, Users, X, LogOut, FileText, Search, Trash2, BookOpen, PenTool, RefreshCw, Radio, Satellite, Video, Wand2, ArrowLeft } from 'lucide-react';
 import AuthForm from '@/components/AuthForm';
 import LearningChat from '@/components/LearningChat';
 
@@ -89,16 +89,6 @@ export default function Dashboard() {
   // selected project. Loaded in project-detail view so the green highlights
   // appear behind the script editor itself (not just in Script Maintenance).
   const [acceptedOverlays, setAcceptedOverlays] = useState<any[]>([]);
-
-  // Debug effect to track crawling state changes
-  useEffect(() => {
-    console.log('🔍 Crawling state changed to:', crawling);
-  }, [crawling]);
-
-  // Debug effect to track generating state changes
-  useEffect(() => {
-    console.log('🔍 Generating state changed to:', generating);
-  }, [generating]);
 
   useEffect(() => {
     if (session?.user) {
@@ -560,10 +550,7 @@ export default function Dashboard() {
     if (crawlMode === 'crawl' && !documentationUrl.trim()) return;
     if (crawlMode === 'specific' && !specificUrls.trim()) return;
     
-    console.log('🔄 Starting crawl...');
-    console.log('🔄 Current crawling state before setting:', crawling);
     setCrawling(true);
-    console.log('🔄 Set crawling to true, current state should be true now');
     setCrawlResults(null);
     
     try {
@@ -571,7 +558,6 @@ export default function Dashboard() {
       
       if (crawlMode === 'crawl') {
         results = await crawlDocumentation(documentationUrl, 50); // Crawl up to 50 pages
-        console.log('📄 Crawl completed:', results);
       } else {
         // Specific URLs mode
         const urlList = specificUrls
@@ -579,7 +565,6 @@ export default function Dashboard() {
           .map(url => url.trim())
           .filter(url => url.length > 0 && url.startsWith('http'));
         
-        console.log('📄 Scraping specific URLs:', urlList);
         
         const response = await fetch('/api/scrape-specific', {
           method: 'POST',
@@ -594,26 +579,18 @@ export default function Dashboard() {
         }
 
         results = await response.json();
-        console.log('📄 Specific scraping completed:', results);
       }
       
       setCrawlResults(results);
       
       if (results.success && selectedProject) {
-        console.log('📊 Processing crawl results...');
         // Auto-populate with the appropriate prompt template based on video type
         setPrompt(prev => prev || getPromptTemplate(selectedProject.videoType || 'tutorial'));
         
         // Calculate summary for display purposes
         const summary = getContentSummary(results);
-        console.log('📊 Summary calculated:', summary);
-        console.log('📏 Content size:', results.totalContent?.length || 0, 'characters');
-        console.log('📄 Pages crawled:', results.pages.length);
         
         // Save the scraped content to the project database via API
-        console.log('💾 Saving scraped content to database via API...');
-        console.log('📏 Total content length to save:', results.totalContent?.length || 0);
-        console.log('📄 First 200 chars to save:', results.totalContent?.substring(0, 200) || 'No content');
         try {
           const response = await fetch('/api/save-scraped-content', {
             method: 'POST',
@@ -631,9 +608,7 @@ export default function Dashboard() {
           });
           
           const data = await response.json();
-          if (data.success) {
-            console.log('✅ Scraped content saved to database successfully via API');
-          } else {
+          if (!data.success) {
             console.error('❌ API error saving scraped content:', data.error);
           }
         } catch (dbError) {
@@ -645,15 +620,8 @@ export default function Dashboard() {
     }
     
     // Always reset crawling state, regardless of what happens above
-    console.log('🏁 Crawl finished, setting crawling to false');
-    console.log('🏁 Current crawling state before resetting:', crawling);
     setCrawling(false);
-    console.log('🏁 Set crawling to false, should be false now');
     
-    // Force a small delay to ensure React has time to process the state change
-    setTimeout(() => {
-      console.log('⏰ Timeout check - crawling state should be false now');
-    }, 50);
   };
 
   const handleGenerateScript = async () => {
@@ -661,7 +629,6 @@ export default function Dashboard() {
     if (!crawlResults?.success) return;
     if (!prompt.trim() || !userRequest.trim()) return;
     
-    console.log('🤖 Starting script generation...');
     setGenerating(true);
     setGeneratedScript('🤖 Generating script with AI...\n\nPlease wait while we create your professional video script based on the crawled documentation.');
     
@@ -669,12 +636,8 @@ export default function Dashboard() {
       // Use stored scraped content if available, otherwise use current crawl results
       let documentationContent: string = '';
       if (selectedProject?.scrapedContent) {
-        console.log('📄 Using stored scraped content from database');
-        console.log('📏 Stored content length:', selectedProject.scrapedContent.length);
-        console.log('📄 First 200 chars of stored content:', selectedProject.scrapedContent.substring(0, 200));
         documentationContent = selectedProject.scrapedContent;
       } else if (crawlResults?.success && crawlResults) {
-        console.log('📄 Using current crawl results');
         documentationContent = aggregateContent(crawlResults);
       }
 
@@ -685,7 +648,6 @@ export default function Dashboard() {
         videoType: selectedProject?.videoType || 'tutorial'
       });
 
-      console.log('📝 Script generation completed:', result.success);
 
       if (result.success && result.script) {
         setGeneratedScript('');
@@ -695,8 +657,6 @@ export default function Dashboard() {
         // Save the generated script to the project via API
         if (selectedProject) {
           try {
-            console.log('💾 Saving generated script to database via API...');
-            console.log('📏 Script size:', result.script.length, 'characters');
             
             const response = await fetch('/api/save-script', {
               method: 'POST',
@@ -710,9 +670,7 @@ export default function Dashboard() {
             });
             
             const data = await response.json();
-            if (data.success) {
-              console.log('✅ Script saved to project successfully via API');
-            } else {
+            if (!data.success) {
               console.error('❌ API error saving script:', data.error);
             }
           } catch (dbError) {
@@ -728,21 +686,13 @@ export default function Dashboard() {
     }
     
     // Always reset generating state, regardless of what happens above
-    console.log('🏁 Script generation finished, setting generating to false');
-    console.log('🏁 Current generating state before resetting:', generating);
     setGenerating(false);
-    console.log('🏁 Set generating to false, should be false now');
     
-    // Force a small delay to ensure React has time to process the state change
-    setTimeout(() => {
-      console.log('⏰ Timeout check - generating state should be false now');
-    }, 50);
   };
 
   const handleModifyScript = async () => {
     if (!selectedProject?.script || !modificationRequest.trim()) return;
     
-    console.log('✏️ Starting script modification...');
     setModifying(true);
     setGeneratedScript('✏️ Modifying script with AI...\n\nPlease wait while we apply your requested changes to the existing script.');
     
@@ -761,7 +711,6 @@ export default function Dashboard() {
       });
 
       const data = await response.json();
-      console.log('📝 Script modification completed:', data.success);
 
       if (data.success && data.script) {
         setGeneratedScript('');
@@ -769,7 +718,6 @@ export default function Dashboard() {
         setHasUnsavedChanges(false);
         // Update the selected project with the new script
         setSelectedProject(prev => prev ? { ...prev, script: data.script } : null);
-        console.log('✅ Script modified and updated successfully');
       } else {
         setGeneratedScript(`❌ Script modification failed: ${data.error || 'Unknown error'}\n\nPlease check your request and try again.`);
       }
@@ -779,13 +727,11 @@ export default function Dashboard() {
     }
     
     setModifying(false);
-    console.log('🏁 Script modification finished');
   };
 
   const handlePartialRegenerate = async () => {
     if (!selectedProject?.script || !modificationRequest.trim() || !selectedText) return;
     
-    console.log('🔄 Starting partial script regeneration...');
     setIsPartiallyRegenerating(true);
     setShowRegenerateButton(false);
     
@@ -818,7 +764,6 @@ export default function Dashboard() {
       result = await response.json();
 
       if (result.success) {
-        console.log('✅ Partial regeneration completed successfully');
 
         // Update the editable script with the new complete script.
         // The API persists this splice, so there are no unsaved changes.
@@ -839,8 +784,6 @@ export default function Dashboard() {
         setIsPartiallyRegenerating(false);
         setRegenerationComplete(true);
         
-        console.log('🔄 Regenerated portion:', result.regeneratedText.substring(0, 100) + '...');
-        console.log('📏 Original length:', selectionEnd - selectionStart, '→ New length:', regeneratedLength);
         
         // Clear selection after showing completion for 2 seconds
         setTimeout(() => {
@@ -939,7 +882,6 @@ export default function Dashboard() {
       setSelectionStart(start);
       setSelectionEnd(end);
       setShowRegenerateButton(true);
-      console.log('📝 Text selected:', selectedPortion.substring(0, 50) + '...');
     } else {
       setSelectedText('');
       setSelectionStart(0);
@@ -951,7 +893,6 @@ export default function Dashboard() {
   const handleManualScriptSave = async () => {
     if (!selectedProject || !editableScript.trim()) return;
     
-    console.log('💾 Saving manually edited script...');
     setSavingScript(true);
     
     try {
@@ -968,7 +909,6 @@ export default function Dashboard() {
       
       const data = await response.json();
       if (data.success) {
-        console.log('✅ Manual script saved successfully');
         // Update the selected project with the new script
         setSelectedProject(prev => prev ? { ...prev, script: editableScript } : null);
         setHasUnsavedChanges(false);
@@ -997,7 +937,6 @@ export default function Dashboard() {
     if (maintenanceCrawlMode === 'specific' && !maintenanceSpecificUrls.trim()) return;
     if (!selectedProject?.script) return;
 
-    console.log('🔍 Starting script update check...');
     setCheckingUpdates(true);
     setUpdateResults(null);
 
@@ -1038,7 +977,6 @@ export default function Dashboard() {
       }
 
       // Now check for updates using AI
-      console.log('🤖 Analyzing script for outdated content...');
       const response = await fetch('/api/check-script-updates', {
         method: 'POST',
         headers: {
@@ -1056,18 +994,11 @@ export default function Dashboard() {
       }
 
       const updateData = await response.json();
-      console.log('📋 Update check completed:', updateData);
-      console.log('🔍 Analysis object:', updateData.analysis);
-      console.log('📊 Outdated sections:', updateData.analysis?.outdated_sections);
-      console.log('📊 Outdated sections length:', updateData.analysis?.outdated_sections?.length);
       setUpdateResults(updateData);
       
       // Initialize the script with overlays if updates were found
       if (updateData.success && updateData.analysis.outdated_sections?.length > 0) {
-        console.log('✅ Initializing overlays with', updateData.analysis.outdated_sections.length, 'sections');
         setTimeout(() => initializeScriptWithOverlays(updateData.analysis.outdated_sections), 100);
-      } else {
-        console.log('❌ Not initializing overlays. Success:', updateData.success, 'Sections:', updateData.analysis?.outdated_sections?.length);
       }
 
     } catch (error) {
@@ -1117,7 +1048,6 @@ export default function Dashboard() {
       return;
     }
 
-    console.log(`🔄 Replacing at index ${matchStart}: "${textToReplace.substring(0, 50)}..." with: "${suggestion.suggested_replacement.substring(0, 50)}..."`);
 
     const updatedScript =
       scriptWithOverlays.substring(0, matchStart) +
@@ -1149,7 +1079,6 @@ export default function Dashboard() {
       }).catch(e => console.error('Failed to mark accepted:', e));
     }
 
-    console.log(`✅ Accepted suggestion ${suggestionIndex + 1} (awaiting re-recording)`);
   };
 
   // Called when the user has re-recorded the affected video section.
@@ -1167,7 +1096,6 @@ export default function Dashboard() {
       }).catch(e => console.error('Failed to mark recorded:', e));
     }
 
-    console.log(`📹 Marked suggestion ${suggestionIndex + 1} as recorded`);
   };
 
   // Same as above but for the project-detail view's standalone panel —
@@ -1203,7 +1131,6 @@ export default function Dashboard() {
       }).catch(e => console.error('Failed to mark declined:', e));
     }
 
-    console.log(`❌ Declined suggestion ${suggestionIndex + 1}`);
   };
 
   const updateProjectScript = async (newScript: string) => {
@@ -1228,7 +1155,6 @@ export default function Dashboard() {
         setEditableScript(newScript);
         // Clear unsaved changes flag since we just saved
         setHasUnsavedChanges(false);
-        console.log('✅ Script updated in database');
       }
     } catch (error) {
       console.error('❌ Failed to update script:', error);
@@ -1252,7 +1178,6 @@ export default function Dashboard() {
   const initializeScriptWithOverlays = (rawOverlays: any[]) => {
     if (!selectedProject?.script || !rawOverlays || rawOverlays.length === 0) return;
 
-    console.log('🔍 Preprocessing overlays with enhanced fuzzy matching...');
     const preprocessedOverlays = rawOverlays.map((section: any, index: number) => {
       const script = selectedProject.script!; // We already checked it exists above
       // For accepted overlays the script already contains the suggested
@@ -1262,7 +1187,6 @@ export default function Dashboard() {
       let actualMatchedText = targetText;
       
       if (textIndex === -1) {
-        console.log(`🔍 Exact match failed for section ${index}, trying enhanced fuzzy matching...`);
         
         // First try: Direct normalized comparison
         const normalizedAiText = normalizeText(targetText);
@@ -1325,9 +1249,6 @@ export default function Dashboard() {
         
         if (bestMatch) {
           actualMatchedText = bestMatch;
-          console.log(`🎯 ${matchType} match ${index} (score: ${bestScore.toFixed(2)}): "${targetText.substring(0, 40)}..." → "${bestMatch.substring(0, 40)}..."`);
-        } else {
-          console.log(`❌ No match found for section ${index}: "${targetText.substring(0, 50)}..."`);
         }
       }
       
@@ -1425,7 +1346,7 @@ export default function Dashboard() {
           {/* Overlay Popup */}
           {selectedOverlay !== null && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900">
                     {overlays[selectedOverlay].status === 'accepted' ? 'Accepted Update' : 'Update Suggestion'}
@@ -1471,9 +1392,10 @@ export default function Dashboard() {
                             onMarkRecorded(selectedOverlay);
                             setSelectedOverlay(null);
                           }}
-                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                          className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                         >
-                          📹 Mark as Recorded
+                          <Video className="w-4 h-4" />
+                          Mark as Recorded
                         </button>
                         <button
                           onClick={() => setSelectedOverlay(null)}
@@ -1555,7 +1477,7 @@ export default function Dashboard() {
   return (
     <div className="h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="bg-primary-600 shadow-sm flex-shrink-0">
+      <header className="bg-primary-600 shadow-sm border-b border-primary-700 flex-shrink-0">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
@@ -1564,7 +1486,7 @@ export default function Dashboard() {
                   onClick={handleBackToClients}
                   className="text-white hover:text-primary-100 transition-colors duration-200 flex items-center"
                 >
-                  ← Back
+                  <ArrowLeft className="w-4 h-4 mr-1" />Back
                 </button>
               )}
               {currentView === 'project-detail' && (
@@ -1572,7 +1494,7 @@ export default function Dashboard() {
                   onClick={handleBackToProjects}
                   className="text-white hover:text-primary-100 transition-colors duration-200 flex items-center"
                 >
-                  ← Back
+                  <ArrowLeft className="w-4 h-4 mr-1" />Back
                 </button>
               )}
               {currentView === 'script-maintenance' && (
@@ -1580,7 +1502,7 @@ export default function Dashboard() {
                   onClick={handleBackToProjectDetail}
                   className="text-white hover:text-primary-100 transition-colors duration-200 flex items-center"
                 >
-                  ← Back to Project
+                  <ArrowLeft className="w-4 h-4 mr-1" />Back to Project
                 </button>
               )}
               <h1 className="text-3xl font-bold text-white">
@@ -1613,7 +1535,7 @@ export default function Dashboard() {
                       className="bg-white text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center text-sm"
                       title={selectedClient.monitoringEnabled ? 'Re-seed daily monitoring' : 'Set up daily monitoring'}
                     >
-                      {selectedClient.monitoringEnabled ? '🔁 Monitoring active' : '🛰️ Set up monitoring'}
+                      {selectedClient.monitoringEnabled ? (<><Radio className="w-4 h-4 mr-2" />Monitoring active</>) : (<><Satellite className="w-4 h-4 mr-2" />Set up monitoring</>)}
                     </button>
                   )}
                   <button
@@ -1630,7 +1552,7 @@ export default function Dashboard() {
                   onClick={handleOpenScriptMaintenance}
                   className="bg-white text-primary-600 px-6 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center"
                 >
-                  🔍 Check Updates
+                  <Search className="w-4 h-4 mr-2" />Check Updates
                   {selectedProject?.pendingEditsCount && selectedProject.pendingEditsCount > 0 ? (
                     <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-orange-500 rounded-full">
                       {selectedProject.pendingEditsCount}
@@ -1674,7 +1596,7 @@ export default function Dashboard() {
               <div className="flex-1 overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
                 {clients.map((client) => (
-                  <div key={client.id} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group relative">
+                  <div key={client.id} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group relative">
                                         <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1779,7 +1701,7 @@ export default function Dashboard() {
                 {selectedClient && getClientProjects(selectedClient.id).map((project) => (
                   <div 
                     key={project.id} 
-                    className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group relative"
+                    className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group relative"
                   >
                     <button
                       onClick={(e) => {
@@ -1841,7 +1763,7 @@ export default function Dashboard() {
           <div className="h-full flex flex-col">
             <div className="flex-1 overflow-y-auto space-y-8 px-2">
               {/* Crawling Interface */}
-              <div className="bg-white rounded-lg shadow-lg p-8">
+              <div className="bg-white rounded-xl shadow-lg p-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Check for Documentation Updates</h2>
                 
                 {/* Crawl Mode Selection */}
@@ -1926,7 +1848,7 @@ export default function Dashboard() {
               {/* Persisted overlays from the daily cron — show whenever there
                   are pending edits and no manual check is in flight. */}
               {!updateResults && activeOverlays.length > 0 && selectedProject?.script && (
-                <div className="bg-white rounded-lg shadow-lg p-8">
+                <div className="bg-white rounded-xl shadow-lg p-8">
                   <div className="p-4 rounded-lg mb-6 bg-yellow-50 border border-yellow-200">
                     <div className="font-medium text-yellow-800">
                       ⚠️ {activeOverlays.length} suggested update{activeOverlays.length === 1 ? '' : 's'} from daily monitoring
@@ -1952,7 +1874,7 @@ export default function Dashboard() {
 
               {/* Update Results */}
               {updateResults && (
-                <div className="bg-white rounded-lg shadow-lg p-8">
+                <div className="bg-white rounded-xl shadow-lg p-8">
                   {updateResults.success ? (
                     <div>
                       {/* Overall Status */}
@@ -2064,7 +1986,6 @@ export default function Dashboard() {
                          />
                          <button
                            onClick={() => {
-                             console.log('🔘 Crawl button clicked, crawling state:', crawling);
                              handleCrawlDocumentation();
                            }}
                            disabled={crawling || !documentationUrl.trim()}
@@ -2097,7 +2018,6 @@ https://docs.example.com/api-reference`}
                          />
                          <button
                            onClick={() => {
-                             console.log('🔘 Scrape specific button clicked, crawling state:', crawling);
                              handleCrawlDocumentation();
                            }}
                            disabled={crawling || !specificUrls.trim()}
@@ -2202,7 +2122,7 @@ https://docs.example.com/api-reference`}
                              Modifying Script...
                            </>
                          ) : (
-                           'Modify Script with AI'
+                           <><Wand2 className="w-5 h-5 mr-2" />Modify Script with AI</>
                          )}
                        </button>
                      </div>
@@ -2242,7 +2162,6 @@ https://docs.example.com/api-reference`}
                      <div className="pt-2">
                        <button 
                          onClick={() => {
-                           console.log('🔘 Generate button clicked, generating state:', generating);
                            handleGenerateScript();
                          }}
                                                  disabled={
@@ -2251,7 +2170,7 @@ https://docs.example.com/api-reference`}
                           !userRequest.trim() || 
                           generating
                         }
-                         className="w-full bg-primary-600 text-white py-4 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
+                         className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
                        >
                          {generating ? (
                            <>
@@ -2259,7 +2178,7 @@ https://docs.example.com/api-reference`}
                              Generating Script...
                            </>
                          ) : (
-                           'Generate Script with AI'
+                           <><Wand2 className="w-5 h-5 mr-2" />Generate Script with AI</>
                          )}
                        </button>
                      </div>
@@ -2286,9 +2205,10 @@ https://docs.example.com/api-reference`}
                            </div>
                            <button
                              onClick={() => handleMarkRecordedInDetail(o.id)}
-                             className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition-colors"
+                             className="inline-flex items-center gap-1 px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition-colors"
                            >
-                             📹 Mark as Recorded
+                             <Video className="w-3 h-3" />
+                             Mark as Recorded
                            </button>
                          </div>
                        ))}
@@ -2308,7 +2228,7 @@ https://docs.example.com/api-reference`}
                        <button
                          onClick={handleManualScriptSave}
                          disabled={savingScript}
-                         className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                         className="px-3 py-1 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                        >
                          {savingScript ? (
                            <>
@@ -2452,7 +2372,7 @@ https://docs.example.com/api-reference`}
                                 disabled={!modificationRequest.trim()}
                                 className="flex-1 bg-blue-600 text-white py-2 px-4 rounded text-sm hover:bg-blue-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                               >
-                                🔄 Regenerate Selection
+                                <RefreshCw className="w-4 h-4 mr-2" />Regenerate Selection
                               </button>
                               <button
                                 onClick={() => {
@@ -2510,7 +2430,7 @@ https://docs.example.com/api-reference`}
                      <button
                        onClick={handleManualScriptSave}
                        disabled={savingScript}
-                       className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                       className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                      >
                        {savingScript ? (
                          <>
@@ -2532,7 +2452,7 @@ https://docs.example.com/api-reference`}
       {/* Client Creation Modal */}
       {showClientModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Add New Client</h2>
               <button 
@@ -2626,7 +2546,7 @@ https://docs.example.com/api-reference`}
                         type="button"
                         onClick={handleClientCrawlDocumentation}
                         disabled={clientCrawling || !clientForm.documentationUrl.trim()}
-                        className="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        className="px-3 py-2 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                       >
                         {clientCrawling ? (
                           <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
@@ -2655,7 +2575,7 @@ https://docs.company.com/user-guide`}
                         type="button"
                         onClick={handleClientCrawlDocumentation}
                         disabled={clientCrawling || !clientForm.specificUrls.trim()}
-                        className="w-full px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        className="w-full px-3 py-2 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                       >
                         {clientCrawling ? (
                           <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
@@ -2715,7 +2635,7 @@ https://docs.company.com/user-guide`}
       {/* Monitoring Setup Modal */}
       {showMonitoringModal && selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">
                 {selectedClient.monitoringEnabled ? 'Re-seed monitoring' : 'Set up daily monitoring'}
@@ -2789,7 +2709,7 @@ https://docs.company.com/user-guide`}
       {/* Project Creation Modal */}
       {showProjectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Add New Project</h2>
               <button 
