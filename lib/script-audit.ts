@@ -1,4 +1,4 @@
-import { generateWithFallback, SONNET, HAIKU } from './anthropic';
+import { generateWithFallback, SONNET, HAIKU, OPUS } from './anthropic';
 
 // ----- Haiku gate: is this doc change semantically meaningful? -------------
 
@@ -145,5 +145,164 @@ export async function auditScriptAgainstPage(input: {
     const msg = error instanceof Error ? error.message : String(error);
     console.error('Sonnet audit failed:', error);
     return { sections: [], rawText, parseError: msg };
+  }
+}
+
+// ----- Repo-release flow: audit a script against a changed feature doc -------
+//
+// Same OutdatedSection/AuditResult contract as the doc-page audit, but sourced
+// from a git diff of a `docs/features/*.md` file rather than a crawled web page.
+// Two differences that matter:
+//   1. It's given the exact DIFF (what just changed) as the primary signal, plus
+//      the full current doc for context — so it anchors on the change instead of
+//      re-deriving staleness from the whole doc every run.
+//   2. It runs on Opus 4.8 (with Sonnet fallback). This is the one judgment-
+//      critical call in the pipeline and its volume is tiny (gated on real doc
+//      changes), so the per-call premium is negligible.
+
+// Pull the outermost { … } out of a model response, tolerating stray prose or
+// fences around it. More robust than a plain fence-strip — matters when a
+// higher-reasoning model occasionally prefixes the JSON with a sentence.
+function extractJsonObject(text: string): string {
+  const stripped = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+  const start = stripped.indexOf('{');
+  const end = stripped.lastIndexOf('}');
+  if (start !== -1 && end !== -1 && end > start) {
+    return stripped.slice(start, end + 1);
+  }
+  return stripped;
+}
+
+const REPO_AUDIT_SYSTEM = `You are an expert tutorial-video-script auditor for a software product. You are given three things:
+1. FEATURE DOC — the current documentation for one product feature.
+2. WHAT CHANGED — the exact diff that was just merged to that doc. This is WHY you are auditing.
+3. SCRIPT — a tutorial video script.
+
+Your task: find sections of the SCRIPT that are now outdated or incorrect because of WHAT CHANGED. Anchor on the diff — a script line is outdated only if the change makes it wrong, incomplete, or misleading. If the script covers nothing affected by this change, return an empty array.
+
+WHAT COUNTS AS OUTDATED (relative to the change):
+- A capability or step the script describes that the change altered, removed, or replaced
+- A UI element, field, tab, or navigation path the change renamed or moved
+- A behaviour the script states that the change now contradicts
+- A newly required step, option, or prerequisite the script omits and should now mention
+
+🚨 CRITICAL: For "original_text", copy the EXACT text from the SCRIPT word-for-word — exact punctuation, spacing, and line breaks, a complete sentence or paragraph. DO NOT paraphrase, summarize, or rewrite. If the fix is an ADDITION with no single wrong sentence to anchor to, quote the nearest existing sentence the new content should follow.
+
+Return ONLY valid JSON (no markdown fences, no commentary):
+{
+  "outdated_sections": [
+    {
+      "original_text": "EXACT TEXT FROM SCRIPT",
+      "reason": "specific explanation tied to what changed",
+      "suggested_replacement": "corrected text based on the current feature doc",
+      "severity": "critical" | "moderate" | "minor",
+      "category": "missing_step" | "wrong_ui_element" | "incorrect_sequence" | "missing_detail"
+    }
+  ]
+}
+If nothing in the script is outdated by this change, return: { "outdated_sections": [] }`;
+
+export async function auditScriptAgainstRepoChange(input: {
+  featureName: string;
+  docPath: string;
+  blobUrl: string;
+  docContent: string;
+  diff: string;
+  script: string;
+}): Promise<AuditResult> {
+  let rawText = '';
+  try {
+    const { text } = await generateWithFallback({
+      system: REPO_AUDIT_SYSTEM,
+      content: [
+        {
+          type: 'text',
+          text: `FEATURE DOC — ${input.featureName} (${input.docPath}):\n${input.docContent}`,
+          // Cache the full doc so auditing several scripts against the same
+          // changed doc reuses it (~90% cheaper on the repeat scripts).
+          cache_control: { type: 'ephemeral' },
+        },
+        {
+          type: 'text',
+          text: `WHAT CHANGED (diff just merged to ${input.docPath}):\n${input.diff}`,
+        },
+        {
+          type: 'text',
+          text: `SCRIPT:\n${input.script}`,
+        },
+      ],
+      maxTokens: 8192,
+      // Opus 4.8 for the judgment; Sonnet 4.6 as availability fallback.
+      models: [OPUS, SONNET],
+      effort: 'high',
+      // Adaptive thinking keeps Opus's reasoning in dedicated thinking blocks,
+      // out of the visible text — so JSON parsing stays clean.
+      thinking: 'adaptive',
+    });
+    rawText = text;
+    try {
+      const parsed = JSON.parse(extractJsonObject(text)) as {
+        outdated_sections?: OutdatedSection[];
+      };
+      return { sections: parsed.outdated_sections ?? [], rawText };
+    } catch (parseError) {
+      const msg = parseError instanceof Error ? parseError.message : String(parseError);
+      console.error('Failed to parse repo audit JSON:', msg);
+      return { sections: [], rawText, parseError: msg };
+    }
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Repo audit failed:', error);
+    return { sections: [], rawText, parseError: msg };
+  }
+}
+
+// A short, plain-language "what changed → how it works now" summary of a single
+// feature-doc diff, for the digest email. Sonnet is plenty here; low effort.
+const REPO_SUMMARY_SYSTEM = `You explain product changes to a non-technical video producer. Given a documentation diff for one feature, write a SHORT plain-language summary of what actually changed and what it means for how the feature now works. 1–2 sentences, concrete, no fluff, no markdown, no lead-in like "This change". State the change, then the resulting behaviour. Example: "Data Templates can now attach Property Groups as bundled sub-units, so a template can pull in a whole group of related properties at once instead of listing each property individually."`;
+
+export async function summarizeRepoChange(input: {
+  featureName: string;
+  diff: string;
+}): Promise<string> {
+  try {
+    const { text } = await generateWithFallback({
+      system: REPO_SUMMARY_SYSTEM,
+      content: `FEATURE: ${input.featureName}\n\nDIFF:\n${input.diff}`,
+      maxTokens: 300,
+      models: [SONNET, HAIKU],
+      effort: 'low',
+    });
+    return text.trim();
+  } catch (error) {
+    console.error('Repo change summary failed:', error);
+    return `Updated ${input.featureName}.`;
+  }
+}
+
+// Cheap Haiku relevance router for the zero-config case (no explicit
+// video↔doc mapping): "is this script even about this feature?" Prunes
+// irrelevant (doc × script) pairs before the expensive Opus audit, so a
+// Property-Group change never burns an Opus call on a Categories video.
+// Fails OPEN — if the router errors, we let the Opus audit be the judge
+// rather than silently skipping a potentially real match.
+const COVERS_SYSTEM = `You are a fast relevance router. Given a product FEATURE (name + short description) and a tutorial video SCRIPT, decide whether the script is substantially about that feature — i.e. whether a change to that feature could plausibly make part of this script outdated. Answer with ONLY one word: "yes" or "no".`;
+
+export async function scriptCoversFeature(input: {
+  featureName: string;
+  featureBrief: string; // a short excerpt of the feature doc
+  script: string;
+}): Promise<boolean> {
+  try {
+    const { text } = await generateWithFallback({
+      system: COVERS_SYSTEM,
+      content: `FEATURE: ${input.featureName}\n${input.featureBrief}\n\nSCRIPT:\n${input.script}`,
+      maxTokens: 8,
+      models: [HAIKU, SONNET],
+    });
+    return /\byes\b/i.test(text);
+  } catch (error) {
+    console.error('scriptCoversFeature failed (failing open):', error);
+    return true;
   }
 }

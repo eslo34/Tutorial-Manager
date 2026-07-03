@@ -6,8 +6,12 @@ export const anthropic = new Anthropic({ apiKey: apiKey || '' });
 
 // Sonnet 4.6 — fast and capable; primary for full-script generation and analysis.
 // Haiku 4.5 — fastest; primary for lightweight chat and partial edits, fallback elsewhere.
+// Opus 4.8 — most capable; reserved for the judgment-critical repo-release audit,
+// where false positives/negatives are costly and call volume is low, so the
+// per-call premium is negligible.
 export const SONNET = 'claude-sonnet-4-6';
 export const HAIKU = 'claude-haiku-4-5';
+export const OPUS = 'claude-opus-4-8';
 
 type UserContent = string | Anthropic.ContentBlockParam[];
 
@@ -17,10 +21,16 @@ interface GenerateArgs {
   models: string[];
   content?: UserContent;
   messages?: Anthropic.MessageParam[];
-  // Sonnet-only. Defaults to 'medium' — UI flows can dial 'low' for snappiness;
-  // background analysis (e.g. the doc-audit pipeline) should use 'high' so it
+  // Sonnet/Opus only. Defaults to 'medium' — UI flows can dial 'low' for
+  // snappiness; background analysis (doc + repo audits) should use 'high' so it
   // doesn't miss anything.
   effort?: 'low' | 'medium' | 'high';
+  // Extended thinking mode. Defaults to 'disabled' (snappy, deterministic-ish).
+  // The repo-release audit passes 'adaptive' so Opus reasons in dedicated
+  // thinking blocks — better precision, and it keeps reasoning out of the
+  // visible text so JSON parsing stays clean. Only pass 'adaptive' for
+  // Sonnet/Opus (Haiku stays on the default).
+  thinking?: 'adaptive' | 'disabled';
 }
 
 // Calls the Messages API, trying each model in order until one returns a
@@ -33,6 +43,7 @@ export async function generateWithFallback({
   content,
   messages,
   effort = 'medium',
+  thinking = 'disabled',
 }: GenerateArgs): Promise<{ text: string; modelUsed: string }> {
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY not found in environment variables');
@@ -53,10 +64,16 @@ export async function generateWithFallback({
         messages: messageList,
       };
 
-      // The effort parameter trades latency for thoroughness on Sonnet 4.6.
-      // Not supported on Haiku 4.5, so only set it for Sonnet. Per-caller
-      // override via the `effort` arg; default 'medium' is the baseline.
-      if (model === SONNET) {
+      // Adaptive thinking (Opus/Sonnet) is set via the escape hatch so we don't
+      // depend on the installed SDK typing the 'adaptive' variant.
+      if (thinking === 'adaptive') {
+        (params as unknown as Record<string, unknown>).thinking = { type: 'adaptive' };
+      }
+
+      // The effort parameter trades latency for thoroughness. Supported on
+      // Sonnet 4.6 and Opus 4.8, not on Haiku 4.5 — so only set it for those.
+      // Per-caller override via the `effort` arg; default 'medium' is baseline.
+      if (model === SONNET || model === OPUS) {
         (params as unknown as Record<string, unknown>).output_config = { effort };
       }
 

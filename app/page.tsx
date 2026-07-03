@@ -8,7 +8,7 @@ import { crawlDocumentation, CrawlResponse, getContentSummary, formatContentForA
 import { getPromptTemplate } from '@/lib/prompt-templates';
 import { generateScript } from '@/lib/openai';
 import { VideoType } from '@/lib/types';
-import { Plus, Users, X, LogOut, FileText, Search, Trash2, BookOpen, PenTool, RefreshCw, Radio, Satellite, Video, Wand2, ArrowLeft } from 'lucide-react';
+import { Plus, Users, X, LogOut, FileText, Search, Trash2, BookOpen, PenTool, RefreshCw, Radio, Satellite, Video, Wand2, ArrowLeft, GitBranch } from 'lucide-react';
 import AuthForm from '@/components/AuthForm';
 import LearningChat from '@/components/LearningChat';
 
@@ -81,6 +81,18 @@ export default function Dashboard() {
   const [monitoringRootUrl, setMonitoringRootUrl] = useState('');
   const [seedingMonitoring, setSeedingMonitoring] = useState(false);
   const [monitoringMessage, setMonitoringMessage] = useState<string | null>(null);
+
+  // Repo-release monitoring modal (GitHub feature-doc → automatic script updates)
+  const [showRepoWatchModal, setShowRepoWatchModal] = useState(false);
+  const [repoWatchLoaded, setRepoWatchLoaded] = useState(false);
+  const [repoWatchTokenConfigured, setRepoWatchTokenConfigured] = useState(false);
+  const [repoWatchActive, setRepoWatchActive] = useState(false);
+  const [savingRepoWatch, setSavingRepoWatch] = useState(false);
+  const [repoWatchMessage, setRepoWatchMessage] = useState<string | null>(null);
+  const [rwOwner, setRwOwner] = useState('bimobject');
+  const [rwName, setRwName] = useState('bim-dictionary');
+  const [rwBranch, setRwBranch] = useState('main');
+  const [rwDocsPath, setRwDocsPath] = useState('docs/features');
 
   // Deep-link processing guard — fires once after initial data load
   const deepLinkProcessedRef = useRef(false);
@@ -361,6 +373,68 @@ export default function Dashboard() {
       setMonitoringMessage(`❌ ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setSeedingMonitoring(false);
+    }
+  };
+
+  const openRepoWatchModal = async () => {
+    if (!selectedClient) return;
+    setRepoWatchMessage(null);
+    setRepoWatchLoaded(false);
+    setShowRepoWatchModal(true);
+    try {
+      const res = await fetch(`/api/repo-watch?clientId=${selectedClient.id}`);
+      const data = await res.json();
+      if (res.ok) {
+        setRepoWatchTokenConfigured(!!data.tokenConfigured);
+        if (data.watch) {
+          setRwOwner(data.watch.owner);
+          setRwName(data.watch.name);
+          setRwBranch(data.watch.branch);
+          setRwDocsPath(data.watch.docs_path);
+          setRepoWatchActive(!!data.watch.enabled);
+        } else {
+          setRepoWatchActive(false);
+        }
+      }
+    } catch (error) {
+      console.error('Load repo watch error:', error);
+    } finally {
+      setRepoWatchLoaded(true);
+    }
+  };
+
+  const handleSaveRepoWatch = async (enabled: boolean) => {
+    if (!selectedClient || !rwOwner.trim() || !rwName.trim()) return;
+    setSavingRepoWatch(true);
+    setRepoWatchMessage(null);
+    try {
+      const res = await fetch('/api/repo-watch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientId: selectedClient.id,
+          owner: rwOwner.trim(),
+          name: rwName.trim(),
+          branch: rwBranch.trim(),
+          docsPath: rwDocsPath.trim(),
+          enabled,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setRepoWatchMessage(`❌ ${data.error || 'Failed to save'}`);
+        return;
+      }
+      setRepoWatchActive(enabled);
+      setRepoWatchMessage(
+        enabled
+          ? '✅ Repo updates are on. The daily check will watch this repo from now on.'
+          : '✅ Repo updates paused.'
+      );
+    } catch (error) {
+      setRepoWatchMessage(`❌ ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setSavingRepoWatch(false);
     }
   };
 
@@ -1538,6 +1612,15 @@ export default function Dashboard() {
                       {selectedClient.monitoringEnabled ? (<><Radio className="w-4 h-4 mr-2" />Monitoring active</>) : (<><Satellite className="w-4 h-4 mr-2" />Set up monitoring</>)}
                     </button>
                   )}
+                  {selectedClient && (
+                    <button
+                      onClick={openRepoWatchModal}
+                      className="bg-white text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center text-sm"
+                      title="Automatic script updates from a GitHub repo's feature docs"
+                    >
+                      <GitBranch className="w-4 h-4 mr-2" />Repo updates
+                    </button>
+                  )}
                   <button
                     onClick={() => setShowProjectModal(true)}
                     className="bg-white text-primary-600 px-6 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center"
@@ -2701,6 +2784,86 @@ https://docs.company.com/user-guide`}
                   {seedingMonitoring ? 'Crawling...' : (selectedClient.monitoringEnabled ? 'Re-seed' : 'Set up monitoring')}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Repo-updates config modal */}
+      {showRepoWatchModal && selectedClient && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Repo updates</h2>
+              <button
+                onClick={() => { if (savingRepoWatch) return; setShowRepoWatchModal(false); setRepoWatchMessage(null); }}
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <p className="text-sm text-gray-600 mb-4">
+                Each day the system checks this GitHub repo&apos;s feature docs for changes and, when a feature changes, audits the affected video scripts — no video-to-doc mapping needed. Read-only: it only ever reads the repo.
+              </p>
+
+              {!repoWatchLoaded ? (
+                <div className="flex items-center text-sm text-gray-500 py-6">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500 mr-2"></div>
+                  Loading…
+                </div>
+              ) : (
+                <>
+                  {!repoWatchTokenConfigured && (
+                    <div className="mb-4 text-xs p-3 rounded bg-amber-50 border border-amber-200 text-amber-800">
+                      Heads up: <code>GITHUB_RELEASE_TOKEN</code> isn&apos;t set on the server yet. You can save this config now, but checks won&apos;t run until the token is added to the deployment&apos;s environment variables.
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Owner</label>
+                      <input type="text" value={rwOwner} onChange={(e) => setRwOwner(e.target.value)} placeholder="bimobject" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" disabled={savingRepoWatch} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Repo</label>
+                      <input type="text" value={rwName} onChange={(e) => setRwName(e.target.value)} placeholder="bim-dictionary" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" disabled={savingRepoWatch} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                      <input type="text" value={rwBranch} onChange={(e) => setRwBranch(e.target.value)} placeholder="main" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" disabled={savingRepoWatch} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Docs folder</label>
+                      <input type="text" value={rwDocsPath} onChange={(e) => setRwDocsPath(e.target.value)} placeholder="docs/features" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" disabled={savingRepoWatch} />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">
+                    Status: {repoWatchActive ? <span className="text-teal-600 font-medium">active</span> : <span className="text-gray-500">off</span>}
+                  </p>
+
+                  {repoWatchMessage && (
+                    <div className="mt-4 text-sm p-3 rounded bg-gray-50 border border-gray-200">{repoWatchMessage}</div>
+                  )}
+
+                  <div className="flex justify-between items-center gap-3 mt-6">
+                    {repoWatchActive ? (
+                      <button type="button" onClick={() => handleSaveRepoWatch(false)} disabled={savingRepoWatch} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50">
+                        Pause
+                      </button>
+                    ) : (<span />)}
+                    <div className="flex gap-3">
+                      <button type="button" onClick={() => { if (savingRepoWatch) return; setShowRepoWatchModal(false); setRepoWatchMessage(null); }} disabled={savingRepoWatch} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50">
+                        Cancel
+                      </button>
+                      <button type="button" onClick={() => handleSaveRepoWatch(true)} disabled={savingRepoWatch || !rwOwner.trim() || !rwName.trim()} className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 flex items-center">
+                        {savingRepoWatch && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>}
+                        {repoWatchActive ? 'Save' : 'Turn on'}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

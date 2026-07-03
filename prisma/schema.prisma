@@ -65,6 +65,7 @@ model Client {
   snapshots           DocPageSnapshot[]
   check_runs          CheckRun[]
   repo_files          RepoFile[]
+  repo_watch          RepoWatch?
 
   @@map("clients")
 }
@@ -94,6 +95,12 @@ model Project {
   // Authoring source: "docs" (crawl documentation) or "code" (uploaded repo +
   // repo-aware chat). Existing projects default to docs so nothing changes.
   source_type         String   @default("docs")
+
+  // Repo-release monitoring: which committed feature-doc file(s) this video
+  // covers (repo-relative paths, e.g. "docs/features/property-group.md"). When
+  // one of these changes upstream, this project's script gets audited against
+  // the change. Empty = not mapped to any feature doc yet.
+  feature_doc_paths   String[] @default([])
 
   // Relations
   user                User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -277,4 +284,27 @@ model ScriptChatMessage {
 
   @@index([project_id])
   @@map("script_chat_messages")
+}
+
+// Configures repo-release monitoring for one client: which GitHub repo + branch
+// to watch, which folder holds the committed feature docs, and how far we've
+// processed. The daily cron compares `last_processed_sha…branch head`, routes
+// changed feature docs to the videos mapped via Project.feature_doc_paths, and
+// audits each affected script. Read-only: the token only ever needs Contents:Read.
+model RepoWatch {
+  id                 String    @id @default(cuid())
+  client_id          String    @unique
+  owner              String    // GitHub org/user, e.g. "bimobject"
+  name               String    // repo name, e.g. "bim-dictionary"
+  branch             String    @default("main")
+  docs_path          String    @default("docs/features") // folder prefix that holds the feature docs
+  last_processed_sha String?   // advanced only after a successful run; null on first run
+  enabled            Boolean   @default(true)
+  last_checked_at    DateTime?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  client Client @relation(fields: [client_id], references: [id], onDelete: Cascade)
+
+  @@map("repo_watches")
 }
