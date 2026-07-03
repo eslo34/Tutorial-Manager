@@ -93,6 +93,7 @@ export default function Dashboard() {
   const [rwName, setRwName] = useState('bim-dictionary');
   const [rwBranch, setRwBranch] = useState('main');
   const [rwDocsPath, setRwDocsPath] = useState('docs/features');
+  const [repoRuns, setRepoRuns] = useState<Array<{ id: string; started_at: string; status: string; summary: string | null }>>([]);
 
   // Deep-link processing guard — fires once after initial data load
   const deepLinkProcessedRef = useRef(false);
@@ -386,6 +387,7 @@ export default function Dashboard() {
       const data = await res.json();
       if (res.ok) {
         setRepoWatchTokenConfigured(!!data.tokenConfigured);
+        setRepoRuns(Array.isArray(data.recentRuns) ? data.recentRuns : []);
         if (data.watch) {
           setRwOwner(data.watch.owner);
           setRwName(data.watch.name);
@@ -2841,6 +2843,27 @@ https://docs.company.com/user-guide`}
                   <p className="text-xs text-gray-500 mt-3">
                     Status: {repoWatchActive ? <span className="text-teal-600 font-medium">active</span> : <span className="text-gray-500">off</span>}
                   </p>
+
+                  <div className="mt-4">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Recent checks</p>
+                    {repoRuns.length === 0 ? (
+                      <p className="text-xs text-gray-400">
+                        No checks logged yet. Each daily run (06:00 UTC) is recorded here — even on days where nothing changed — so you can confirm it ran.
+                      </p>
+                    ) : (
+                      <div className="max-h-44 overflow-y-auto rounded-lg border border-gray-200 divide-y divide-gray-100">
+                        {repoRuns.map((r) => (
+                          <div key={r.id} className="px-3 py-2 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-500">{new Date(r.started_at).toLocaleString()}</span>
+                              <span className={r.status === 'error' ? 'text-red-600 font-medium' : r.status === 'partial' ? 'text-amber-600 font-medium' : 'text-teal-600 font-medium'}>{r.status}</span>
+                            </div>
+                            <div className="text-gray-700 mt-0.5">{r.summary || '—'}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   {repoWatchMessage && (
                     <div className="mt-4 text-sm p-3 rounded bg-gray-50 border border-gray-200">{repoWatchMessage}</div>

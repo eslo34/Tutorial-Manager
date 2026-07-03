@@ -244,6 +244,8 @@ model CheckRun {
   pages_trivial  Int       @default(0)
   edits_proposed Int       @default(0)
   error_message  String?
+  source         String    @default("docs") // "docs" (crawl) | "repo" (feature-doc watch)
+  summary        String?   // one-line human-readable outcome, for the activity log
 
   client Client @relation(fields: [client_id], references: [id], onDelete: Cascade)
 

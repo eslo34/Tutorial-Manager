@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     const repoLabel = `${owner}/${name}`;
 
     const checkRun = await prisma.checkRun.create({
-      data: { client_id: clientId, status: 'running' },
+      data: { client_id: clientId, status: 'running', source: 'repo' },
     });
     checkRunId = checkRun.id;
 
@@ -101,7 +101,11 @@ export async function POST(request: NextRequest) {
       });
       await prisma.checkRun.update({
         where: { id: checkRunId },
-        data: { status: 'success', finished_at: new Date() },
+        data: {
+          status: 'success',
+          finished_at: new Date(),
+          summary: 'Watching started — first run just records the baseline; audits begin on the next change.',
+        },
       });
       return NextResponse.json({ runId: checkRunId, firstRun: true, seededSha: head });
     }
@@ -115,7 +119,11 @@ export async function POST(request: NextRequest) {
       });
       await prisma.checkRun.update({
         where: { id: checkRunId },
-        data: { status: 'success', finished_at: new Date() },
+        data: {
+          status: 'success',
+          finished_at: new Date(),
+          summary: 'Checked — no new commits since the last run.',
+        },
       });
       return NextResponse.json({ runId: checkRunId, aheadBy: 0, changedDocs: 0 });
     }
@@ -142,6 +150,7 @@ export async function POST(request: NextRequest) {
           pages_checked: changedDocs.length,
           pages_changed: changedDocs.length,
           error_message: `${changedDocs.length} feature docs changed — likely a docs restructure; skipped AI`,
+          summary: `${changedDocs.length} feature docs changed at once — looks like a bulk restructure, so the AI audit was skipped. Review manually.`,
         },
       });
       if (process.env.MONITORING_TO_EMAIL) {
@@ -284,6 +293,19 @@ export async function POST(request: NextRequest) {
       data: { last_processed_sha: head, last_checked_at: new Date() },
     });
 
+    const emailed = changeGroups.size > 0 && !!process.env.MONITORING_TO_EMAIL;
+    let runSummary: string;
+    if (editsProposed > 0) {
+      runSummary = `${changeGroups.size} feature${changeGroups.size === 1 ? '' : 's'} changed -> ${editsProposed} suggested edit${editsProposed === 1 ? '' : 's'}${emailed ? ', digest emailed' : ''}.`;
+    } else if (changedDocs.length > 0) {
+      runSummary = `${changedDocs.length} feature doc${changedDocs.length === 1 ? '' : 's'} changed, but nothing in the scripts was outdated.`;
+    } else {
+      runSummary = 'Checked — no feature-doc changes.';
+    }
+    if (overflow > 0) {
+      runSummary += ` (${overflow} audit${overflow === 1 ? '' : 's'} deferred to the next run.)`;
+    }
+
     const status = overflow > 0 ? 'partial' : 'success';
     await prisma.checkRun.update({
       where: { id: checkRunId },
@@ -294,6 +316,7 @@ export async function POST(request: NextRequest) {
         pages_changed: changedDocs.length,
         pages_trivial: pagesTrivial,
         edits_proposed: editsProposed,
+        summary: runSummary,
       },
     });
 
@@ -334,7 +357,12 @@ export async function POST(request: NextRequest) {
       await prisma.checkRun
         .update({
           where: { id: checkRunId },
-          data: { status: 'error', finished_at: new Date(), error_message: message },
+          data: {
+            status: 'error',
+            finished_at: new Date(),
+            error_message: message,
+            summary: `Check failed: ${message.slice(0, 200)}`,
+          },
         })
         .catch(() => undefined);
     }

@@ -24,9 +24,18 @@ export async function GET(request: NextRequest) {
   if (!client) {
     return NextResponse.json({ error: 'Client not found' }, { status: 404 });
   }
+  // Recent repo checks — the activity log the UI shows so you can confirm the
+  // daily run happened even on days where nothing changed.
+  const recentRuns = await prisma.checkRun.findMany({
+    where: { client_id: clientId, source: 'repo' },
+    orderBy: { started_at: 'desc' },
+    take: 20,
+    select: { id: true, started_at: true, status: true, summary: true },
+  });
   return NextResponse.json({
     watch: client.repo_watch,
     tokenConfigured: !!process.env.GITHUB_RELEASE_TOKEN,
+    recentRuns,
   });
 }
 

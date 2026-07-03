@@ -149,6 +149,10 @@ a deep link to its review screen. Sent only when at least one edit was produced.
 ## Inspecting state
 
 - `RepoWatch` holds the repo config + `last_processed_sha` cursor per client.
-- `CheckRun` rows also cover repo runs (`pages_changed` = feature docs changed).
+- `CheckRun` rows also cover repo runs (`source = 'repo'`, `pages_changed` =
+  feature docs changed, `summary` = a one-line human-readable outcome). The
+  **Repo updates** modal shows the last ~20 of these as an activity log, so you
+  can confirm the daily check ran — even on days where nothing changed and no
+  email was sent.
 - Repo-sourced `PendingScriptEdit` rows have `source_snapshot_id = null` and a
   `source_url` pointing at the GitHub blob at the audited sha.
