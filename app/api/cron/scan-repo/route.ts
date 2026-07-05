@@ -11,6 +11,9 @@ import {
   scriptCoversFeature,
   auditScriptAgainstRepoChange,
   summarizeRepoChange,
+  extractUiWorkflowChanges,
+  scriptMightBeAffected,
+  auditScriptAgainstChangeNotes,
 } from '@/lib/script-audit';
 import { sendRepoDigestEmail, sendErrorEmail } from '@/lib/email';
 
@@ -20,6 +23,7 @@ const TIME_BUDGET_MS = 50_000; // ~10s headroom under the 60s function ceiling
 const MAX_DOCS_CHANGED = 15; // more feature docs than this in one run = bulk restructure; skip AI
 const MAX_AUDITS = 16; // safety cap on Opus audits per run
 const RELEVANCE_CONCURRENCY = 6;
+const UI_GROUP_KEY = '__ui_changes__'; // digest group for commit-derived UI/workflow findings
 
 function isAuthorized(request: NextRequest): boolean {
   const auth = request.headers.get('authorization');
@@ -293,15 +297,114 @@ export async function POST(request: NextRequest) {
       data: { last_processed_sha: head, last_checked_at: new Date() },
     });
 
-    const emailed = changeGroups.size > 0 && !!process.env.MONITORING_TO_EMAIL;
-    let runSummary: string;
-    if (editsProposed > 0) {
-      runSummary = `${changeGroups.size} feature${changeGroups.size === 1 ? '' : 's'} changed -> ${editsProposed} suggested edit${editsProposed === 1 ? '' : 's'}${emailed ? ', digest emailed' : ''}.`;
-    } else if (changedDocs.length > 0) {
-      runSummary = `${changedDocs.length} feature doc${changedDocs.length === 1 ? '' : 's'} changed, but nothing in the scripts was outdated.`;
-    } else {
-      runSummary = 'Checked — no feature-doc changes.';
+    // ----- Option A: user-facing changes described in commit / PR messages ---
+    // Catches the "small stuff" (renamed or moved buttons, layout tweaks,
+    // reordered steps) that may never reach the feature docs. Runs off the
+    // commit descriptions we already fetched, whether or not a doc changed.
+    let uiChangeNotes: string[] = [];
+    let uiEditsProposed = 0;
+    if (Date.now() < deadline && auditsRun < MAX_AUDITS && projects.length > 0) {
+      const commitMessages = Array.from(
+        new Set(cmp.commits.map((c) => c.message.trim()).filter((m) => m.length > 0))
+      )
+        .slice(0, 120)
+        .map((m) => m.slice(0, 300));
+      if (commitMessages.length > 0) {
+        uiChangeNotes = await extractUiWorkflowChanges({ commitMessages });
+      }
     }
+
+    if (uiChangeNotes.length > 0) {
+      const compareUrl = `https://github.com/${owner}/${name}/compare/${watch.last_processed_sha}...${head}`;
+      for (const project of projects) {
+        if (!project.script) continue;
+        if (Date.now() > deadline || auditsRun >= MAX_AUDITS) {
+          overflow += 1;
+          continue;
+        }
+        // Cheap prefilter: could any of these changes touch this script at all?
+        const maybe = await scriptMightBeAffected({
+          changeNotes: uiChangeNotes,
+          script: project.script,
+        });
+        if (!maybe) continue;
+        if (Date.now() > deadline || auditsRun >= MAX_AUDITS) {
+          overflow += 1;
+          continue;
+        }
+        auditsRun += 1;
+        const { sections } = await auditScriptAgainstChangeNotes({
+          changeNotes: uiChangeNotes,
+          script: project.script,
+        });
+        const significant = sections.filter(
+          (s) => s.severity === 'critical' || s.severity === 'moderate'
+        );
+        if (significant.length === 0) continue;
+
+        await prisma.pendingScriptEdit.createMany({
+          data: significant.map((s) => ({
+            project_id: project.id,
+            source_url: compareUrl,
+            original_text: s.original_text,
+            suggested_replacement: s.suggested_replacement,
+            reason: s.reason,
+            severity: s.severity,
+            category: s.category,
+          })),
+        });
+        uiEditsProposed += significant.length;
+        editsProposed += significant.length;
+
+        let group = changeGroups.get(UI_GROUP_KEY);
+        if (!group) {
+          group = {
+            feature: 'UI & workflow changes',
+            docPath: 'from developer change descriptions',
+            sourceUrl: compareUrl,
+            summary: uiChangeNotes.map((c) => `• ${c}`).join('  '),
+            videos: new Map(),
+          };
+          changeGroups.set(UI_GROUP_KEY, group);
+        }
+        let video = group.videos.get(project.id);
+        if (!video) {
+          video = { id: project.id, title: project.title, edits: [] };
+          group.videos.set(project.id, video);
+        }
+        for (const s of significant) {
+          video.edits.push({ severity: s.severity, category: s.category, reason: s.reason });
+        }
+      }
+    }
+
+    // ----- Build the run summary (feature-doc pass + UI/commit pass) --------
+    const docFeatureGroups = Array.from(changeGroups.keys()).filter(
+      (k) => k !== UI_GROUP_KEY
+    ).length;
+    const docEdits = editsProposed - uiEditsProposed;
+    const summaryParts: string[] = [];
+    if (changedDocs.length === 0) {
+      summaryParts.push('no feature-doc changes');
+    } else if (docEdits > 0) {
+      summaryParts.push(
+        `${docFeatureGroups} feature${docFeatureGroups === 1 ? '' : 's'} changed -> ${docEdits} edit${docEdits === 1 ? '' : 's'}`
+      );
+    } else {
+      summaryParts.push(
+        `${changedDocs.length} feature doc${changedDocs.length === 1 ? '' : 's'} changed, nothing outdated`
+      );
+    }
+    if (uiChangeNotes.length > 0) {
+      summaryParts.push(
+        uiEditsProposed > 0
+          ? `${uiChangeNotes.length} UI/workflow change${uiChangeNotes.length === 1 ? '' : 's'} from commits -> ${uiEditsProposed} edit${uiEditsProposed === 1 ? '' : 's'}`
+          : `${uiChangeNotes.length} UI/workflow change${uiChangeNotes.length === 1 ? '' : 's'} from commits, nothing outdated`
+      );
+    }
+    const emailed = changeGroups.size > 0 && !!process.env.MONITORING_TO_EMAIL;
+    let runSummary = `Checked — ${summaryParts.join('; ')}.`;
+    if (emailed) runSummary += ' Digest emailed.';
     if (overflow > 0) {
       runSummary += ` (${overflow} audit${overflow === 1 ? '' : 's'} deferred to the next run.)`;
     }

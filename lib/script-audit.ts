@@ -306,3 +306,130 @@ export async function scriptCoversFeature(input: {
     return true;
   }
 }
+
+// ----- Option A: user-facing changes described in commit / PR messages ------
+//
+// Feature docs describe behaviour; they often miss the small UI stuff (a button
+// renamed or moved, a page relaid out, a step reordered). Those are frequently
+// described in the commit/PR messages, which we already fetch in the daily
+// compare. This pass mines those messages for user-facing changes and audits
+// the scripts against them — catching the minor drift the docs don't cover.
+
+const UI_EXTRACT_SYSTEM = `You are given a list of git commit / pull-request descriptions from a software product. Extract ONLY the changes that affect what an end-user sees or does in the app — the kind of thing that could make a tutorial video subtly wrong:
+- A button, menu item, tab, field, or link renamed, moved, added, or removed
+- A page or screen layout change / redesign
+- A step added to, removed from, or reordered in a workflow
+- A changed default, toggle, or option the user interacts with
+- A changed navigation path
+
+IGNORE everything internal that a user never sees: backend, API, database, tests, refactors, dependency bumps, CI, performance, logging, types, build config.
+
+For each real user-facing change, write ONE concise, concrete sentence describing it (include where in the app, if the message says). Merge duplicates. If there are no user-facing changes, return an empty list.
+
+Return ONLY valid JSON (no markdown fences, no commentary):
+{ "changes": ["...", "..."] }`;
+
+export async function extractUiWorkflowChanges(input: {
+  commitMessages: string[];
+}): Promise<string[]> {
+  const joined = input.commitMessages.map((m, i) => `${i + 1}. ${m}`).join('\n');
+  try {
+    const { text } = await generateWithFallback({
+      system: UI_EXTRACT_SYSTEM,
+      content: `COMMIT / PR DESCRIPTIONS:\n${joined}`,
+      maxTokens: 1024,
+      models: [SONNET, HAIKU],
+      effort: 'low',
+    });
+    const parsed = JSON.parse(extractJsonObject(text)) as { changes?: unknown };
+    if (!Array.isArray(parsed.changes)) return [];
+    return parsed.changes
+      .filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
+      .map((c) => c.trim());
+  } catch (error) {
+    console.error('extractUiWorkflowChanges failed:', error);
+    return [];
+  }
+}
+
+// Cheap Haiku prefilter: could ANY of these changes touch this script? Prunes
+// unrelated scripts before the Opus audit. Fails open.
+export async function scriptMightBeAffected(input: {
+  changeNotes: string[];
+  script: string;
+}): Promise<boolean> {
+  try {
+    const { text } = await generateWithFallback({
+      system: `Given a list of recent user-facing product changes and a tutorial video script, answer "yes" if ANY of the changes could plausibly make part of the script outdated, otherwise "no". Answer with ONLY one word: "yes" or "no".`,
+      content: `RECENT CHANGES:\n${input.changeNotes.map((c) => `- ${c}`).join('\n')}\n\nSCRIPT:\n${input.script}`,
+      maxTokens: 8,
+      models: [HAIKU, SONNET],
+    });
+    return /\byes\b/i.test(text);
+  } catch (error) {
+    console.error('scriptMightBeAffected failed (failing open):', error);
+    return true;
+  }
+}
+
+const CHANGE_NOTE_AUDIT_SYSTEM = `You are an expert tutorial-video-script auditor. You are given:
+1. RECENT CHANGES — a list of user-facing changes that just shipped in the product (renamed or moved buttons, layout changes, changed/reordered steps, etc.).
+2. SCRIPT — a tutorial video script.
+
+Find sections of the SCRIPT that are now outdated or incorrect because of one of the RECENT CHANGES. A line is outdated only if a listed change makes it wrong, misleading, or incomplete. If none of the changes affect this script, return an empty array.
+
+🚨 CRITICAL: For "original_text", copy the EXACT text from the SCRIPT word-for-word — exact punctuation, spacing, and line breaks; a complete sentence or paragraph, never a paraphrase.
+
+IMPORTANT: these changes come from short developer descriptions, so you may know THAT something changed (e.g. a button moved) without the exact new detail. In that case still flag the affected line, but in "suggested_replacement" tell the user what to check or re-record rather than inventing specifics you were not given.
+
+Return ONLY valid JSON (no markdown fences, no commentary):
+{
+  "outdated_sections": [
+    {
+      "original_text": "EXACT TEXT FROM SCRIPT",
+      "reason": "which change makes this outdated and why",
+      "suggested_replacement": "corrected text, or what to verify/re-record if the exact new detail isn't known",
+      "severity": "critical" | "moderate" | "minor",
+      "category": "missing_step" | "wrong_ui_element" | "incorrect_sequence" | "missing_detail"
+    }
+  ]
+}
+If nothing in the script is outdated, return: { "outdated_sections": [] }`;
+
+export async function auditScriptAgainstChangeNotes(input: {
+  changeNotes: string[];
+  script: string;
+}): Promise<AuditResult> {
+  let rawText = '';
+  try {
+    const { text } = await generateWithFallback({
+      system: CHANGE_NOTE_AUDIT_SYSTEM,
+      content: [
+        {
+          type: 'text',
+          text: `RECENT CHANGES:\n${input.changeNotes.map((c) => `- ${c}`).join('\n')}`,
+        },
+        { type: 'text', text: `SCRIPT:\n${input.script}` },
+      ],
+      maxTokens: 8192,
+      models: [OPUS, SONNET],
+      effort: 'high',
+      thinking: 'adaptive',
+    });
+    rawText = text;
+    try {
+      const parsed = JSON.parse(extractJsonObject(text)) as {
+        outdated_sections?: OutdatedSection[];
+      };
+      return { sections: parsed.outdated_sections ?? [], rawText };
+    } catch (parseError) {
+      const msg = parseError instanceof Error ? parseError.message : String(parseError);
+      console.error('Failed to parse change-note audit JSON:', msg);
+      return { sections: [], rawText, parseError: msg };
+    }
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Change-note audit failed:', error);
+    return { sections: [], rawText, parseError: msg };
+  }
+}

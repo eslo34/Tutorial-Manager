@@ -107,6 +107,15 @@ enabled `RepoWatch` to `/api/cron/scan-repo`. That route:
    cursor to `head`.
 7. Emails a digest (below) if anything was produced.
 
+Alongside the feature-doc pass, each run also mines the commit/PR descriptions in
+the same compare window for user-facing changes that may never reach the docs —
+renamed or moved buttons, layout tweaks, reordered steps (`extractUiWorkflowChanges`
+→ `scriptMightBeAffected` prefilter → `auditScriptAgainstChangeNotes`). These
+findings surface in the digest under a **"UI & workflow changes"** group, with
+`source_url` set to the GitHub compare view. This catches the small UI drift the
+feature docs don't describe; because it works off short developer descriptions, a
+finding may say "verify / re-record this" rather than give the exact new wording.
+
 Model split: **Haiku** gates/routes, **Sonnet** writes the plain-language "what
 changed" summary, **Opus 4.8** does the audit. Cadence stays daily — the heavy
 work is gated on real doc changes, not the clock, so checking daily costs
