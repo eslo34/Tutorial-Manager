@@ -911,7 +911,7 @@ export default function Dashboard() {
         end: idx + matchText.length,
         // Pale green bg + green underline; text color stays transparent
         // (inherited) so the textarea on top renders the real characters.
-        style: 'background-color: #bbf7d0; border-bottom: 2px solid #4ade80; padding: 0; border-radius: 3px;',
+        style: 'background-color: rgba(95, 227, 140, 0.18); border-bottom: 2px solid #5FE38C; padding: 0; border-radius: 3px;',
       });
     }
 
@@ -1422,7 +1422,7 @@ export default function Dashboard() {
           {/* Overlay Popup */}
           {selectedOverlay !== null && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="bg-raised rounded-xl border border-gray-200 shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900">
                     {overlays[selectedOverlay].status === 'accepted' ? 'Accepted Update' : 'Update Suggestion'}
@@ -1537,7 +1537,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-ground">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -1551,16 +1551,16 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="h-screen bg-white flex flex-col">
+    <div className="h-screen bg-ground flex flex-col">
       {/* Header */}
-      <header className="bg-primary-600 shadow-sm border-b border-primary-700 flex-shrink-0">
+      <header className="bg-raised border-b border-line flex-shrink-0">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
               {currentView === 'projects' && (
                 <button
                   onClick={handleBackToClients}
-                  className="text-white hover:text-primary-100 transition-colors duration-200 flex items-center"
+                  className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1" />Back
                 </button>
@@ -1568,7 +1568,7 @@ export default function Dashboard() {
               {currentView === 'project-detail' && (
                 <button
                   onClick={handleBackToProjects}
-                  className="text-white hover:text-primary-100 transition-colors duration-200 flex items-center"
+                  className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1" />Back
                 </button>
@@ -1576,12 +1576,12 @@ export default function Dashboard() {
               {currentView === 'script-maintenance' && (
                 <button
                   onClick={handleBackToProjectDetail}
-                  className="text-white hover:text-primary-100 transition-colors duration-200 flex items-center"
+                  className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1" />Back to Project
                 </button>
               )}
-              <h1 className="text-3xl font-bold text-white">
+              <h1 className="text-2xl font-bold tracking-tight text-white">
                 {currentView === 'clients' && 'Script Manager'}
                 {currentView === 'projects' && selectedClient?.name}
                 {currentView === 'project-detail' && selectedProject?.title}
@@ -1593,7 +1593,7 @@ export default function Dashboard() {
               {currentView === 'clients' && (
                 <button 
                   onClick={() => setShowClientModal(true)}
-                  className="bg-white text-primary-600 px-6 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center"
+                  className="bg-primary-600 text-ink px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium flex items-center"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   New Client
@@ -1608,7 +1608,7 @@ export default function Dashboard() {
                         setMonitoringMessage(null);
                         setShowMonitoringModal(true);
                       }}
-                      className="bg-white text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center text-sm"
+                      className="bg-primary-600 text-ink px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium flex items-center text-sm"
                       title={selectedClient.monitoringEnabled ? 'Re-seed daily monitoring' : 'Set up daily monitoring'}
                     >
                       {selectedClient.monitoringEnabled ? (<><Radio className="w-4 h-4 mr-2" />Monitoring active</>) : (<><Satellite className="w-4 h-4 mr-2" />Set up monitoring</>)}
@@ -1617,7 +1617,7 @@ export default function Dashboard() {
                   {selectedClient && (
                     <button
                       onClick={openRepoWatchModal}
-                      className="bg-white text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center text-sm"
+                      className="bg-primary-600 text-ink px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium flex items-center text-sm"
                       title="Automatic script updates from a GitHub repo's feature docs"
                     >
                       <GitBranch className="w-4 h-4 mr-2" />Repo updates
@@ -1625,7 +1625,7 @@ export default function Dashboard() {
                   )}
                   <button
                     onClick={() => setShowProjectModal(true)}
-                    className="bg-white text-primary-600 px-6 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center"
+                    className="bg-primary-600 text-ink px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium flex items-center"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     New Project
@@ -1635,7 +1635,7 @@ export default function Dashboard() {
               {currentView === 'project-detail' && selectedProject?.script && (
                 <button
                   onClick={handleOpenScriptMaintenance}
-                  className="bg-white text-primary-600 px-6 py-2 rounded-lg hover:bg-primary-50 transition-colors duration-200 font-medium flex items-center"
+                  className="bg-primary-600 text-ink px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium flex items-center"
                 >
                   <Search className="w-4 h-4 mr-2" />Check Updates
                   {selectedProject?.pendingEditsCount && selectedProject.pendingEditsCount > 0 ? (
@@ -1648,7 +1648,7 @@ export default function Dashboard() {
               
               <button 
                 onClick={handleLogout}
-                className="text-white hover:text-primary-100 transition-colors duration-200 flex items-center"
+                className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
@@ -1671,7 +1671,7 @@ export default function Dashboard() {
                   <p className="text-gray-600 mb-6">Get started by adding your first client</p>
                   <button 
                     onClick={() => setShowClientModal(true)}
-                    className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium"
+                    className="bg-primary-600 text-ink px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium"
                   >
                     Add Your First Client
                   </button>
@@ -1681,7 +1681,7 @@ export default function Dashboard() {
               <div className="flex-1 overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
                 {clients.map((client) => (
-                  <div key={client.id} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group relative">
+                  <div key={client.id} className="bg-raised border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group relative">
                                         <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1725,7 +1725,7 @@ export default function Dashboard() {
                     onClick={() => setClientMode('projects')}
                     className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       clientMode === 'projects'
-                        ? 'bg-white text-primary-700 shadow-sm'
+                        ? 'bg-gray-300 text-primary-400 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -1736,7 +1736,7 @@ export default function Dashboard() {
                     onClick={() => setClientMode('learning')}
                     className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       clientMode === 'learning'
-                        ? 'bg-white text-primary-700 shadow-sm'
+                        ? 'bg-gray-300 text-primary-400 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -1774,7 +1774,7 @@ export default function Dashboard() {
                   <p className="text-gray-600 mb-6">Create your first project to get started</p>
                   <button 
                     onClick={() => setShowProjectModal(true)}
-                    className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium"
+                    className="bg-primary-600 text-ink px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium"
                   >
                     Create Your First Project
                   </button>
@@ -1786,7 +1786,7 @@ export default function Dashboard() {
                 {selectedClient && getClientProjects(selectedClient.id).map((project) => (
                   <div 
                     key={project.id} 
-                    className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group relative"
+                    className="bg-raised border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group relative"
                   >
                     <button
                       onClick={(e) => {
@@ -1848,7 +1848,7 @@ export default function Dashboard() {
           <div className="h-full flex flex-col">
             <div className="flex-1 overflow-y-auto space-y-8 px-2">
               {/* Crawling Interface */}
-              <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="bg-raised rounded-xl border border-gray-200 shadow-lg p-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Check for Documentation Updates</h2>
                 
                 {/* Crawl Mode Selection */}
@@ -1923,7 +1923,7 @@ export default function Dashboard() {
                   className={`w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 ${
                     checkingUpdates || (maintenanceCrawlMode === 'crawl' && !maintenanceDocUrl.trim()) || (maintenanceCrawlMode === 'specific' && !maintenanceSpecificUrls.trim())
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-primary-600 text-white hover:bg-primary-700'
+                      : 'bg-primary-600 text-ink hover:bg-primary-700'
                   }`}
                 >
                   {checkingUpdates ? 'Checking for Updates...' : '🔍 Check for Updates'}
@@ -1933,7 +1933,7 @@ export default function Dashboard() {
               {/* Persisted overlays from the daily cron — show whenever there
                   are pending edits and no manual check is in flight. */}
               {!updateResults && activeOverlays.length > 0 && selectedProject?.script && (
-                <div className="bg-white rounded-xl shadow-lg p-8">
+                <div className="bg-raised rounded-xl border border-gray-200 shadow-lg p-8">
                   <div className="p-4 rounded-lg mb-6 bg-yellow-50 border border-yellow-200">
                     <div className="font-medium text-yellow-800">
                       ⚠️ {activeOverlays.length} suggested update{activeOverlays.length === 1 ? '' : 's'} from daily monitoring
@@ -1959,7 +1959,7 @@ export default function Dashboard() {
 
               {/* Update Results */}
               {updateResults && (
-                <div className="bg-white rounded-xl shadow-lg p-8">
+                <div className="bg-raised rounded-xl border border-gray-200 shadow-lg p-8">
                   {updateResults.success ? (
                     <div>
                       {/* Overall Status */}
@@ -2022,7 +2022,7 @@ export default function Dashboard() {
                {selectedProject?.sourceType !== 'code' && (
                <div className="lg:col-span-2 space-y-6 overflow-y-auto px-2">
                  {/* Documentation Scraping Section */}
-                 <div className="bg-white p-4 rounded-lg border border-gray-200">
+                 <div className="bg-raised p-4 rounded-lg border border-gray-200">
                    <label className="block text-sm font-medium text-gray-700 mb-3">
                      Documentation Scraping
                    </label>
@@ -2074,7 +2074,7 @@ export default function Dashboard() {
                              handleCrawlDocumentation();
                            }}
                            disabled={crawling || !documentationUrl.trim()}
-                           className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                           className="px-4 py-2 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                          >
                            {crawling ? (
                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -2106,7 +2106,7 @@ https://docs.example.com/api-reference`}
                              handleCrawlDocumentation();
                            }}
                            disabled={crawling || !specificUrls.trim()}
-                           className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                           className="w-full px-4 py-2 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                          >
                            {crawling ? (
                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -2135,7 +2135,7 @@ https://docs.example.com/api-reference`}
                            })()}
                            <div className="mt-3">
                              <select 
-                               className="w-full text-xs bg-white border border-primary-300 rounded-md px-2 py-1 text-primary-800"
+                               className="w-full text-xs bg-raised border border-primary-300 rounded-md px-2 py-1 text-primary-800"
                                onChange={(e) => {
                                  if (e.target.value) {
                                    window.open(e.target.value, '_blank');
@@ -2182,7 +2182,7 @@ https://docs.example.com/api-reference`}
                        </p>
                      </div>
 
-                     <div className="bg-white p-4 rounded-lg border border-gray-200">
+                     <div className="bg-raised p-4 rounded-lg border border-gray-200">
                        <label className="block text-sm font-medium text-gray-700 mb-3">
                          What changes would you like to make to the script? *
                        </label>
@@ -2217,7 +2217,7 @@ https://docs.example.com/api-reference`}
                  ) : (
                    /* Original Script Generation Mode */
                    <>
-                     <div className="bg-white p-4 rounded-lg border border-gray-200">
+                     <div className="bg-raised p-4 rounded-lg border border-gray-200">
                        <label className="block text-sm font-medium text-gray-700 mb-3">
                          What should this tutorial teach? *
                        </label>
@@ -2230,7 +2230,7 @@ https://docs.example.com/api-reference`}
                        />
                      </div>
 
-                     <div className="bg-white p-4 rounded-lg border border-gray-200">
+                     <div className="bg-raised p-4 rounded-lg border border-gray-200">
                        <label className="block text-sm font-medium text-gray-700 mb-3">
                          AI Prompt Template
                          <span className="text-xs text-gray-500 ml-2">(Auto-filled based on video type)</span>
@@ -2284,7 +2284,7 @@ https://docs.example.com/api-reference`}
                      </p>
                      <div className="space-y-2 max-h-40 overflow-y-auto">
                        {acceptedOverlays.map((o) => (
-                         <div key={o.id} className="bg-white border border-yellow-200 rounded p-2">
+                         <div key={o.id} className="bg-raised border border-yellow-200 rounded p-2">
                            <div className="text-xs text-gray-700 mb-2 line-clamp-2">
                              &ldquo;{(o.suggested_replacement || '').slice(0, 200)}{(o.suggested_replacement || '').length > 200 ? '…' : ''}&rdquo;
                            </div>
@@ -2313,7 +2313,7 @@ https://docs.example.com/api-reference`}
                        <button
                          onClick={handleManualScriptSave}
                          disabled={savingScript}
-                         className="px-3 py-1 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                         className="px-3 py-1 bg-primary-600 text-ink text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                        >
                          {savingScript ? (
                            <>
@@ -2377,7 +2377,7 @@ https://docs.example.com/api-reference`}
                             ? 'bg-blue-50 border-blue-200' 
                             : 'bg-transparent border-gray-200 hover:border-gray-300'
                         } text-gray-900 p-6 rounded-lg border absolute inset-0 w-full h-full resize-none font-sans leading-relaxed text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 z-10`}
-                        style={{ background: generatedScript ? undefined : 'rgba(249, 250, 251, 0.8)' }}
+                        style={{ background: generatedScript ? undefined : 'rgba(11, 13, 18, 0.72)' }}
                         placeholder={
                           generatedScript 
                             ? "✨ Fresh AI result - will become editable in a moment..." 
@@ -2515,7 +2515,7 @@ https://docs.example.com/api-reference`}
                      <button
                        onClick={handleManualScriptSave}
                        disabled={savingScript}
-                       className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                       className="w-full px-4 py-3 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                      >
                        {savingScript ? (
                          <>
@@ -2537,7 +2537,7 @@ https://docs.example.com/api-reference`}
       {/* Client Creation Modal */}
       {showClientModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-raised rounded-xl border border-gray-200 shadow-xl max-w-md w-full">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Add New Client</h2>
               <button 
@@ -2580,7 +2580,7 @@ https://docs.example.com/api-reference`}
               </div>
 
               {/* Documentation Scraping Section */}
-              <div className="mb-4 border-t pt-4">
+              <div className="mb-4 border-t border-gray-200 pt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Company Documentation (Optional)
                 </label>
@@ -2631,7 +2631,7 @@ https://docs.example.com/api-reference`}
                         type="button"
                         onClick={handleClientCrawlDocumentation}
                         disabled={clientCrawling || !clientForm.documentationUrl.trim()}
-                        className="px-3 py-2 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        className="px-3 py-2 bg-primary-600 text-ink text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                       >
                         {clientCrawling ? (
                           <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
@@ -2660,7 +2660,7 @@ https://docs.company.com/user-guide`}
                         type="button"
                         onClick={handleClientCrawlDocumentation}
                         disabled={clientCrawling || !clientForm.specificUrls.trim()}
-                        className="w-full px-3 py-2 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        className="w-full px-3 py-2 bg-primary-600 text-ink text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                       >
                         {clientCrawling ? (
                           <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
@@ -2707,7 +2707,7 @@ https://docs.company.com/user-guide`}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200"
+                  className="px-4 py-2 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200"
                 >
                   Create Client
                 </button>
@@ -2720,7 +2720,7 @@ https://docs.company.com/user-guide`}
       {/* Monitoring Setup Modal */}
       {showMonitoringModal && selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-raised rounded-xl border border-gray-200 shadow-xl max-w-md w-full">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">
                 {selectedClient.monitoringEnabled ? 'Re-seed monitoring' : 'Set up daily monitoring'}
@@ -2780,7 +2780,7 @@ https://docs.company.com/user-guide`}
                   type="button"
                   onClick={handleSetupMonitoring}
                   disabled={seedingMonitoring || !monitoringRootUrl.trim()}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 flex items-center"
+                  className="px-4 py-2 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 flex items-center"
                 >
                   {seedingMonitoring && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>}
                   {seedingMonitoring ? 'Crawling...' : (selectedClient.monitoringEnabled ? 'Re-seed' : 'Set up monitoring')}
@@ -2794,7 +2794,7 @@ https://docs.company.com/user-guide`}
       {/* Repo-updates config modal */}
       {showRepoWatchModal && selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-raised rounded-xl border border-gray-200 shadow-xl max-w-md w-full">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Repo updates</h2>
               <button
@@ -2879,7 +2879,7 @@ https://docs.company.com/user-guide`}
                       <button type="button" onClick={() => { if (savingRepoWatch) return; setShowRepoWatchModal(false); setRepoWatchMessage(null); }} disabled={savingRepoWatch} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50">
                         Cancel
                       </button>
-                      <button type="button" onClick={() => handleSaveRepoWatch(true)} disabled={savingRepoWatch || !rwOwner.trim() || !rwName.trim()} className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 flex items-center">
+                      <button type="button" onClick={() => handleSaveRepoWatch(true)} disabled={savingRepoWatch || !rwOwner.trim() || !rwName.trim()} className="px-4 py-2 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 flex items-center">
                         {savingRepoWatch && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>}
                         {repoWatchActive ? 'Save' : 'Turn on'}
                       </button>
@@ -2895,7 +2895,7 @@ https://docs.company.com/user-guide`}
       {/* Project Creation Modal */}
       {showProjectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-raised rounded-xl border border-gray-200 shadow-xl max-w-md w-full">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Add New Project</h2>
               <button 
@@ -2986,7 +2986,7 @@ https://docs.company.com/user-guide`}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200"
+                  className="px-4 py-2 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200"
                 >
                   Create Project
                 </button>

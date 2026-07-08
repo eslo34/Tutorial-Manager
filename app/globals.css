@@ -3,31 +3,87 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: dark;
+    /* StepByStep design tokens (dark cinematic) */
+    --ground: #0A0C10;
+    --raised: #12151B;
+    --inset: #0B0D12;
+    --line: rgba(151, 164, 190, 0.14);
+    --line-2: rgba(151, 164, 190, 0.22);
+    --text: #ECEDE7;
+    --text-2: #A7ACB7;
+    --text-3: #6C7280;
+    --sync: #5FE38C;
+    --sync-ink: #04140B;
+    --sync-dim: rgba(95, 227, 140, 0.14);
+    --sync-line: rgba(95, 227, 140, 0.34);
+    --render: #F5B44C;
+    --stale: #FF6B6B;
+    --radius: 16px;
+    --shadow: 0 24px 70px -28px rgba(0, 0, 0, 0.75);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    background: var(--ground);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* One consistent keyboard-focus ring across the whole app */
+  /* One consistent keyboard-focus ring across the whole app (green = brand) */
   *:focus-visible {
-    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white;
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+    --tw-ring-offset-color: var(--ground);
   }
 
   ::selection {
-    @apply bg-primary-100 text-primary-900;
+    background: var(--sync-dim);
+    color: var(--text);
+  }
+
+  /* Dark, unobtrusive scrollbars */
+  * {
+    scrollbar-color: rgba(151, 164, 190, 0.24) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(151, 164, 190, 0.18);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(151, 164, 190, 0.32);
+    background-clip: content-box;
   }
 }
 
 @layer components {
   /* Buttons — one shape, semantic colours.
-     teal = primary app actions · blue = AI actions · green = confirm/done */
+     green = primary app actions (dark ink + glow) · blue = AI actions ·
+     green-600 = confirm/done · red = destructive · gray = neutral · ghost = quiet */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium
-           bg-primary-600 text-white hover:bg-primary-700
-           transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold
+           bg-primary-600 text-ink transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+    box-shadow: 0 10px 30px -12px var(--sync-line);
+  }
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-primary-700;
+    transform: translateY(-1px);
+    box-shadow: 0 16px 40px -14px var(--sync-line);
   }
 
   .btn-ai {
@@ -50,23 +106,27 @@
 
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium
-           bg-gray-100 text-gray-700 hover:bg-gray-200
+           bg-gray-100 text-gray-200 border border-gray-200 hover:bg-gray-200 hover:border-gray-300
            transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium
-           text-gray-600 hover:text-gray-900 hover:bg-gray-100
+           text-gray-300 hover:text-white hover:bg-gray-100
            transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .card {
-    @apply bg-white rounded-xl border border-gray-200 shadow-sm
-           hover:shadow-md transition-shadow duration-200 p-6;
+    @apply bg-raised rounded-2xl border border-gray-200 p-6
+           transition-shadow duration-200;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset, var(--shadow);
+  }
+  .card:hover {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 30px 80px -30px rgba(0, 0, 0, 0.8);
   }
 
   .input-field {
-    @apply w-full px-3 py-2 bg-white border border-gray-300 rounded-lg
+    @apply w-full px-3 py-2 bg-inset border border-gray-300 rounded-lg
            text-gray-900 placeholder-gray-400
            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
            transition-shadow duration-200;
@@ -76,16 +136,20 @@
   .badge {
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
   }
-  .badge-neutral { @apply badge bg-gray-100 text-gray-700; }
+  .badge-neutral { @apply badge bg-gray-100 text-gray-300; }
   .badge-success { @apply badge bg-green-100 text-green-800; }
   .badge-warning { @apply badge bg-yellow-100 text-yellow-800; }
   .badge-info    { @apply badge bg-blue-100 text-blue-800; }
 
   /* Modals */
   .modal-overlay {
-    @apply fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50;
+    @apply fixed inset-0 flex items-center justify-center p-4 z-50;
+    background: rgba(4, 6, 10, 0.66);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
   .modal-card {
-    @apply bg-white rounded-xl shadow-xl w-full;
+    @apply bg-raised rounded-2xl border border-gray-200 w-full;
+    box-shadow: var(--shadow);
   }
 }

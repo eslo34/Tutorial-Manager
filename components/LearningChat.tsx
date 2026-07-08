@@ -168,7 +168,7 @@ export default function LearningChat({ projectId, softwareName }: LearningChatPr
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)] flex flex-col max-h-screen">
+    <div className="bg-raised rounded-xl border border-gray-200 shadow-lg h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)] flex flex-col max-h-screen">
       {/* Header */}
       <div className="border-b border-gray-200 p-3 flex-shrink-0">
         <h3 className="text-base font-semibold text-gray-900">Learn {softwareName}</h3>
@@ -187,13 +187,13 @@ export default function LearningChat({ projectId, softwareName }: LearningChatPr
                   <div
                     className={`max-w-[80%] p-3 rounded-lg ${
                       message.role === 'user'
-                        ? 'bg-primary-600 text-white'
+                        ? 'bg-primary-600 text-ink'
                         : 'bg-gray-100 text-gray-900'
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     <p className={`text-xs mt-1 ${
-                      message.role === 'user' ? 'text-primary-200' : 'text-gray-500'
+                      message.role === 'user' ? 'text-primary-900/70' : 'text-gray-500'
                     }`}>
                       {message.timestamp.toLocaleTimeString()}
                     </p>
@@ -215,7 +215,7 @@ export default function LearningChat({ projectId, softwareName }: LearningChatPr
             </div>
 
             {/* Input */}
-            <div className="border-t border-gray-200 p-4 flex-shrink-0 bg-white">
+            <div className="border-t border-gray-200 p-4 flex-shrink-0 bg-raised">
               <div className="flex space-x-2">
                 <input
                   type="text"

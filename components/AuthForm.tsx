@@ -79,10 +79,19 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
+    <div className="min-h-screen bg-ground flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Ambient brand glows (green + violet), atmosphere only */}
+      <div
+        className="pointer-events-none absolute -top-1/4 -right-1/4 w-[52vw] h-[52vw] rounded-full"
+        style={{ background: 'radial-gradient(circle at 50% 50%, rgba(95,227,140,0.14), transparent 68%)' }}
+      />
+      <div
+        className="pointer-events-none absolute bottom-[-18vh] left-[-14vw] w-[46vw] h-[46vw] rounded-full"
+        style={{ background: 'radial-gradient(circle at 50% 50%, rgba(108,92,231,0.14), transparent 70%)' }}
+      />
+      <div className="relative bg-raised rounded-2xl border border-gray-200 shadow-xl max-w-md w-full p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
             Script Manager
           </h1>
           <p className="text-gray-600">
@@ -102,7 +111,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
                 id="email"
                 value={form.email}
                 onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 bg-inset text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="you@example.com"
                 required
               />
@@ -120,7 +129,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
                 id="password"
                 value={form.password}
                 onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-10 py-2 bg-inset text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="••••••••"
                 required
                 minLength={6}
@@ -147,7 +156,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
                   id="confirmPassword"
                   value={form.confirmPassword}
                   onChange={(e) => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-inset text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="••••••••"
                   required
                   minLength={6}
@@ -165,7 +174,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary-600 text-ink py-3 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
           </button>
