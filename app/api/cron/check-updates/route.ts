@@ -41,20 +41,13 @@ async function handle(request: NextRequest) {
       });
     }
 
-    const monitoringClients = await prisma.client.findMany({
-      where: { monitoring_enabled: true },
-      select: { id: true, name: true },
-    });
-
-    // Clients that watch a GitHub repo for feature-doc changes. This is a
-    // separate flow from doc-crawl monitoring — a client may have either, both,
-    // or neither.
+    // Clients that watch a GitHub repo for feature-doc changes.
     const repoWatches = await prisma.repoWatch.findMany({
       where: { enabled: true },
       select: { client_id: true, client: { select: { name: true } } },
     });
 
-    if (monitoringClients.length === 0 && repoWatches.length === 0) {
+    if (repoWatches.length === 0) {
       return NextResponse.json({ clientsTriggered: 0 });
     }
 
@@ -67,11 +60,6 @@ async function handle(request: NextRequest) {
       );
     }
 
-    // Propagate `?force=1` to scan-client so the test harness can bypass the
-    // Haiku gate end-to-end.
-    const forceSuffix =
-      new URL(request.url).searchParams.get('force') === '1' ? '&force=1' : '';
-
     const settle = (r: PromiseSettledResult<unknown>) =>
       r.status === 'fulfilled'
         ? r.value
@@ -79,17 +67,8 @@ async function handle(request: NextRequest) {
           ? r.reason.message
           : String(r.reason);
 
-    // Each scan-* has its own 60s budget; this entry returns once all fan-out
-    // summaries come back.
-    const docResults = await Promise.allSettled(
-      monitoringClients.map((c) =>
-        fetch(`${baseUrl}/api/cron/scan-client?clientId=${encodeURIComponent(c.id)}${forceSuffix}`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${cronSecret}` },
-        }).then((r) => r.json())
-      )
-    );
-
+    // Each scan-repo has its own 60s budget; this entry returns once all
+    // fan-out summaries come back.
     const repoResults = await Promise.allSettled(
       repoWatches.map((w) =>
         fetch(`${baseUrl}/api/cron/scan-repo?clientId=${encodeURIComponent(w.client_id)}`, {
@@ -100,13 +79,7 @@ async function handle(request: NextRequest) {
     );
 
     return NextResponse.json({
-      docClientsTriggered: monitoringClients.length,
       repoClientsTriggered: repoWatches.length,
-      docResults: docResults.map((r, i) => ({
-        clientName: monitoringClients[i].name,
-        ok: r.status === 'fulfilled',
-        value: settle(r),
-      })),
       repoResults: repoResults.map((r, i) => ({
         clientName: repoWatches[i].client.name,
         ok: r.status === 'fulfilled',

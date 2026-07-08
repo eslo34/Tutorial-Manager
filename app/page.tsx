@@ -4,13 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { Client, Project } from '@/lib/types';
 
-import { crawlDocumentation, CrawlResponse, getContentSummary, formatContentForAI, aggregateContent } from '@/lib/crawler';
-import { getPromptTemplate } from '@/lib/prompt-templates';
-import { generateScript } from '@/lib/openai';
-import { VideoType } from '@/lib/types';
-import { Plus, Users, X, LogOut, FileText, Search, Trash2, BookOpen, PenTool, RefreshCw, Radio, Satellite, Video, Wand2, ArrowLeft, GitBranch } from 'lucide-react';
+import { Plus, Users, X, LogOut, FileText, Search, Trash2, RefreshCw, Video, ArrowLeft, GitBranch } from 'lucide-react';
 import AuthForm from '@/components/AuthForm';
-import LearningChat from '@/components/LearningChat';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -23,44 +18,23 @@ export default function Dashboard() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  const [clientMode, setClientMode] = useState<'projects' | 'learning'>('projects');
   const [clientForm, setClientForm] = useState({
     name: '',
-    description: '',
-    documentationUrl: '',
-    specificUrls: ''
+    description: ''
   });
-  const [clientCrawlMode, setClientCrawlMode] = useState<'crawl' | 'specific'>('crawl');
-  const [clientCrawling, setClientCrawling] = useState(false);
-  const [clientCrawlResults, setClientCrawlResults] = useState<CrawlResponse | null>(null);
   const [projectForm, setProjectForm] = useState({
     title: '',
-    description: '',
-    videoType: 'tutorial' as VideoType
+    description: ''
   });
-  // Authoring source chosen at creation: 'docs' (crawl docs + generate) or 'code' (script-only window)
-  const [projectSourceType, setProjectSourceType] = useState<'docs' | 'code'>('docs');
-  const [documentationUrl, setDocumentationUrl] = useState('');
-  const [specificUrls, setSpecificUrls] = useState('');
-  const [crawlMode, setCrawlMode] = useState<'crawl' | 'specific'>('crawl');
-  const [prompt, setPrompt] = useState('');
-  const [userRequest, setUserRequest] = useState('');
+  // The editor still tracks a transient "generated script" slot; it stays empty
+  // now that docs-based generation is gone, but the editor logic reads it.
   const [generatedScript, setGeneratedScript] = useState('');
-  const [crawling, setCrawling] = useState(false);
-  const [crawlResults, setCrawlResults] = useState<CrawlResponse | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const [modifying, setModifying] = useState(false);
   const [modificationRequest, setModificationRequest] = useState('');
   const [editableScript, setEditableScript] = useState('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [savingScript, setSavingScript] = useState(false);
   
-  // Script maintenance states
-  const [maintenanceDocUrl, setMaintenanceDocUrl] = useState('');
-  const [maintenanceSpecificUrls, setMaintenanceSpecificUrls] = useState('');
-  const [maintenanceCrawlMode, setMaintenanceCrawlMode] = useState<'crawl' | 'specific'>('crawl');
-  const [checkingUpdates, setCheckingUpdates] = useState(false);
-  const [updateResults, setUpdateResults] = useState<any>(null);
+  // Suggested-edit overlays (queued by the daily repo check) for review.
   const [scriptWithOverlays, setScriptWithOverlays] = useState<string>('');
   const [activeOverlays, setActiveOverlays] = useState<any[]>([]);
 
@@ -75,12 +49,6 @@ export default function Dashboard() {
   // Refs for scroll synchronization
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-
-  // Monitoring setup modal
-  const [showMonitoringModal, setShowMonitoringModal] = useState(false);
-  const [monitoringRootUrl, setMonitoringRootUrl] = useState('');
-  const [seedingMonitoring, setSeedingMonitoring] = useState(false);
-  const [monitoringMessage, setMonitoringMessage] = useState<string | null>(null);
 
   // Repo-release monitoring modal (GitHub feature-doc → automatic script updates)
   const [showRepoWatchModal, setShowRepoWatchModal] = useState(false);
@@ -165,69 +133,16 @@ export default function Dashboard() {
     }
   };
 
-  const handleClientCrawlDocumentation = async () => {
-    if (clientCrawlMode === 'crawl' && !clientForm.documentationUrl.trim()) return;
-    if (clientCrawlMode === 'specific' && !clientForm.specificUrls.trim()) return;
-    
-    setClientCrawling(true);
-    setClientCrawlResults(null);
-    
-    try {
-      let results: CrawlResponse;
-      
-      if (clientCrawlMode === 'crawl') {
-        results = await crawlDocumentation(clientForm.documentationUrl, 50);
-      } else {
-        const urlList = clientForm.specificUrls
-          .split('\n')
-          .map(url => url.trim())
-          .filter(url => url.length > 0 && url.startsWith('http'));
-        
-        const response = await fetch('/api/scrape-specific', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ urls: urlList }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        results = await response.json();
-      }
-      
-      setClientCrawlResults(results);
-    } catch (error) {
-      console.error('Client crawling failed:', error);
-    }
-    
-    setClientCrawling(false);
-  };
-
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientForm.name.trim() || !clientForm.description.trim()) return;
-    
+
     try {
-      // Prepare client data
-      const clientData: any = {
+      const clientData = {
         name: clientForm.name.trim(),
         company: clientForm.description.trim(),
         email: ''
       };
-
-      // Add scraped documentation if available
-      if (clientCrawlResults?.success && clientCrawlResults.totalContent) {
-        const summary = getContentSummary(clientCrawlResults);
-        clientData.scrapedContent = clientCrawlResults.totalContent;
-        clientData.scrapedPages = clientCrawlResults.pages.length;
-        clientData.scrapedChars = summary.totalCharacters;
-        clientData.scrapedWords = summary.totalWords;
-        clientData.scrapedUrl = clientCrawlMode === 'crawl' ? clientForm.documentationUrl : 'Multiple specific URLs';
-        clientData.scrapedAt = new Date().toISOString();
-      }
 
       const response = await fetch('/api/clients', {
         method: 'POST',
@@ -238,9 +153,7 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         setClients(prev => [...prev, data.client]);
-        setClientForm({ name: '', description: '', documentationUrl: '', specificUrls: '' });
-        setClientCrawlResults(null);
-        setClientCrawlMode('crawl');
+        setClientForm({ name: '', description: '' });
         setShowClientModal(false);
       }
     } catch (error) {
@@ -316,18 +229,16 @@ export default function Dashboard() {
           title: projectForm.title.trim(),
           description: projectForm.description.trim(),
           documentationUrls: [],
-          prompt: getPromptTemplate(projectForm.videoType),
+          prompt: '',
           status: 'planning',
-          videoType: projectForm.videoType,
-          sourceType: projectSourceType
+          sourceType: 'code'
         })
       });
 
       if (response.ok) {
         const data = await response.json();
         setProjects(prev => [...prev, data.project]);
-        setProjectForm({ title: '', description: '', videoType: 'tutorial' });
-        setProjectSourceType('docs');
+        setProjectForm({ title: '', description: '' });
         setShowProjectModal(false);
       }
     } catch (error) {
@@ -338,43 +249,6 @@ export default function Dashboard() {
   const handleClientClick = (client: Client) => {
     setSelectedClient(client);
     setCurrentView('projects');
-  };
-
-  const handleSetupMonitoring = async () => {
-    if (!selectedClient || !monitoringRootUrl.trim()) return;
-    setSeedingMonitoring(true);
-    setMonitoringMessage(null);
-    try {
-      const response = await fetch(`/api/clients/${selectedClient.id}/setup-monitoring`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rootUrl: monitoringRootUrl.trim() }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        setMonitoringMessage(`❌ ${data.error || 'Failed to set up monitoring'}`);
-        return;
-      }
-      // Optimistically update the selected client
-      const updated: Client = {
-        ...selectedClient,
-        monitoringEnabled: true,
-        monitoringRootUrl: monitoringRootUrl.trim(),
-      };
-      setSelectedClient(updated);
-      setClients(prev => prev.map(c => (c.id === updated.id ? updated : c)));
-      setMonitoringMessage(`✅ Seeded ${data.pagesSeeded} pages. Daily monitoring is now active.`);
-      setTimeout(() => {
-        setShowMonitoringModal(false);
-        setMonitoringMessage(null);
-        setMonitoringRootUrl('');
-      }, 2500);
-    } catch (error) {
-      console.error('Setup monitoring error:', error);
-      setMonitoringMessage(`❌ ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setSeedingMonitoring(false);
-    }
   };
 
   const openRepoWatchModal = async () => {
@@ -455,70 +329,20 @@ export default function Dashboard() {
           if (response.ok) {
             const data = await response.json();
             const latestProject = data.project;
-            
-            // Update the selected project with latest data
             setSelectedProject(latestProject);
-            
-            // Populate existing data
-            setPrompt(latestProject.prompt || '');
-            setGeneratedScript(''); // Clear this so UI shows selectedProject.script
-            setDocumentationUrl(latestProject.scrapedUrl || '');
+            setGeneratedScript('');
             setEditableScript(latestProject.script || '');
             setHasUnsavedChanges(false);
-            
-            // If project has scraped content, create mock crawl results to show the green box
-            if (latestProject.scrapedContent && latestProject.scrapedPages) {
-              const scrapedPages = latestProject.scrapedPages;
-              const mockCrawlResults: CrawlResponse = {
-                success: true,
-                totalPages: scrapedPages,
-                pages: Array.from({ length: scrapedPages }, (_, i) => ({
-                  url: `${latestProject.scrapedUrl || 'Unknown URL'}/page-${i + 1}`,
-                  content: `Page ${i + 1} content (${Math.round((latestProject.scrapedContent?.length || 0) / scrapedPages)} chars)`,
-                  title: `Page ${i + 1}`,
-                  links: []
-                })),
-                totalContent: latestProject.scrapedContent
-              };
-              setCrawlResults(mockCrawlResults);
-            } else {
-              setCrawlResults(null);
-            }
           } else {
-            // Fallback to using the project data we already have
-            setPrompt(selectedProject.prompt || '');
-            setGeneratedScript(''); // Clear this so UI shows selectedProject.script
-            setDocumentationUrl(selectedProject.scrapedUrl || '');
+            setGeneratedScript('');
             setEditableScript(selectedProject.script || '');
             setHasUnsavedChanges(false);
-            
-            if (selectedProject.scrapedContent && selectedProject.scrapedPages) {
-              const scrapedPages = selectedProject.scrapedPages;
-              const mockCrawlResults: CrawlResponse = {
-                success: true,
-                totalPages: scrapedPages,
-                pages: Array.from({ length: scrapedPages }, (_, i) => ({
-                  url: `${selectedProject.scrapedUrl || 'Unknown URL'}/page-${i + 1}`,
-                  content: `Page ${i + 1} content (${Math.round((selectedProject.scrapedContent?.length || 0) / scrapedPages)} chars)`,
-                  title: `Page ${i + 1}`,
-                  links: []
-                })),
-                totalContent: selectedProject.scrapedContent
-              };
-              setCrawlResults(mockCrawlResults);
-            } else {
-              setCrawlResults(null);
-            }
           }
         } catch (error) {
           console.error('Error loading project data:', error);
-          // Fallback to existing data
-          setPrompt(selectedProject.prompt || '');
-          setGeneratedScript(''); // Clear this so UI shows selectedProject.script
-          setDocumentationUrl(selectedProject.scrapedUrl || '');
+          setGeneratedScript('');
           setEditableScript(selectedProject.script || '');
           setHasUnsavedChanges(false);
-          setCrawlResults(null);
         }
       }
     };
@@ -572,237 +396,33 @@ export default function Dashboard() {
   const handleBackToClients = () => {
     setCurrentView('clients');
     setSelectedClient(null);
-    setClientMode('projects'); // Reset to projects mode
   };
 
   const handleBackToProjects = () => {
     setCurrentView('projects');
     setSelectedProject(null);
 
-    // Clear project detail form data
-    setDocumentationUrl('');
-    setSpecificUrls('');
-    setCrawlMode('crawl');
-    setPrompt('');
-    setUserRequest('');
+    // Clear project detail + review state
     setGeneratedScript('');
-    setCrawlResults(null);
     setEditableScript('');
     setHasUnsavedChanges(false);
     setModificationRequest('');
-    // Clear maintenance data
-    setMaintenanceDocUrl('');
-    setMaintenanceSpecificUrls('');
-    setMaintenanceCrawlMode('crawl');
-    setUpdateResults(null);
     setScriptWithOverlays('');
     setActiveOverlays([]);
   };
 
   const handleOpenScriptMaintenance = () => {
     setCurrentView('script-maintenance');
-    // Pre-populate with original crawl data if available
-    if (selectedProject?.scrapedUrl && selectedProject.scrapedUrl !== 'Multiple specific URLs') {
-      setMaintenanceDocUrl(selectedProject.scrapedUrl);
-    }
   };
 
   const handleBackToProjectDetail = () => {
     setCurrentView('project-detail');
-    // Clear maintenance data
-    setMaintenanceDocUrl('');
-    setMaintenanceSpecificUrls('');
-    setMaintenanceCrawlMode('crawl');
-    setUpdateResults(null);
     setScriptWithOverlays('');
     setActiveOverlays([]);
   };
 
   const getClientProjects = (clientId: string) => {
     return projects.filter(p => p.clientId === clientId);
-  };
-
-  const handleCrawlDocumentation = async () => {
-    if (crawlMode === 'crawl' && !documentationUrl.trim()) return;
-    if (crawlMode === 'specific' && !specificUrls.trim()) return;
-    
-    setCrawling(true);
-    setCrawlResults(null);
-    
-    try {
-      let results: CrawlResponse;
-      
-      if (crawlMode === 'crawl') {
-        results = await crawlDocumentation(documentationUrl, 50); // Crawl up to 50 pages
-      } else {
-        // Specific URLs mode
-        const urlList = specificUrls
-          .split('\n')
-          .map(url => url.trim())
-          .filter(url => url.length > 0 && url.startsWith('http'));
-        
-        
-        const response = await fetch('/api/scrape-specific', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ urls: urlList }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        results = await response.json();
-      }
-      
-      setCrawlResults(results);
-      
-      if (results.success && selectedProject) {
-        // Auto-populate with the appropriate prompt template based on video type
-        setPrompt(prev => prev || getPromptTemplate(selectedProject.videoType || 'tutorial'));
-        
-        // Calculate summary for display purposes
-        const summary = getContentSummary(results);
-        
-        // Save the scraped content to the project database via API
-        try {
-          const response = await fetch('/api/save-scraped-content', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              projectId: selectedProject.id,
-              scrapedContent: results.totalContent || '',
-              scrapedPages: results.pages.length,
-              scrapedChars: summary.totalCharacters,
-              scrapedWords: summary.totalWords,
-              scrapedUrl: crawlMode === 'crawl' ? documentationUrl : 'Multiple specific URLs'
-            })
-          });
-          
-          const data = await response.json();
-          if (!data.success) {
-            console.error('❌ API error saving scraped content:', data.error);
-          }
-        } catch (dbError) {
-          console.error('❌ API save error (scraped content):', dbError);
-        }
-      }
-    } catch (error) {
-      console.error('Crawling failed:', error);
-    }
-    
-    // Always reset crawling state, regardless of what happens above
-    setCrawling(false);
-    
-  };
-
-  const handleGenerateScript = async () => {
-    // Crawling is required for script generation
-    if (!crawlResults?.success) return;
-    if (!prompt.trim() || !userRequest.trim()) return;
-    
-    setGenerating(true);
-    setGeneratedScript('🤖 Generating script with AI...\n\nPlease wait while we create your professional video script based on the crawled documentation.');
-    
-    try {
-      // Use stored scraped content if available, otherwise use current crawl results
-      let documentationContent: string = '';
-      if (selectedProject?.scrapedContent) {
-        documentationContent = selectedProject.scrapedContent;
-      } else if (crawlResults?.success && crawlResults) {
-        documentationContent = aggregateContent(crawlResults);
-      }
-
-      const result = await generateScript({
-        prompt: prompt,
-        userRequest: userRequest,
-        documentationContent: documentationContent,
-        videoType: selectedProject?.videoType || 'tutorial'
-      });
-
-
-      if (result.success && result.script) {
-        setGeneratedScript('');
-        setEditableScript(result.script);
-        setHasUnsavedChanges(false);
-
-        // Save the generated script to the project via API
-        if (selectedProject) {
-          try {
-            
-            const response = await fetch('/api/save-script', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                projectId: selectedProject.id,
-                script: result.script
-              })
-            });
-            
-            const data = await response.json();
-            if (!data.success) {
-              console.error('❌ API error saving script:', data.error);
-            }
-          } catch (dbError) {
-            console.error('❌ API save error (script):', dbError);
-          }
-        }
-      } else {
-        setGeneratedScript(`❌ Script generation failed: ${result.error || 'Unknown error'}\n\nPlease check your internet connection and try again.`);
-      }
-    } catch (error) {
-      console.error('Script generation error:', error);
-      setGeneratedScript(`❌ Script generation failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try again.`);
-    }
-    
-    // Always reset generating state, regardless of what happens above
-    setGenerating(false);
-    
-  };
-
-  const handleModifyScript = async () => {
-    if (!selectedProject?.script || !modificationRequest.trim()) return;
-    
-    setModifying(true);
-    setGeneratedScript('✏️ Modifying script with AI...\n\nPlease wait while we apply your requested changes to the existing script.');
-    
-    try {
-      const response = await fetch('/api/modify-script', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectId: selectedProject.id,
-          currentScript: selectedProject.script,
-          modificationRequest: modificationRequest,
-          documentationContent: selectedProject.scrapedContent || ''
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.script) {
-        setGeneratedScript('');
-        setEditableScript(data.script);
-        setHasUnsavedChanges(false);
-        // Update the selected project with the new script
-        setSelectedProject(prev => prev ? { ...prev, script: data.script } : null);
-      } else {
-        setGeneratedScript(`❌ Script modification failed: ${data.error || 'Unknown error'}\n\nPlease check your request and try again.`);
-      }
-    } catch (error) {
-      console.error('Script modification error:', error);
-      setGeneratedScript(`❌ Script modification failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try again.`);
-    }
-    
-    setModifying(false);
   };
 
   const handlePartialRegenerate = async () => {
@@ -833,7 +453,6 @@ export default function Dashboard() {
           selectionStart: selectionStart,
           selectionEnd: selectionEnd,
           modificationRequest: modificationRequest,
-          documentationContent: selectedProject.scrapedContent || ''
         }),
       });
 
@@ -1006,86 +625,6 @@ export default function Dashboard() {
     // Check if there are unsaved changes
     const currentScript = selectedProject?.script || '';
     setHasUnsavedChanges(newScript !== currentScript);
-  };
-
-  const handleCheckScriptUpdates = async () => {
-    if (maintenanceCrawlMode === 'crawl' && !maintenanceDocUrl.trim()) return;
-    if (maintenanceCrawlMode === 'specific' && !maintenanceSpecificUrls.trim()) return;
-    if (!selectedProject?.script) return;
-
-    setCheckingUpdates(true);
-    setUpdateResults(null);
-
-    try {
-      // First, get fresh documentation content
-      let freshContent: string;
-      
-      if (maintenanceCrawlMode === 'crawl') {
-        const results = await crawlDocumentation(maintenanceDocUrl, 50);
-        if (!results.success) {
-          throw new Error(results.error || 'Failed to crawl documentation');
-        }
-        freshContent = results.totalContent || '';
-      } else {
-        // Specific URLs mode
-        const urlList = maintenanceSpecificUrls
-          .split('\n')
-          .map(url => url.trim())
-          .filter(url => url.length > 0 && url.startsWith('http'));
-        
-        const response = await fetch('/api/scrape-specific', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ urls: urlList }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const results = await response.json();
-        if (!results.success) {
-          throw new Error(results.error || 'Failed to scrape specific URLs');
-        }
-        freshContent = results.totalContent || '';
-      }
-
-      // Now check for updates using AI
-      const response = await fetch('/api/check-script-updates', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectId: selectedProject.id,
-          currentScript: selectedProject.script,
-          freshDocumentation: freshContent
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const updateData = await response.json();
-      setUpdateResults(updateData);
-      
-      // Initialize the script with overlays if updates were found
-      if (updateData.success && updateData.analysis.outdated_sections?.length > 0) {
-        setTimeout(() => initializeScriptWithOverlays(updateData.analysis.outdated_sections), 100);
-      }
-
-    } catch (error) {
-      console.error('❌ Script update check failed:', error);
-      setUpdateResults({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-
-    setCheckingUpdates(false);
   };
 
   const handleAcceptSuggestion = (suggestionIndex: number) => {
@@ -1603,19 +1142,6 @@ export default function Dashboard() {
                 <>
                   {selectedClient && (
                     <button
-                      onClick={() => {
-                        setMonitoringRootUrl(selectedClient.monitoringRootUrl || selectedClient.scrapedUrl || '');
-                        setMonitoringMessage(null);
-                        setShowMonitoringModal(true);
-                      }}
-                      className="bg-primary-600 text-ink px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium flex items-center text-sm"
-                      title={selectedClient.monitoringEnabled ? 'Re-seed daily monitoring' : 'Set up daily monitoring'}
-                    >
-                      {selectedClient.monitoringEnabled ? (<><Radio className="w-4 h-4 mr-2" />Monitoring active</>) : (<><Satellite className="w-4 h-4 mr-2" />Set up monitoring</>)}
-                    </button>
-                  )}
-                  {selectedClient && (
-                    <button
                       onClick={openRepoWatchModal}
                       className="bg-primary-600 text-ink px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium flex items-center text-sm"
                       title="Automatic script updates from a GitHub repo's feature docs"
@@ -1715,55 +1241,9 @@ export default function Dashboard() {
             )}
           </div>
         ) : currentView === 'projects' ? (
-          // Client View (Projects + Learning)
+          // Client View (Projects)
           <div className="h-full flex flex-col">
-            {/* Mode Selection Tabs - Only show if client has documentation */}
-            {selectedClient?.scrapedContent && (
-              <div className="flex-shrink-0 mb-6">
-                <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-                  <button
-                    onClick={() => setClientMode('projects')}
-                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      clientMode === 'projects'
-                        ? 'bg-gray-300 text-primary-400 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Projects
-                  </button>
-                  <button
-                    onClick={() => setClientMode('learning')}
-                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      clientMode === 'learning'
-                        ? 'bg-gray-300 text-primary-400 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Learn Software
-                  </button>
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  {clientMode === 'projects' 
-                    ? 'Manage individual tutorial projects' 
-                    : 'Learn the software with AI guidance'
-                  }
-                </p>
-              </div>
-            )}
-
-            {clientMode === 'learning' && selectedClient?.scrapedContent ? (
-              // Learning Mode
-              <div className="flex-1 min-h-0">
-                <LearningChat 
-                  projectId={selectedClient.id} // Using client ID instead of project ID
-                  softwareName={selectedClient.company || 'Software'}
-                />
-              </div>
-            ) : (
-              // Projects Mode
-              <div className="h-full flex flex-col">
+            <div className="h-full flex flex-col">
             {selectedClient && getClientProjects(selectedClient.id).length === 0 ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
@@ -1829,11 +1309,6 @@ export default function Dashboard() {
                         </span>
                         <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
                       </div>
-                      {project.scrapedPages && project.scrapedPages > 0 && (
-                        <div className="mt-2 text-xs text-primary-600">
-                          📄 {project.scrapedPages} pages scraped • {project.scrapedChars?.toLocaleString()} chars
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -1841,102 +1316,16 @@ export default function Dashboard() {
               </div>
             )}
               </div>
-            )}
           </div>
         ) : currentView === 'script-maintenance' ? (
-          // Script Maintenance View
+          // Script Maintenance View — review suggested edits queued by the daily repo check
           <div className="h-full flex flex-col">
             <div className="flex-1 overflow-y-auto space-y-8 px-2">
-              {/* Crawling Interface */}
-              <div className="bg-raised rounded-xl border border-gray-200 shadow-lg p-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Check for Documentation Updates</h2>
-                
-                {/* Crawl Mode Selection */}
-                <div className="mb-6">
-                  <label className="text-sm font-medium text-gray-700 mb-3 block">Update Check Mode</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="maintenanceCrawlMode"
-                        value="crawl"
-                        checked={maintenanceCrawlMode === 'crawl'}
-                        onChange={(e) => setMaintenanceCrawlMode(e.target.value as 'crawl' | 'specific')}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-700">Crawl from starting URL</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="maintenanceCrawlMode"
-                        value="specific"
-                        checked={maintenanceCrawlMode === 'specific'}
-                        onChange={(e) => setMaintenanceCrawlMode(e.target.value as 'crawl' | 'specific')}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-700">Check specific URLs</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* URL Input Fields */}
-                {maintenanceCrawlMode === 'crawl' ? (
-                  <div className="mb-6">
-                    <label htmlFor="maintenanceDocUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                      Starting Documentation URL
-                    </label>
-                    <input
-                      type="url"
-                      id="maintenanceDocUrl"
-                      value={maintenanceDocUrl}
-                      onChange={(e) => setMaintenanceDocUrl(e.target.value)}
-                      placeholder="https://docs.example.com/getting-started"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                    <p className="text-sm text-gray-500 mt-2">
-                      Will crawl up to 50 pages starting from this URL
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mb-6">
-                    <label htmlFor="maintenanceSpecificUrls" className="block text-sm font-medium text-gray-700 mb-2">
-                      Specific URLs to Check (one per line)
-                    </label>
-                    <textarea
-                      id="maintenanceSpecificUrls"
-                      value={maintenanceSpecificUrls}
-                      onChange={(e) => setMaintenanceSpecificUrls(e.target.value)}
-                      placeholder="https://docs.example.com/page1&#10;https://docs.example.com/page2&#10;https://docs.example.com/page3"
-                      rows={6}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                    <p className="text-sm text-gray-500 mt-2">
-                      Enter the exact URLs you want to check for updates
-                    </p>
-                  </div>
-                )}
-
-                <button
-                  onClick={handleCheckScriptUpdates}
-                  disabled={checkingUpdates || (maintenanceCrawlMode === 'crawl' && !maintenanceDocUrl.trim()) || (maintenanceCrawlMode === 'specific' && !maintenanceSpecificUrls.trim())}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 ${
-                    checkingUpdates || (maintenanceCrawlMode === 'crawl' && !maintenanceDocUrl.trim()) || (maintenanceCrawlMode === 'specific' && !maintenanceSpecificUrls.trim())
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-primary-600 text-ink hover:bg-primary-700'
-                  }`}
-                >
-                  {checkingUpdates ? 'Checking for Updates...' : '🔍 Check for Updates'}
-                </button>
-              </div>
-
-              {/* Persisted overlays from the daily cron — show whenever there
-                  are pending edits and no manual check is in flight. */}
-              {!updateResults && activeOverlays.length > 0 && selectedProject?.script && (
+              {activeOverlays.length > 0 && selectedProject?.script ? (
                 <div className="bg-raised rounded-xl border border-gray-200 shadow-lg p-8">
                   <div className="p-4 rounded-lg mb-6 bg-yellow-50 border border-yellow-200">
                     <div className="font-medium text-yellow-800">
-                      ⚠️ {activeOverlays.length} suggested update{activeOverlays.length === 1 ? '' : 's'} from daily monitoring
+                      ⚠️ {activeOverlays.length} suggested update{activeOverlays.length === 1 ? '' : 's'} from the daily repo check
                     </div>
                     <p className="text-sm mt-1 text-yellow-700">
                       Click on a highlighted section to review and accept or decline the suggestion.
@@ -1955,61 +1344,15 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-              )}
-
-              {/* Update Results */}
-              {updateResults && (
-                <div className="bg-raised rounded-xl border border-gray-200 shadow-lg p-8">
-                  {updateResults.success ? (
-                    <div>
-                      {/* Overall Status */}
-                      <div className={`p-4 rounded-lg mb-6 ${
-                        updateResults.analysis.overall_status === 'current'
-                          ? 'bg-green-50 border border-green-200'
-                          : 'bg-yellow-50 border border-yellow-200'
-                      }`}>
-                        <div className={`font-medium ${
-                          updateResults.analysis.overall_status === 'current' 
-                            ? 'text-green-800' 
-                            : 'text-yellow-800'
-                        }`}>
-                          {updateResults.analysis.overall_status === 'current' 
-                            ? '✅ Script is Up to Date' 
-                            : `⚠️ ${activeOverlays.length} Updates Needed`}
-                        </div>
-                        <p className={`text-sm mt-1 ${
-                          updateResults.analysis.overall_status === 'current' 
-                            ? 'text-green-700' 
-                            : 'text-yellow-700'
-                        }`}>
-                          {updateResults.analysis.overall_status === 'current' 
-                            ? updateResults.analysis.summary
-                            : 'Click on red highlighted sections to review and accept/decline suggestions'}
-                        </p>
-                      </div>
-
-                      {/* Interactive Script with Overlays */}
-                      {updateResults.analysis.outdated_sections && updateResults.analysis.outdated_sections.length > 0 && (
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-800 mb-4">Script with Update Suggestions</h3>
-                          <div className="bg-gray-50 text-gray-900 p-6 rounded-lg border border-gray-200 relative">
-                            <ScriptWithOverlays
-                              script={scriptWithOverlays || selectedProject?.script || ''}
-                              overlays={activeOverlays}
-                              onAccept={handleAcceptSuggestion}
-                              onDecline={handleDeclineSuggestion}
-                              onMarkRecorded={handleMarkRecorded}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <div className="font-medium text-red-800">❌ Error</div>
-                      <p className="text-sm text-red-700 mt-1">{updateResults.error}</p>
-                    </div>
-                  )}
+              ) : (
+                <div className="bg-raised rounded-xl border border-gray-200 shadow-lg p-8 text-center">
+                  <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-7 h-7 text-primary-600" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">No suggested updates right now</h2>
+                  <p className="text-gray-600 max-w-md mx-auto">
+                    The daily repo check watches your connected GitHub repo for feature changes and queues suggested edits here automatically. When something changes, it&apos;ll show up on this screen (and in a digest email) for you to accept or decline.
+                  </p>
                 </div>
               )}
             </div>
@@ -2018,262 +1361,9 @@ export default function Dashboard() {
           // Project Detail View
           <div className="h-full flex flex-col">
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-8 min-h-0">
-                             {/* Left Column - Inputs (documentation projects only) */}
-               {selectedProject?.sourceType !== 'code' && (
-               <div className="lg:col-span-2 space-y-6 overflow-y-auto px-2">
-                 {/* Documentation Scraping Section */}
-                 <div className="bg-raised p-4 rounded-lg border border-gray-200">
-                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                     Documentation Scraping
-                   </label>
-                   
 
-                   
-                   {/* Mode Toggle */}
-                   <div className="mb-4">
-                     <div className="flex space-x-4">
-                       <label className="flex items-center">
-                         <input
-                           type="radio"
-                           value="crawl"
-                           checked={crawlMode === 'crawl'}
-                           onChange={(e) => setCrawlMode(e.target.value as 'crawl' | 'specific')}
-                           className="mr-2"
-                         />
-                         <span className="text-sm">Crawl All Pages</span>
-                       </label>
-                       <label className="flex items-center">
-                         <input
-                           type="radio"
-                           value="specific"
-                           checked={crawlMode === 'specific'}
-                           onChange={(e) => setCrawlMode(e.target.value as 'crawl' | 'specific')}
-                           className="mr-2"
-                         />
-                         <span className="text-sm">Specific Pages</span>
-                       </label>
-                     </div>
-                   </div>
-
-                   {crawlMode === 'crawl' ? (
-                     /* Crawl Mode */
-                     <div>
-                       <label className="block text-xs text-gray-600 mb-2">
-                         Starting URL (will discover and crawl related pages)
-                       </label>
-                       <div className="flex space-x-3">
-                         <input
-                           type="url"
-                           value={documentationUrl}
-                           onChange={(e) => setDocumentationUrl(e.target.value)}
-                           className="input-field flex-1"
-                           placeholder="https://docs.example.com"
-                         />
-                         <button
-                           onClick={() => {
-                             handleCrawlDocumentation();
-                           }}
-                           disabled={crawling || !documentationUrl.trim()}
-                           className="px-4 py-2 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                         >
-                           {crawling ? (
-                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                           ) : (
-                             <Search className="w-4 h-4 mr-2" />
-                           )}
-                           {crawling ? 'Crawling...' : 'Crawl'}
-                         </button>
-                       </div>
-                     </div>
-                   ) : (
-                     /* Specific URLs Mode */
-                     <div>
-                       <label className="block text-xs text-gray-600 mb-2">
-                         Specific URLs (one per line)
-                       </label>
-                       <div className="space-y-3">
-                         <textarea
-                           value={specificUrls}
-                           onChange={(e) => setSpecificUrls(e.target.value)}
-                           className="input-field resize-none"
-                           rows={4}
-                           placeholder={`https://docs.example.com/getting-started
-https://docs.example.com/user-guide
-https://docs.example.com/api-reference`}
-                         />
-                         <button
-                           onClick={() => {
-                             handleCrawlDocumentation();
-                           }}
-                           disabled={crawling || !specificUrls.trim()}
-                           className="w-full px-4 py-2 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                         >
-                           {crawling ? (
-                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                           ) : (
-                             <Search className="w-4 h-4 mr-2" />
-                           )}
-                           {crawling ? 'Scraping...' : 'Scrape Pages'}
-                         </button>
-                       </div>
-                     </div>
-                   )}
-                   
-                   {/* Crawl Results Summary */}
-                                        {crawlResults && (
-                       <div className="mt-4 p-4 bg-primary-50 rounded-lg">
-                         {crawlResults.success ? (
-                           <div className="text-sm text-primary-700">
-                             ✅ Successfully {crawlMode === 'crawl' ? 'crawled' : 'scraped'} {crawlResults.pages.length} pages
-                           {(() => {
-                             const summary = getContentSummary(crawlResults);
-                             return (
-                               <div className="mt-2 text-xs text-primary-600">
-                                 📊 {summary.totalCharacters.toLocaleString()} characters • {summary.totalWords.toLocaleString()} words • Avg {summary.averagePageLength} chars/page
-                               </div>
-                             );
-                           })()}
-                           <div className="mt-3">
-                             <select 
-                               className="w-full text-xs bg-raised border border-primary-300 rounded-md px-2 py-1 text-primary-800"
-                               onChange={(e) => {
-                                 if (e.target.value) {
-                                   window.open(e.target.value, '_blank');
-                                 }
-                               }}
-                               defaultValue=""
-                             >
-                               <option value="">📄 View crawled pages ({crawlResults.pages.length} total)</option>
-                               {crawlResults.pages
-                                 .sort((a, b) => b.content.length - a.content.length)
-                                 .map((page, index) => (
-                                 <option key={index} value={page.url}>
-                                   {page.title} ({page.content.length.toLocaleString()} chars)
-                                 </option>
-                               ))}
-                             </select>
-                           </div>
-                           <div className="mt-2 text-xs text-primary-600">
-                             💾 All text content scraped and stored in project database
-                             <br />
-                             🤖 Ready for AI script generation
-                           </div>
-                         </div>
-                       ) : (
-                         <div className="text-sm text-red-600">
-                           ❌ Crawling failed: {crawlResults.error}
-                         </div>
-                       )}
-                     </div>
-                   )}
-                 </div>
-                 
-                 {/* Dynamic Content: Script Generation vs Modification */}
-                 {selectedProject?.script ? (
-                   /* Script Modification Mode */
-                   <>
-                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                       <div className="flex items-center mb-3">
-                         <FileText className="w-5 h-5 text-blue-600 mr-2" />
-                         <span className="text-sm font-medium text-blue-800">Script Modification Mode</span>
-                       </div>
-                       <p className="text-sm text-blue-700">
-                         A script already exists for this project. Describe what changes you'd like to make, and AI will modify the existing script while preserving its structure and style.
-                       </p>
-                     </div>
-
-                     <div className="bg-raised p-4 rounded-lg border border-gray-200">
-                       <label className="block text-sm font-medium text-gray-700 mb-3">
-                         What changes would you like to make to the script? *
-                       </label>
-                       <textarea
-                         value={modificationRequest}
-                         onChange={(e) => setModificationRequest(e.target.value)}
-                         className="input-field resize-none"
-                         rows={4}
-                         placeholder="e.g., Make the introduction shorter and more engaging, Add more examples in the setup section, Change the tone to be more casual, etc."
-                       />
-                     </div>
-
-                     <div className="pt-2">
-                       <button 
-                         onClick={handleModifyScript}
-                         disabled={!modificationRequest.trim() || modifying}
-                         className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
-                       >
-                         {modifying ? (
-                           <>
-                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                             Modifying Script...
-                           </>
-                         ) : (
-                           <><Wand2 className="w-5 h-5 mr-2" />Modify Script with AI</>
-                         )}
-                       </button>
-                     </div>
-
- 
-                   </>
-                 ) : (
-                   /* Original Script Generation Mode */
-                   <>
-                     <div className="bg-raised p-4 rounded-lg border border-gray-200">
-                       <label className="block text-sm font-medium text-gray-700 mb-3">
-                         What should this tutorial teach? *
-                       </label>
-                       <textarea
-                         value={userRequest}
-                         onChange={(e) => setUserRequest(e.target.value)}
-                         className="input-field resize-none"
-                         rows={4}
-                         placeholder="e.g., How to create a new product in the system, How to set up user permissions, etc."
-                       />
-                     </div>
-
-                     <div className="bg-raised p-4 rounded-lg border border-gray-200">
-                       <label className="block text-sm font-medium text-gray-700 mb-3">
-                         AI Prompt Template
-                         <span className="text-xs text-gray-500 ml-2">(Auto-filled based on video type)</span>
-                       </label>
-                       <textarea
-                         value={prompt}
-                         onChange={(e) => setPrompt(e.target.value)}
-                         className="input-field resize-none text-xs"
-                         rows={8}
-                         placeholder="AI prompt template..."
-                       />
-                     </div>
-                     
-                     <div className="pt-2">
-                       <button 
-                         onClick={() => {
-                           handleGenerateScript();
-                         }}
-                                                 disabled={
-                          !crawlResults?.success || 
-                          !prompt.trim() || 
-                          !userRequest.trim() || 
-                          generating
-                        }
-                         className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-lg"
-                       >
-                         {generating ? (
-                           <>
-                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                             Generating Script...
-                           </>
-                         ) : (
-                           <><Wand2 className="w-5 h-5 mr-2" />Generate Script with AI</>
-                         )}
-                       </button>
-                     </div>
-                   </>
-                 )}
-               </div>
-               )}
-
-                             {/* Right Column - Generated Script (full width for code projects) */}
-               <div className={`${selectedProject?.sourceType === 'code' ? 'lg:col-span-5' : 'lg:col-span-3'} flex flex-col min-h-0`}>
+                             {/* Script editor (full width) */}
+               <div className="lg:col-span-5 flex flex-col min-h-0">
                  {acceptedOverlays.length > 0 && (
                    <div className="mb-3 bg-yellow-50 border border-yellow-200 rounded p-3 flex-shrink-0">
                      <div className="text-sm font-medium text-yellow-900 mb-1">
@@ -2488,25 +1578,9 @@ https://docs.example.com/api-reference`}
                   </div>
                 ) : (
                    <div className="bg-gray-50 text-gray-500 p-6 rounded-lg border border-gray-200 overflow-y-auto flex-1 font-sans">
-                     {selectedProject?.sourceType === 'code' ? (
-                       <>
-                         No script yet.
-                         <br /><br />
-                         This is a code-based project — the script is written and edited directly (e.g. with Claude). It will appear here once added.
-                       </>
-                     ) : (
-                       <>
-                         Generated script will appear here...
-                         <br /><br />
-                         Steps:
-                         <br />1. Enter documentation URL
-                         <br />2. Click "Crawl" to discover all pages
-                         <br />3. Describe what the tutorial should teach
-                         <br />4. Click "Generate Script with AI"
-                         <br /><br />
-                         💡 Tip: Be specific about what you want to teach!
-                       </>
-                     )}
+                     No script yet.
+                     <br /><br />
+                     The script is written and edited directly here (e.g. with Claude). It will appear once added, and the daily repo check will keep it up to date.
                    </div>
                  )}
                  
@@ -2579,124 +1653,6 @@ https://docs.example.com/api-reference`}
                 />
               </div>
 
-              {/* Documentation Scraping Section */}
-              <div className="mb-4 border-t border-gray-200 pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Company Documentation (Optional)
-                </label>
-                <p className="text-xs text-gray-600 mb-4">
-                  Scrape their documentation to enable AI-powered learning for their software
-                </p>
-                
-                {/* Crawl Mode Selection */}
-                <div className="mb-4">
-                  <div className="flex space-x-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="crawl"
-                        checked={clientCrawlMode === 'crawl'}
-                        onChange={(e) => setClientCrawlMode(e.target.value as 'crawl' | 'specific')}
-                        className="mr-2"
-                      />
-                      <span className="text-sm">Crawl from URL</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="specific"
-                        checked={clientCrawlMode === 'specific'}
-                        onChange={(e) => setClientCrawlMode(e.target.value as 'crawl' | 'specific')}
-                        className="mr-2"
-                      />
-                      <span className="text-sm">Specific URLs</span>
-                    </label>
-                  </div>
-                </div>
-
-                {clientCrawlMode === 'crawl' ? (
-                  <div className="mb-3">
-                    <label className="block text-xs text-gray-600 mb-2">
-                      Documentation URL
-                    </label>
-                    <div className="flex space-x-2">
-                      <input
-                        type="url"
-                        value={clientForm.documentationUrl}
-                        onChange={(e) => setClientForm(prev => ({ ...prev, documentationUrl: e.target.value }))}
-                        className="input-field flex-1 text-sm"
-                        placeholder="https://docs.company.com"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleClientCrawlDocumentation}
-                        disabled={clientCrawling || !clientForm.documentationUrl.trim()}
-                        className="px-3 py-2 bg-primary-600 text-ink text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                      >
-                        {clientCrawling ? (
-                          <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
-                        ) : (
-                          <Search className="w-3 h-3 mr-1" />
-                        )}
-                        {clientCrawling ? 'Crawling...' : 'Crawl'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mb-3">
-                    <label className="block text-xs text-gray-600 mb-2">
-                      Specific URLs (one per line)
-                    </label>
-                    <div className="space-y-2">
-                      <textarea
-                        value={clientForm.specificUrls}
-                        onChange={(e) => setClientForm(prev => ({ ...prev, specificUrls: e.target.value }))}
-                        className="input-field resize-none text-sm"
-                        rows={3}
-                        placeholder={`https://docs.company.com/getting-started
-https://docs.company.com/user-guide`}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleClientCrawlDocumentation}
-                        disabled={clientCrawling || !clientForm.specificUrls.trim()}
-                        className="w-full px-3 py-2 bg-primary-600 text-ink text-xs rounded hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                      >
-                        {clientCrawling ? (
-                          <div className="animate-spin rounded-full h-3 w-3 border-b border-white mr-1"></div>
-                        ) : (
-                          <Search className="w-3 h-3 mr-1" />
-                        )}
-                        {clientCrawling ? 'Scraping...' : 'Scrape URLs'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Crawl Results Summary */}
-                {clientCrawlResults && (
-                  <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                    {clientCrawlResults.success ? (
-                      <div className="text-sm text-blue-700">
-                        ✅ Successfully {clientCrawlMode === 'crawl' ? 'crawled' : 'scraped'} {clientCrawlResults.pages.length} pages
-                        {(() => {
-                          const summary = getContentSummary(clientCrawlResults);
-                          return (
-                            <div className="mt-1 text-xs text-blue-600">
-                              📊 {summary.totalCharacters.toLocaleString()} characters • {summary.totalWords.toLocaleString()} words
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-red-600">
-                        ❌ Scraping failed: {clientCrawlResults.error}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
@@ -2713,80 +1669,6 @@ https://docs.company.com/user-guide`}
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Monitoring Setup Modal */}
-      {showMonitoringModal && selectedClient && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-raised rounded-xl border border-gray-200 shadow-xl max-w-md w-full">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {selectedClient.monitoringEnabled ? 'Re-seed monitoring' : 'Set up daily monitoring'}
-              </h2>
-              <button
-                onClick={() => {
-                  if (seedingMonitoring) return;
-                  setShowMonitoringModal(false);
-                  setMonitoringMessage(null);
-                }}
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-6">
-              <p className="text-sm text-gray-600 mb-4">
-                Each day at 06:00 UTC the system re-fetches every page under this URL,
-                detects meaningful changes, and queues suggested script edits for the affected videos.
-              </p>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Docs root URL
-              </label>
-              <input
-                type="url"
-                value={monitoringRootUrl}
-                onChange={(e) => setMonitoringRootUrl(e.target.value)}
-                placeholder="https://docs.example.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                disabled={seedingMonitoring}
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Will crawl up to 50 pages and store one snapshot per page. Re-running just refreshes.
-              </p>
-
-              {monitoringMessage && (
-                <div className="mt-4 text-sm p-3 rounded bg-gray-50 border border-gray-200">
-                  {monitoringMessage}
-                </div>
-              )}
-
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (seedingMonitoring) return;
-                    setShowMonitoringModal(false);
-                    setMonitoringMessage(null);
-                  }}
-                  disabled={seedingMonitoring}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSetupMonitoring}
-                  disabled={seedingMonitoring || !monitoringRootUrl.trim()}
-                  className="px-4 py-2 bg-primary-600 text-ink rounded-lg hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 flex items-center"
-                >
-                  {seedingMonitoring && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>}
-                  {seedingMonitoring ? 'Crawling...' : (selectedClient.monitoringEnabled ? 'Re-seed' : 'Set up monitoring')}
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -2935,45 +1817,6 @@ https://docs.company.com/user-guide`}
                   rows={3}
                   required
                 />
-              </div>
-
-              {/* Source selector: docs vs code */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Source
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setProjectSourceType('docs')}
-                    className={`text-left p-3 rounded-lg border transition-colors duration-200 ${
-                      projectSourceType === 'docs'
-                        ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center mb-1">
-                      <BookOpen className={`w-4 h-4 mr-2 ${projectSourceType === 'docs' ? 'text-primary-600' : 'text-gray-500'}`} />
-                      <span className="text-sm font-medium text-gray-900">From documentation</span>
-                    </div>
-                    <p className="text-xs text-gray-500">Crawl docs and generate a script.</p>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProjectSourceType('code')}
-                    className={`text-left p-3 rounded-lg border transition-colors duration-200 ${
-                      projectSourceType === 'code'
-                        ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center mb-1">
-                      <PenTool className={`w-4 h-4 mr-2 ${projectSourceType === 'code' ? 'text-primary-600' : 'text-gray-500'}`} />
-                      <span className="text-sm font-medium text-gray-900">From code</span>
-                    </div>
-                    <p className="text-xs text-gray-500">Just a script window — written/edited directly.</p>
-                  </button>
-                </div>
               </div>
 
               <div className="flex justify-end space-x-3">
