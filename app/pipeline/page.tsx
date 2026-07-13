@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 
 // ── types (mirror /api/pipeline/runs) ───────────────────────────────────────
@@ -11,7 +12,7 @@ type Run = {
   detail: string | null; started_at: string; updated_at: string; finished_at: string | null;
   events: Evt[];
 };
-type Video = { id: string; title: string; client: string | null };
+type Video = { id: string; title: string; client: string | null; pending: number };
 type Board = { generatedAt: string; videos: Video[]; runs: Run[] };
 
 const PHASES = ['detect', 'brief', 'editing', 'written', 'reference', 'render', 'splice', 'proxy', 'beats', 'resync', 'ready'];
@@ -29,6 +30,15 @@ function labelOf(run: Run): string {
   if (run.status === 'error') return 'ERROR';
   return (run.phase ?? 'working').toUpperCase(); // running -> current phase
 }
+// a video's board state merges the cron (pending changes) with the pipeline (runs): STALE -> UPDATING -> READY
+function videoState(latest: Run | undefined, pending: number): { kind: 'sync' | 'render' | 'stale'; label: string } {
+  if (latest?.status === 'running') return { kind: 'render', label: (latest.phase ?? 'updating').toUpperCase() };
+  if (latest?.status === 'halted') return { kind: 'render', label: 'HALTED' };
+  if (latest?.status === 'error') return { kind: 'stale', label: 'ERROR' };
+  if (latest?.status === 'ready_for_review') return { kind: 'sync', label: 'READY FOR REVIEW' };
+  if (pending > 0) return { kind: 'stale', label: `STALE · ${pending} CHANGE${pending > 1 ? 'S' : ''}` };
+  return { kind: 'sync', label: 'IN SYNC' };
+}
 function ago(iso: string | null) {
   if (!iso) return '—';
   try { return formatDistanceToNow(new Date(iso), { addSuffix: true }); } catch { return '—'; }
@@ -42,7 +52,7 @@ function RunFlow({ run }: { run: Run }) {
   const progress = idx < 0 ? 0 : idx / (PHASES.length - 1);
 
   return (
-    <div className="card flow">
+    <Link className="card flow" href={`/pipeline/${run.projectId}`}>
       <div className="flow-head">
         <div className="min0">
           <div className="flow-title">{run.video ?? 'Unknown video'}</div>
@@ -60,12 +70,12 @@ function RunFlow({ run }: { run: Run }) {
           <div className="frame-body mono">{run.trigger ?? 'change detected'}</div>
         </div>
 
-        {/* connector: fill to phase-progress + a traveling pulse + arrowhead */}
+        {/* connector: amber fill + a pulsing progress-head at the current step, arrow -> video */}
         <div className="conn">
           <div className="conn-phase mono">{(run.phase ?? '').toUpperCase()}{idx >= 0 ? ` · ${idx + 1}/${PHASES.length}` : ''}</div>
-          <div className={`conn-track ${kind} ${running ? 'live' : ''}`}>
+          <div className={`conn-track ${kind}`}>
             <div className="conn-fill" style={{ width: `${(kind === 'sync' ? 1 : progress) * 100}%` }} />
-            {running && <span className="conn-pulse" />}
+            <span className="conn-head" style={{ left: `${(kind === 'sync' ? 1 : progress) * 100}%` }} />
             <span className="conn-arrow" />
           </div>
         </div>
@@ -91,27 +101,26 @@ function RunFlow({ run }: { run: Run }) {
           </div>
         ))}
       </div>
-    </div>
+    </Link>
   );
 }
 
 // ── a video tile in the grid ────────────────────────────────────────────────
 function VideoTile({ video, latest }: { video: Video; latest?: Run }) {
-  const kind = latest ? kindOf(latest.status) : 'sync';
-  const label = latest ? labelOf(latest) : 'IN SYNC';
+  const st = videoState(latest, video.pending);
   return (
-    <div className="card tile">
+    <Link className="card tile" href={`/pipeline/${video.id}`}>
       <div className="tile-top">
         <div className="min0">
           <div className="tile-title">{video.title}</div>
           <div className="mono tile-client">{video.client ?? ''}</div>
         </div>
-        <span className={`pill sm ${kind}`}><span className="pdot" />{label}</span>
+        <span className={`pill sm ${st.kind}`}><span className="pdot" />{st.label}</span>
       </div>
       <div className="mono tile-foot">
-        {latest ? `updated ${ago(latest.updated_at)}` : 'no updates · in sync'}
+        {latest ? `updated ${ago(latest.updated_at)}` : (video.pending > 0 ? 'change detected · needs update' : 'no updates · in sync')}
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -220,6 +229,8 @@ const CSS = `
 .sbs .note{color:var(--text-2);font-size:12px;letter-spacing:.08em;}
 
 .sbs .card{background:var(--raised);border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--shadow);}
+.sbs a.card{color:inherit;text-decoration:none;display:block;transition:border-color .18s var(--ease),transform .18s var(--ease);}
+.sbs a.card:hover{border-color:rgba(151,164,190,.42);transform:translateY(-1px);}
 .sbs .flows{display:flex;flex-direction:column;gap:14px;margin-bottom:34px;}
 .sbs .flow{padding:16px 18px 14px;}
 .sbs .flow-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
@@ -254,19 +265,22 @@ const CSS = `
 .sbs .eq b:nth-child(3){height:6px;animation:eq 1s var(--ease) infinite .3s;}
 .sbs .eq b:nth-child(4){height:9px;animation:eq 1s var(--ease) infinite .45s;}
 
-.sbs .conn{width:132px;flex-shrink:0;padding:0 10px;}
-.sbs .conn-phase{font-size:9px;letter-spacing:.16em;color:var(--text-3);text-align:center;margin-bottom:8px;height:11px;text-transform:uppercase;}
-.sbs .conn-track{position:relative;height:2px;background:var(--line-2);border-radius:2px;}
-.sbs .conn-fill{position:absolute;left:0;top:0;bottom:0;border-radius:2px;transition:width .6s var(--ease);}
+.sbs .conn{width:152px;flex-shrink:0;padding:0 16px;}
+.sbs .conn-phase{font-size:9px;letter-spacing:.16em;color:var(--text-3);text-align:center;margin-bottom:9px;height:11px;text-transform:uppercase;}
+.sbs .conn-track{position:relative;height:3px;background:var(--line-2);border-radius:3px;}
+.sbs .conn-fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;transition:width .6s var(--ease);}
 .sbs .conn-track.render .conn-fill{background:var(--render);box-shadow:0 0 10px var(--render-line);}
 .sbs .conn-track.sync .conn-fill{background:var(--sync);box-shadow:0 0 10px var(--sync-line);}
-.sbs .conn-track.stale .conn-fill{background:var(--stale);}
-.sbs .conn-arrow{position:absolute;right:-1px;top:-4px;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid var(--line-2);}
+.sbs .conn-track.stale .conn-fill{background:var(--stale);box-shadow:0 0 10px var(--stale-line);}
+/* progress head: a glowing dot that sits at the current step and advances toward the video */
+.sbs .conn-head{position:absolute;top:50%;width:9px;height:9px;margin-top:-4.5px;margin-left:-4.5px;border-radius:50%;transition:left .6s var(--ease);}
+.sbs .conn-track.render .conn-head{background:var(--render);animation:headpulse 1.5s var(--ease) infinite;}
+.sbs .conn-track.sync .conn-head{background:var(--sync);box-shadow:0 0 10px 2px var(--sync-line);}
+.sbs .conn-track.stale .conn-head{background:var(--stale);box-shadow:0 0 9px 2px var(--stale-line);}
+.sbs .conn-arrow{position:absolute;right:-8px;top:50%;margin-top:-5px;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid var(--line-2);}
 .sbs .conn-track.sync .conn-arrow{border-left-color:var(--sync);}
-.sbs .conn-track.render .conn-arrow{border-left-color:var(--render);}
-.sbs .conn-pulse{position:absolute;top:50%;left:-26px;width:26px;height:3px;margin-top:-1.5px;border-radius:3px;
-  background:linear-gradient(90deg,rgba(245,180,76,0),var(--render));animation:flow 1.5s linear infinite;}
-.sbs .conn-pulse::after{content:"";position:absolute;right:-1px;top:50%;margin-top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--render);box-shadow:0 0 12px 3px var(--render-line);}
+.sbs .conn-track.render .conn-arrow{border-left-color:var(--render-line);}
+.sbs .conn-track.stale .conn-arrow{border-left-color:var(--stale-line);}
 
 /* event stream */
 .sbs .stream{margin-top:14px;border-top:1px solid var(--line);padding-top:11px;display:flex;flex-direction:column;gap:5px;}
@@ -284,7 +298,7 @@ const CSS = `
 .sbs .tile-client{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-top:4px;}
 .sbs .tile-foot{margin-top:12px;font-size:9.5px;letter-spacing:.06em;color:var(--text-3);}
 
-@keyframes flow{0%{left:-26px;opacity:0}14%{opacity:1}82%{opacity:1}100%{left:100%;opacity:0}}
+@keyframes headpulse{0%,100%{box-shadow:0 0 6px 1px var(--render-line);transform:scale(1)}50%{box-shadow:0 0 15px 4px var(--render-line);transform:scale(1.3)}}
 @keyframes eq{0%,100%{transform:scaleY(.55)}50%{transform:scaleY(1)}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes scan{0%{transform:translateX(-6px);opacity:.3}50%{opacity:1}100%{transform:translateX(6px);opacity:.3}}
@@ -297,6 +311,6 @@ const CSS = `
   .sbs .flow-title,.sbs .flow-sub{white-space:normal;}
 }
 @media (prefers-reduced-motion:reduce){
-  .sbs .conn-pulse,.sbs .logo b,.sbs .eq b,.sbs .live .scan,.sbs .pill.render .pdot{animation:none;}
+  .sbs .conn-head,.sbs .logo b,.sbs .eq b,.sbs .live .scan,.sbs .pill.render .pdot{animation:none;}
 }
 `;

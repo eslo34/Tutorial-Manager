@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(Number(searchParams.get('limit') ?? 50) || 50, 200);
     const userId = session.user.id;
 
-    const [projects, runs] = await Promise.all([
+    const [projects, runs, pending] = await Promise.all([
       prisma.project.findMany({
         where: { user_id: userId },
         select: { id: true, title: true, client: { select: { name: true } } },
@@ -32,11 +32,18 @@ export async function GET(req: NextRequest) {
           events: { orderBy: { at: 'desc' }, take: 6 },
         },
       }),
+      // unresolved cron-detected changes per video -> drives the STALE state
+      prisma.pendingScriptEdit.groupBy({
+        by: ['project_id'],
+        where: { project: { user_id: userId }, status: { in: ['pending', 'accepted'] } },
+        _count: { _all: true },
+      }),
     ]);
+    const pendingBy = new Map(pending.map((x) => [x.project_id, x._count._all]));
 
     return NextResponse.json({
       generatedAt: new Date().toISOString(),
-      videos: projects.map((p) => ({ id: p.id, title: p.title, client: p.client?.name ?? null })),
+      videos: projects.map((p) => ({ id: p.id, title: p.title, client: p.client?.name ?? null, pending: pendingBy.get(p.id) ?? 0 })),
       runs: runs.map((r) => ({
         id: r.id,
         projectId: r.project_id,
