@@ -107,6 +107,7 @@ model Project {
   client              Client         @relation(fields: [client_id], references: [id], onDelete: Cascade)
   pending_edits       PendingScriptEdit[]
   script_chat_messages ScriptChatMessage[]
+  pipeline_runs       PipelineRun[]
 
   @@map("projects")
 }
@@ -286,6 +287,48 @@ model ScriptChatMessage {
 
   @@index([project_id])
   @@map("script_chat_messages")
+}
+
+// ── Animation-pipeline mission control ──────────────────────────────────────
+// A PipelineRun is one end-to-end animation-update of a video (the Fable pipeline:
+// detect → edit animation → render → splice → [beats/re-sync] → ready-for-review).
+// Written by the LOCAL pipeline via POST /api/pipeline/event (CRON_SECRET-authed),
+// read by the mission-control dashboard. Independent of the cron's script-side
+// PendingScriptEdit — this is the ANIMATION side.
+model PipelineRun {
+  id          String    @id @default(cuid())
+  project_id  String    // the video this run updates
+  status      String    @default("running") // running | ready_for_review | halted | error | done
+  path        String?   // "A" (cosmetic) | "B" (beat-change)
+  trigger     String?   // e.g. "OD-Test 8ac0970: activation note"
+  phase       String?   // latest phase, denormalized from events for the board
+  detail      String?   // latest human-readable line
+  started_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  finished_at DateTime?
+
+  project Project         @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  events  PipelineEvent[]
+
+  @@index([project_id, started_at(sort: Desc)])
+  @@map("pipeline_runs")
+}
+
+// One step in a run's live stream. The board renders the latest per run; a run's
+// detail view renders the whole ordered stream.
+model PipelineEvent {
+  id     String   @id @default(cuid())
+  run_id String
+  phase  String   // detect | brief | editing | written | reference | render | splice | proxy | beats | resync | ready | halt
+  status String   @default("start") // start | progress | done | error
+  detail String?
+  data   Json?    // {part, frames, pct, ...}
+  at     DateTime @default(now())
+
+  run PipelineRun @relation(fields: [run_id], references: [id], onDelete: Cascade)
+
+  @@index([run_id, at])
+  @@map("pipeline_events")
 }
 
 // Configures repo-release monitoring for one client: which GitHub repo + branch
