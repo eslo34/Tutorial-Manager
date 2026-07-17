@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
     const [changes, runs] = await Promise.all([
       prisma.pendingScriptEdit.findMany({
-        where: { project_id: video.id, status: { in: ['pending', 'accepted'] } },
+        where: { project_id: video.id, status: { in: ['pending', 'accepted', 'auto_applied'] } },
         orderBy: [{ severity: 'asc' }, { detected_at: 'desc' }],
       }),
       prisma.pipelineRun.findMany({

@@ -1407,9 +1407,14 @@ export default function Dashboard() {
                      </p>
                      <div className="space-y-2 max-h-40 overflow-y-auto">
                        {pipelineOverlays.map((o) => (
-                         <div key={o.id} className="bg-raised border border-green-200 rounded p-2">
-                           <div className="text-xs text-gray-700 line-clamp-2">
-                             &ldquo;{(o.suggested_replacement || '').slice(0, 200)}{(o.suggested_replacement || '').length > 200 ? '…' : ''}&rdquo;
+                         <div key={o.id} className="bg-raised border border-green-200 rounded p-2 text-xs space-y-1">
+                           {o.original_text && (
+                             <div className="text-gray-400 line-through line-clamp-2">
+                               {(o.original_text || '').slice(0, 220)}{(o.original_text || '').length > 220 ? '…' : ''}
+                             </div>
+                           )}
+                           <div className="text-green-800 line-clamp-3">
+                             {(o.suggested_replacement || '').slice(0, 220)}{(o.suggested_replacement || '').length > 220 ? '…' : ''}
                            </div>
                          </div>
                        ))}

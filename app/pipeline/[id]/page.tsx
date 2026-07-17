@@ -29,10 +29,17 @@ function stateOf(latest: Run | undefined, pending: number): { kind: 'sync' | 're
   return { kind: 'sync', label: 'IN SYNC' };
 }
 
-// Split the script into plain segments + change segments (matched by original_text).
+// Split the script into plain segments + change segments. Anchor each change where it actually
+// sits in the CURRENT script: the OLD text for not-yet-applied edits, or the NEW text for ones
+// already applied (e.g. the pipeline's auto_applied voiceover changes). Either way we render old→new.
 function buildSegments(script: string, changes: Change[]) {
   const marks = changes
-    .map((c) => ({ c, start: script.indexOf(c.original_text) }))
+    .map((c) => {
+      let start = script.indexOf(c.original_text);
+      let len = c.original_text.length;
+      if (start < 0) { start = script.indexOf(c.suggested_replacement); len = c.suggested_replacement.length; }
+      return { c, start, len };
+    })
     .filter((m) => m.start >= 0)
     .sort((a, b) => a.start - b.start);
   const segs: ({ type: 'text'; text: string } | { type: 'chg'; c: Change })[] = [];
@@ -41,10 +48,10 @@ function buildSegments(script: string, changes: Change[]) {
     if (m.start < cursor) continue; // overlapping match, skip
     if (m.start > cursor) segs.push({ type: 'text', text: script.slice(cursor, m.start) });
     segs.push({ type: 'chg', c: m.c });
-    cursor = m.start + m.c.original_text.length;
+    cursor = m.start + m.len;
   }
   if (cursor < script.length) segs.push({ type: 'text', text: script.slice(cursor) });
-  const unmatched = changes.filter((c) => script.indexOf(c.original_text) < 0);
+  const unmatched = changes.filter((c) => script.indexOf(c.original_text) < 0 && script.indexOf(c.suggested_replacement) < 0);
   return { segs, unmatched };
 }
 
@@ -72,7 +79,10 @@ export default function VideoDetail() {
   }, [id]);
 
   const latest = data?.runs?.[0];
-  const st = stateOf(latest, data?.changes?.length ?? 0);
+  // Only genuinely-pending edits drive the STALE state; already-applied ones (accepted / the
+  // pipeline's auto_applied VO changes) are informational and must not mark the video stale.
+  const pendingCount = data?.changes?.filter((c) => c.status === 'pending' || c.status === 'accepted').length ?? 0;
+  const st = stateOf(latest, pendingCount);
   const { segs, unmatched } = data ? buildSegments(data.video.script, data.changes) : { segs: [], unmatched: [] };
 
   return (
