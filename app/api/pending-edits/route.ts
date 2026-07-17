@@ -27,10 +27,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
-    // Pending = waiting for accept/decline. Accepted = applied to script,
-    // awaiting re-recording. Both states render as overlays (red vs green).
+    // Pending = waiting for accept/decline. Accepted = applied, awaiting re-recording.
+    // Auto_applied = applied by the animation pipeline (already recorded). All render as overlays.
     const edits = await prisma.pendingScriptEdit.findMany({
-      where: { project_id: projectId, status: { in: ['pending', 'accepted'] } },
+      where: { project_id: projectId, status: { in: ['pending', 'accepted', 'auto_applied'] } },
       orderBy: [{ severity: 'asc' }, { detected_at: 'desc' }],
     });
 

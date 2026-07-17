@@ -70,6 +70,10 @@ export default function Dashboard() {
   // selected project. Loaded in project-detail view so the green highlights
   // appear behind the script editor itself (not just in Script Maintenance).
   const [acceptedOverlays, setAcceptedOverlays] = useState<any[]>([]);
+  // Overlays the animation pipeline auto-applied (status 'auto_applied'): rendered
+  // GREEN like accepted edits, but already recorded — so they are NOT surfaced in the
+  // "awaiting re-recording" queue.
+  const [pipelineOverlays, setPipelineOverlays] = useState<any[]>([]);
 
   useEffect(() => {
     if (session?.user) {
@@ -376,6 +380,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (currentView !== 'project-detail' || !selectedProject?.id) {
       setAcceptedOverlays([]);
+      setPipelineOverlays([]);
       return;
     }
     let cancelled = false;
@@ -386,8 +391,9 @@ export default function Dashboard() {
         const data = await res.json();
         if (cancelled || !data.overlays) return;
         setAcceptedOverlays(data.overlays.filter((o: any) => o.status === 'accepted'));
+        setPipelineOverlays(data.overlays.filter((o: any) => o.status === 'auto_applied'));
       } catch (e) {
-        console.error('Failed to load accepted overlays for project-detail:', e);
+        console.error('Failed to load overlays for project-detail:', e);
       }
     })();
     return () => { cancelled = true; };
@@ -520,7 +526,7 @@ export default function Dashboard() {
     type Range = { start: number; end: number; style: string };
     const ranges: Range[] = [];
 
-    for (const overlay of acceptedOverlays) {
+    for (const overlay of [...acceptedOverlays, ...pipelineOverlays]) {
       const matchText = overlay.suggested_replacement;
       if (!matchText) continue;
       const idx = text.indexOf(matchText);
@@ -1385,6 +1391,26 @@ export default function Dashboard() {
                              <Video className="w-3 h-3" />
                              Mark as Recorded
                            </button>
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+
+                 {pipelineOverlays.length > 0 && (
+                   <div className="mb-3 bg-green-50 border border-green-200 rounded p-3 flex-shrink-0">
+                     <div className="text-sm font-medium text-green-900 mb-1">
+                       ✨ {pipelineOverlays.length} line{pipelineOverlays.length === 1 ? '' : 's'} updated by the animation pipeline
+                     </div>
+                     <p className="text-xs text-green-700 mb-3">
+                       The green-highlighted text below was regenerated automatically — script and voiceover are already updated, so there&apos;s nothing to re-record.
+                     </p>
+                     <div className="space-y-2 max-h-40 overflow-y-auto">
+                       {pipelineOverlays.map((o) => (
+                         <div key={o.id} className="bg-raised border border-green-200 rounded p-2">
+                           <div className="text-xs text-gray-700 line-clamp-2">
+                             &ldquo;{(o.suggested_replacement || '').slice(0, 200)}{(o.suggested_replacement || '').length > 200 ? '…' : ''}&rdquo;
+                           </div>
                          </div>
                        ))}
                      </div>
