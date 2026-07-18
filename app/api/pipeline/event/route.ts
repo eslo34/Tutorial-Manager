@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { notify } from '@/lib/notify';
 
 // POST /api/pipeline/event — the LOCAL animation pipeline reports progress here.
 // Auth: CRON_SECRET bearer (a machine caller, like the cron routes). Body:
@@ -84,6 +85,20 @@ export async function POST(req: NextRequest) {
         ...(terminal ? { finished_at: new Date() } : {}),
       },
     });
+
+    // Phone push on terminal states (best-effort — never blocks the event).
+    if (terminal) {
+      const proj = await prisma.project.findUnique({ where: { id: run.project_id }, select: { title: true } });
+      const title = proj?.title ?? video ?? 'a video';
+      const url = 'https://tutorial-manager-three.vercel.app/pipeline';
+      if (newStatus === 'ready_for_review') {
+        await notify(`✅ "${title}" is updated and ready for review.`, { title: `${title} ready`, tags: ['white_check_mark'], click: url });
+      } else if (newStatus === 'halted') {
+        await notify(`⚠️ The auto-update for "${title}" halted: ${detail ?? 'see the report'}.`, { title: `${title} halted`, priority: 'high', click: url });
+      } else if (newStatus === 'error') {
+        await notify(`❌ The auto-update for "${title}" hit an error: ${detail ?? ''}.`, { title: `${title} error`, priority: 'high', click: url });
+      }
+    }
 
     return NextResponse.json({ runId: run.id });
   } catch (error) {

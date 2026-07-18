@@ -108,6 +108,7 @@ model Project {
   pending_edits       PendingScriptEdit[]
   script_chat_messages ScriptChatMessage[]
   pipeline_runs       PipelineRun[]
+  run_requests        RunRequest[]
 
   @@map("projects")
 }
@@ -329,6 +330,41 @@ model PipelineEvent {
 
   @@index([run_id, at])
   @@map("pipeline_events")
+}
+
+// The auto-trigger QUEUE. A push to a watched repo (e.g. OD-Test) creates one of these via the
+// /api/pipeline/trigger webhook; the local poller claims it (serialized per project), pulls the
+// repo, composes the brief, and launches the Fable agent. Survives the PC being off — a queued
+// row just waits until the poller next comes online.
+model RunRequest {
+  id          String    @id @default(cuid())
+  project_id  String    // the video this change targets
+  repo        String    // "owner/name", e.g. "eslo34/OD-Test"
+  sha         String
+  ref         String?   // "refs/heads/main"
+  queued_offline Boolean @default(false) // true if the PC was off when queued → ping "launching" on boot
+  status      String    @default("queued") // queued | claimed | launched | done | error
+  detail      String?
+  created_at  DateTime  @default(now())
+  claimed_at  DateTime?
+  launched_at DateTime?
+  finished_at DateTime?
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([status, created_at])
+  @@index([project_id, created_at(sort: Desc)])
+  @@map("run_requests")
+}
+
+// Liveness of the local runner (poller). The webhook checks last_seen_at to decide whether the PC
+// is on ("launching…") or off ("will run when your computer next starts"). id = the runner name.
+model RunnerHeartbeat {
+  id           String   @id // runner name, e.g. "local"
+  last_seen_at DateTime @default(now())
+  detail       String?
+
+  @@map("runner_heartbeats")
 }
 
 // Configures repo-release monitoring for one client: which GitHub repo + branch
