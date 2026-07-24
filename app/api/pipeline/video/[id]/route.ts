@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       where: { id: params.id, user_id: session.user.id },
       select: {
         id: true, title: true, script: true, auto_update: true, editor_project: true,
-        client: { select: { name: true } },
+        client: { select: { name: true, auto_update_default: true } },
       },
     });
     if (!video) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -40,6 +40,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         script: video.script ?? '',
         autoUpdate: video.auto_update,
         editorProject: video.editor_project,
+        // false = this client's videos are made outside the editor, so manual is the norm here
+        clientAutoDefault: video.client?.auto_update_default ?? true,
       },
       changes: changes.map((c) => ({
         id: c.id,

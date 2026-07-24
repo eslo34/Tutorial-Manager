@@ -16,7 +16,7 @@ type Run = {
 };
 type Video = {
   id: string; title: string; client: string | null; script: string;
-  autoUpdate: boolean; editorProject: string | null;
+  autoUpdate: boolean; editorProject: string | null; clientAutoDefault: boolean;
 };
 type Data = { video: Video; changes: Change[]; runs: Run[] };
 
@@ -159,6 +159,11 @@ export default function VideoDetail() {
                     ? 'Built in the StepByStep editor. When the product changes, the pipeline updates the animation, re-renders, regenerates the affected narration and re-syncs the timeline — you just review the result.'
                     : 'Not built in the editor. When the product changes, the daily check audits this script and emails you a digest with what went out of date — then you update the video yourself. No agent ever touches it.'}
                 </p>
+                {data.video.clientAutoDefault === false && (
+                  <p className="mono client-default">
+                    {data.video.client}&rsquo;s videos are produced outside the editor — new videos for this client start on CHECK + EMAIL.
+                  </p>
+                )}
                 <div className="slugrow">
                   <label className="mono slug-label" htmlFor="editorproj">EDITOR PROJECT</label>
                   <input
@@ -321,6 +326,7 @@ const CSS = `
 .sbs .slug-save{appearance:none;cursor:pointer;background:var(--sync-dim);border:1px solid var(--sync-line);color:var(--sync);
   border-radius:7px;font-size:9.5px;font-weight:600;letter-spacing:.14em;padding:7px 13px;}
 .sbs .modeerr{margin:11px 0 0;font-size:11px;color:var(--stale);letter-spacing:.03em;}
+.sbs .client-default{margin:10px 0 0;font-size:10px;line-height:1.55;letter-spacing:.05em;color:var(--text-3);}
 .sbs .chgcards{display:flex;flex-direction:column;gap:10px;}
 .sbs .chgcard{padding:14px 16px;}
 .sbs .chgcard-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;}

@@ -65,6 +65,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Client ID and title are required' }, { status: 400 })
     }
 
+    // New videos are auto-updated by the animation pipeline unless the client is
+    // one whose videos are produced outside the editor (e.g. cut in Premiere) —
+    // then they start on the original check-and-email system.
+    const client = await prisma.client.findFirst({
+      where: { id: clientId, user_id: session.user.id },
+      select: { auto_update_default: true },
+    })
+    if (!client) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+    }
+
     const project = await prisma.project.create({
       data: {
         client_id: clientId,
@@ -75,6 +86,7 @@ export async function POST(request: NextRequest) {
         status: status || 'planning',
         video_type: videoType || 'tutorial',
         source_type: sourceType === 'code' ? 'code' : 'docs',
+        auto_update: client.auto_update_default,
         user_id: session.user.id
       }
     })
