@@ -3,9 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/pipeline/video/[id] — drill-down data for one video: the script, the
-// cron-detected changes (PendingScriptEdit — the "what changed" + highlight data),
-// and the animation pipeline runs. User-authed.
+// GET /api/pipeline/video/[id] — everything the merged video page needs: the
+// script, the detected changes (PendingScriptEdit — both the cron's suggestions
+// and the animation pipeline's auto-applied lines), and the pipeline runs.
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -13,7 +13,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const video = await prisma.project.findFirst({
       where: { id: params.id, user_id: session.user.id },
       select: {
-        id: true, title: true, script: true, auto_update: true, editor_project: true,
+        id: true, title: true, description: true, script: true, auto_update: true,
+        editor_project: true, client_id: true, updated_at: true,
         client: { select: { name: true, auto_update_default: true } },
       },
     });
@@ -36,10 +37,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       video: {
         id: video.id,
         title: video.title,
+        description: video.description,
+        clientId: video.client_id,
         client: video.client?.name ?? null,
         script: video.script ?? '',
         autoUpdate: video.auto_update,
         editorProject: video.editor_project,
+        updatedAt: video.updated_at,
         // false = this client's videos are made outside the editor, so manual is the norm here
         clientAutoDefault: video.client?.auto_update_default ?? true,
       },
@@ -56,6 +60,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       })),
       runs: runs.map((r) => ({
         id: r.id,
+        projectId: r.project_id,
+        video: video.title,
+        clientId: video.client_id,
+        client: video.client?.name ?? null,
         status: r.status,
         path: r.path,
         phase: r.phase,
@@ -67,6 +75,46 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         events: r.events.map((e) => ({ phase: e.phase, status: e.status, detail: e.detail, at: e.at })),
       })),
     });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+  }
+}
+
+// PATCH { action: 'approve' } — you've watched the finished video and it's good.
+// Flips the latest ready_for_review run to 'reviewed' so the state stops being
+// sticky. Previously a run sat on READY FOR REVIEW forever, because only the
+// pipeline itself could emit a 'done' phase and it never does after 'ready'.
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const project = await prisma.project.findFirst({
+      where: { id: params.id, user_id: session.user.id },
+      select: { id: true },
+    });
+    if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    const { action } = await req.json().catch(() => ({ action: null }));
+    if (action !== 'approve') {
+      return NextResponse.json({ error: "action must be 'approve'" }, { status: 400 });
+    }
+
+    const run = await prisma.pipelineRun.findFirst({
+      where: { project_id: project.id, status: 'ready_for_review' },
+      orderBy: { started_at: 'desc' },
+      select: { id: true },
+    });
+    if (!run) return NextResponse.json({ error: 'No run is awaiting review' }, { status: 404 });
+
+    await prisma.pipelineRun.update({
+      where: { id: run.id },
+      data: { status: 'reviewed', finished_at: new Date(), detail: 'approved' },
+    });
+    await prisma.pipelineEvent.create({
+      data: { run_id: run.id, phase: 'ready', status: 'done', detail: 'approved by you' },
+    });
+
+    return NextResponse.json({ runId: run.id, status: 'reviewed' });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }

@@ -321,7 +321,10 @@ model ScriptChatMessage {
 model PipelineRun {
   id          String    @id @default(cuid())
   project_id  String    // the video this run updates
-  status      String    @default("running") // running | ready_for_review | halted | error | done
+  // running | ready_for_review | reviewed | halted | error | done
+  // 'reviewed' is set from the UI when you approve a finished run — without it a
+  // run sat on ready_for_review forever, since the pipeline never emits 'done'.
+  status      String    @default("running")
   path        String?   // "A" (cosmetic) | "B" (beat-change)
   trigger     String?   // e.g. "OD-Test 8ac0970: activation note"
   phase       String?   // latest phase, denormalized from events for the board
