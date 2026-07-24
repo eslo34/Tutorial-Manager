@@ -51,12 +51,13 @@ model Client {
   monitoring_enabled  Boolean   @default(false)
   monitoring_root_url String?
 
-  // Are this client's videos produced IN the StepByStep editor? true (default)
-  // = new videos for this client can be auto-updated by the animation pipeline.
-  // false = this client's videos are made elsewhere (e.g. OpenDictionary is cut
-  // in Premiere), so every new video starts notify-only: check + email, human
-  // updates the video. Only seeds Project.auto_update at creation — an
-  // individual video can still be flipped afterwards.
+  // Are this client's videos produced IN the StepByStep editor? true (default,
+  // and currently true for every client) = new videos for this client are
+  // auto-updated by the animation pipeline. Set false only for a client whose
+  // videos are made elsewhere (Premiere, screen recordings) — then every new
+  // video for them starts notify-only: check + email, human updates the video.
+  // Only seeds Project.auto_update at creation; an individual video can still
+  // be flipped either way afterwards.
   auto_update_default Boolean   @default(true)
 
   // Code-repo source (alternative to scraped docs). Files are uploaded from a
