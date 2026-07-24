@@ -386,6 +386,11 @@ model RunnerHeartbeat {
   last_seen_at DateTime @default(now())
   detail       String?
 
+  // Set when the watchdog has already pushed a "runner went silent" alert for the CURRENT
+  // outage; cleared on the next heartbeat (which also pushes the "back online" ping). Keeps
+  // one incident to one notification instead of one per watchdog tick.
+  alerted_at   DateTime?
+
   @@map("runner_heartbeats")
 }
 

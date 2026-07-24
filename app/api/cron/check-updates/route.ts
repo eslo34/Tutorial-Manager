@@ -47,10 +47,6 @@ async function handle(request: NextRequest) {
       select: { client_id: true, client: { select: { name: true } } },
     });
 
-    if (repoWatches.length === 0) {
-      return NextResponse.json({ clientsTriggered: 0 });
-    }
-
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const cronSecret = process.env.CRON_SECRET;
     if (!baseUrl || !cronSecret) {
@@ -58,6 +54,20 @@ async function handle(request: NextRequest) {
         { error: 'NEXT_PUBLIC_BASE_URL or CRON_SECRET missing' },
         { status: 500 }
       );
+    }
+
+    // Is the local runner silent while updates are waiting? Runs on every daily tick, and
+    // BEFORE the early return below so it still happens when no client watches a repo.
+    // Point an external pinger at /api/pipeline/watchdog if you want tighter than daily.
+    const watchdog = await fetch(`${baseUrl}/api/pipeline/watchdog`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${cronSecret}` },
+    })
+      .then((r) => r.json())
+      .catch((e) => ({ error: e instanceof Error ? e.message : 'watchdog failed' }));
+
+    if (repoWatches.length === 0) {
+      return NextResponse.json({ clientsTriggered: 0, watchdog });
     }
 
     const settle = (r: PromiseSettledResult<unknown>) =>
@@ -79,6 +89,7 @@ async function handle(request: NextRequest) {
     );
 
     return NextResponse.json({
+      watchdog,
       repoClientsTriggered: repoWatches.length,
       repoResults: repoResults.map((r, i) => ({
         clientName: repoWatches[i].client.name,
