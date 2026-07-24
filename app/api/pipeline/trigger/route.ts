@@ -11,6 +11,14 @@ export const maxDuration = 30;
 
 const HEARTBEAT_FRESH_MS = 2 * 60 * 1000;
 const VIDEO_TITLE = process.env.SBS_VIDEO || 'Using Versions';
+// Only pushes to the PRODUCT repo may queue an animation run. Without this, a
+// webhook installed on any other repo (e.g. this app's own repo) queues runs
+// whose sha doesn't exist in the product checkout — the poller then fails on
+// `git reset --hard <sha>`. Comma-separated "owner/name" allowlist.
+const TRIGGER_REPOS = (process.env.SBS_TRIGGER_REPOS || 'eslo34/OD-Test')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
 const WATCH_BRANCH = 'refs/heads/main';
 const DASHBOARD = 'https://tutorial-manager-three.vercel.app/pipeline';
 
@@ -45,6 +53,9 @@ export async function POST(req: NextRequest) {
   const sha = p.after ?? '';
   if (!sha || /^0+$/.test(sha)) return NextResponse.json({ ok: true, ignored: 'no sha' });
   const repo = p.repository?.full_name ?? 'unknown';
+  if (!TRIGGER_REPOS.includes(repo.toLowerCase())) {
+    return NextResponse.json({ ok: true, ignored: `repo ${repo} is not a product repo` });
+  }
   const msg = (p.head_commit?.message ?? '').split('\n')[0].slice(0, 200);
 
   const project = await prisma.project.findFirst({
