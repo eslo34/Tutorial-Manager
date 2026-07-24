@@ -14,7 +14,11 @@ type Run = {
   id: string; status: string; path: string | null; phase: string | null; trigger: string | null;
   detail: string | null; started_at: string; updated_at: string; finished_at: string | null; events: Evt[];
 };
-type Data = { video: { id: string; title: string; client: string | null; script: string }; changes: Change[]; runs: Run[] };
+type Video = {
+  id: string; title: string; client: string | null; script: string;
+  autoUpdate: boolean; editorProject: string | null;
+};
+type Data = { video: Video; changes: Change[]; runs: Run[] };
 
 function ago(iso: string | null) {
   if (!iso) return '—';
@@ -61,6 +65,9 @@ export default function VideoDetail() {
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [slugDraft, setSlugDraft] = useState<string | null>(null); // null = not editing
+  const [savingMode, setSavingMode] = useState(false);
+  const [modeErr, setModeErr] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -77,6 +84,32 @@ export default function VideoDetail() {
     const t = setInterval(load, 4000); // live while a run is in flight
     return () => { alive = false; clearInterval(t); };
   }, [id]);
+
+  // Change how this video is kept up to date (auto pipeline vs check + email).
+  const saveMode = async (patch: { autoUpdate?: boolean; editorProject?: string | null }) => {
+    setSavingMode(true);
+    setModeErr(null);
+    try {
+      const res = await fetch(`/api/projects/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      const j = await res.json();
+      if (!res.ok) { setModeErr(j.error ?? 'Could not save.'); return; }
+      setData((d) => (d ? { ...d, video: { ...d.video, autoUpdate: j.project.autoUpdate, editorProject: j.project.editorProject } } : d));
+      setSlugDraft(null);
+    } catch {
+      setModeErr('Network error.');
+    } finally {
+      setSavingMode(false);
+    }
+  };
+
+  const auto = data?.video.autoUpdate === true;
+  const slugSaved = data?.video.editorProject ?? '';
+  const slugValue = slugDraft ?? slugSaved;
+  const slugDirty = slugDraft !== null && slugDraft.trim() !== slugSaved;
 
   const latest = data?.runs?.[0];
   // Only genuinely-pending edits drive the STALE state; already-applied ones (accepted / the
@@ -103,8 +136,48 @@ export default function VideoDetail() {
                 <h1 className="dtitle">{data.video.title}</h1>
                 <div className="mono dsub">{data.video.client ?? ''}{latest?.trigger ? `  ·  ${latest.trigger}` : ''}</div>
               </div>
-              <span className={`pill ${st.kind}`}><span className="pdot" />{st.label}</span>
+              <div className="hpills">
+                <span className={`mode ${auto ? 'auto' : 'manual'}`}>{auto ? 'AUTO' : 'MANUAL'}</span>
+                <span className={`pill ${st.kind}`}><span className="pdot" />{st.label}</span>
+              </div>
             </header>
+
+            {/* UPDATE MODE */}
+            <section>
+              <div className="mono eyebrow sec"><span className="dot dim" />UPDATE MODE</div>
+              <div className="card modebox">
+                <div className="seg mono">
+                  <button type="button" className={auto ? 'on' : ''} disabled={savingMode} onClick={() => saveMode({ autoUpdate: true })}>
+                    AUTO-UPDATE
+                  </button>
+                  <button type="button" className={!auto ? 'on' : ''} disabled={savingMode} onClick={() => saveMode({ autoUpdate: false })}>
+                    CHECK + EMAIL
+                  </button>
+                </div>
+                <p className="mode-desc">
+                  {auto
+                    ? 'Built in the StepByStep editor. When the product changes, the pipeline updates the animation, re-renders, regenerates the affected narration and re-syncs the timeline — you just review the result.'
+                    : 'Not built in the editor. When the product changes, the daily check audits this script and emails you a digest with what went out of date — then you update the video yourself. No agent ever touches it.'}
+                </p>
+                <div className="slugrow">
+                  <label className="mono slug-label" htmlFor="editorproj">EDITOR PROJECT</label>
+                  <input
+                    id="editorproj"
+                    className="mono slug-input"
+                    value={slugValue}
+                    placeholder="— not made in the editor —"
+                    spellCheck={false}
+                    onChange={(e) => setSlugDraft(e.target.value)}
+                  />
+                  {slugDirty && (
+                    <button type="button" className="mono slug-save" disabled={savingMode} onClick={() => saveMode({ editorProject: slugValue })}>
+                      SAVE
+                    </button>
+                  )}
+                </div>
+                {modeErr && <p className="mono modeerr">{modeErr}</p>}
+              </div>
+            </section>
 
             {/* WHAT CHANGED */}
             <section>
@@ -223,6 +296,31 @@ const CSS = `
 .sbs .pill.stale .pdot{background:var(--stale);box-shadow:0 0 8px var(--stale);}
 
 .sbs .card{background:var(--raised);border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--shadow);}
+
+/* update mode: AUTO = the pipeline owns it, MANUAL = check + email only */
+.sbs .hpills{display:flex;align-items:center;gap:9px;flex-shrink:0;}
+.sbs .mode{font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.16em;padding:4px 8px;
+  border-radius:5px;border:1px solid var(--line-2);color:var(--text-3);}
+.sbs .mode.auto{color:var(--sync);border-color:var(--sync-line);background:rgba(95,227,140,.07);}
+.sbs .mode.manual{color:var(--text-2);background:rgba(151,164,190,.06);}
+.sbs .modebox{padding:16px 18px;}
+.sbs .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:9px;overflow:hidden;background:var(--inset);}
+.sbs .seg button{appearance:none;background:transparent;border:0;cursor:pointer;color:var(--text-3);
+  font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.14em;padding:8px 14px;
+  transition:background .18s var(--ease),color .18s var(--ease);}
+.sbs .seg button+button{border-left:1px solid var(--line-2);}
+.sbs .seg button:hover:not(:disabled){color:var(--text-2);}
+.sbs .seg button.on{background:var(--sync-dim);color:var(--sync);}
+.sbs .seg button:disabled{cursor:default;opacity:.6;}
+.sbs .mode-desc{margin:13px 0 0;font-size:13px;line-height:1.6;color:var(--text-2);max-width:70ch;}
+.sbs .slugrow{display:flex;align-items:center;gap:11px;margin-top:15px;padding-top:14px;border-top:1px solid var(--line);flex-wrap:wrap;}
+.sbs .slug-label{font-size:9px;letter-spacing:.16em;color:var(--text-3);}
+.sbs .slug-input{flex:1;min-width:170px;background:var(--inset);border:1px solid var(--line-2);border-radius:7px;
+  color:var(--text-2);font-size:11.5px;letter-spacing:.04em;padding:7px 10px;outline:none;}
+.sbs .slug-input:focus{border-color:var(--sync-line);}
+.sbs .slug-save{appearance:none;cursor:pointer;background:var(--sync-dim);border:1px solid var(--sync-line);color:var(--sync);
+  border-radius:7px;font-size:9.5px;font-weight:600;letter-spacing:.14em;padding:7px 13px;}
+.sbs .modeerr{margin:11px 0 0;font-size:11px;color:var(--stale);letter-spacing:.03em;}
 .sbs .chgcards{display:flex;flex-direction:column;gap:10px;}
 .sbs .chgcard{padding:14px 16px;}
 .sbs .chgcard-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;}

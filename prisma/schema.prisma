@@ -102,6 +102,18 @@ model Project {
   // the change. Empty = not mapped to any feature doc yet.
   feature_doc_paths   String[] @default([])
 
+  // UPDATE MODE. false (default) = the original system: when the product
+  // changes we only CHECK the script and EMAIL a digest — a human updates the
+  // video. true = the animation pipeline is allowed to auto-update this video
+  // end-to-end (queue a RunRequest, launch the agent, re-render, re-sync).
+  // Only videos actually built in the StepByStep editor can be auto-updated;
+  // everything else (screen-recorded / externally produced) stays notify-only.
+  auto_update         Boolean  @default(false)
+
+  // Which StepByStep editor project backs this video (library slug, e.g.
+  // "newvideo"). Null = not made in the editor, so it can't be auto-updated.
+  editor_project      String?
+
   // Relations
   user                User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
   client              Client         @relation(fields: [client_id], references: [id], onDelete: Cascade)

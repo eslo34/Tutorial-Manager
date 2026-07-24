@@ -12,7 +12,10 @@ export type Run = {
   detail: string | null; started_at: string; updated_at: string; finished_at: string | null;
   events: Evt[];
 };
-export type Video = { id: string; title: string; clientId: string | null; client: string | null; pending: number };
+export type Video = {
+  id: string; title: string; clientId: string | null; client: string | null; pending: number;
+  autoUpdate?: boolean; // false/absent = notify-only: checked + emailed, updated by hand
+};
 export type Board = { generatedAt: string; videos: Video[]; runs: Run[] };
 
 export const PHASES = ['detect', 'brief', 'editing', 'written', 'reference', 'render', 'splice', 'proxy', 'beats', 'resync', 'ready'];
@@ -124,6 +127,14 @@ export function RunFlow({ run }: { run: Run }) {
 // ── a video tile in the grid ────────────────────────────────────────────────
 export function VideoTile({ video, latest }: { video: Video; latest?: Run }) {
   const st = videoState(latest, video.pending);
+  const manual = video.autoUpdate === false;
+  // A notify-only video is never auto-updated, so "stale" means "we emailed you,
+  // it's waiting on a person" — say that instead of implying a run is coming.
+  const foot = latest
+    ? `updated ${ago(latest.updated_at)}`
+    : video.pending > 0
+      ? manual ? 'change detected · emailed · update manually' : 'change detected · needs update'
+      : 'no updates · in sync';
   return (
     <Link className="card tile" href={`/pipeline/${video.id}`}>
       <div className="tile-top">
@@ -133,8 +144,9 @@ export function VideoTile({ video, latest }: { video: Video; latest?: Run }) {
         </div>
         <span className={`pill sm ${st.kind}`}><span className="pdot" />{st.label}</span>
       </div>
-      <div className="mono tile-foot">
-        {latest ? `updated ${ago(latest.updated_at)}` : (video.pending > 0 ? 'change detected · needs update' : 'no updates · in sync')}
+      <div className="tile-bottom">
+        <span className="mono tile-foot">{foot}</span>
+        <span className={`mode ${manual ? 'manual' : 'auto'}`}>{manual ? 'MANUAL' : 'AUTO'}</span>
       </div>
     </Link>
   );
@@ -266,7 +278,14 @@ export const CSS = `
 .sbs .tile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
 .sbs .tile-title{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sbs .tile-client{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-top:4px;}
-.sbs .tile-foot{margin-top:12px;font-size:9.5px;letter-spacing:.06em;color:var(--text-3);}
+.sbs .tile-foot{font-size:9.5px;letter-spacing:.06em;color:var(--text-3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sbs .tile-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;}
+
+/* update mode: AUTO = the pipeline owns it, MANUAL = check + email only */
+.sbs .mode{flex-shrink:0;font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.16em;
+  padding:3px 7px;border-radius:5px;border:1px solid var(--line-2);color:var(--text-3);}
+.sbs .mode.auto{color:var(--sync);border-color:var(--sync-line);background:rgba(95,227,140,.07);}
+.sbs .mode.manual{color:var(--text-2);border-color:var(--line-2);background:rgba(151,164,190,.06);}
 
 @keyframes headpulse{0%,100%{box-shadow:0 0 6px 1px var(--render-line);transform:scale(1)}50%{box-shadow:0 0 15px 4px var(--render-line);transform:scale(1.3)}}
 @keyframes eq{0%,100%{transform:scaleY(.55)}50%{transform:scaleY(1)}}

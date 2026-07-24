@@ -42,6 +42,7 @@ interface ProjectRow {
   title: string;
   script: string | null;
   feature_doc_paths: string[];
+  auto_update: boolean; // false = notify-only: the digest is the deliverable
 }
 
 // Accumulates per-feature-change edit groups for the digest email.
@@ -50,7 +51,7 @@ interface ChangeGroup {
   docPath: string;
   sourceUrl: string;
   summary: string;
-  videos: Map<string, { id: string; title: string; edits: { severity: string; category: string; reason: string }[] }>;
+  videos: Map<string, { id: string; title: string; autoUpdate: boolean; edits: { severity: string; category: string; reason: string }[] }>;
 }
 
 export async function POST(request: NextRequest) {
@@ -175,7 +176,7 @@ export async function POST(request: NextRequest) {
 
     const projects = (await prisma.project.findMany({
       where: { client_id: clientId, script: { not: null } },
-      select: { id: true, title: true, script: true, feature_doc_paths: true },
+      select: { id: true, title: true, script: true, feature_doc_paths: true, auto_update: true },
     })) as ProjectRow[];
     // If ANY project has an explicit mapping, we trust mappings and skip the
     // Haiku router. Otherwise (zero-config) we route via the router.
@@ -281,7 +282,7 @@ export async function POST(request: NextRequest) {
         }
         let video = group.videos.get(project.id);
         if (!video) {
-          video = { id: project.id, title: project.title, edits: [] };
+          video = { id: project.id, title: project.title, autoUpdate: project.auto_update, edits: [] };
           group.videos.set(project.id, video);
         }
         for (const s of significant) {
@@ -369,7 +370,7 @@ export async function POST(request: NextRequest) {
         }
         let video = group.videos.get(project.id);
         if (!video) {
-          video = { id: project.id, title: project.title, edits: [] };
+          video = { id: project.id, title: project.title, autoUpdate: project.auto_update, edits: [] };
           group.videos.set(project.id, video);
         }
         for (const s of significant) {

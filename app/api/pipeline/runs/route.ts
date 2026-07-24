@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     const [projects, runs, pending] = await Promise.all([
       prisma.project.findMany({
         where: { user_id: userId },
-        select: { id: true, title: true, client_id: true, client: { select: { name: true } } },
+        select: { id: true, title: true, client_id: true, auto_update: true, client: { select: { name: true } } },
         orderBy: { updated_at: 'desc' },
       }),
       prisma.pipelineRun.findMany({
@@ -43,7 +43,14 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       generatedAt: new Date().toISOString(),
-      videos: projects.map((p) => ({ id: p.id, title: p.title, clientId: p.client_id, client: p.client?.name ?? null, pending: pendingBy.get(p.id) ?? 0 })),
+      videos: projects.map((p) => ({
+        id: p.id,
+        title: p.title,
+        clientId: p.client_id,
+        client: p.client?.name ?? null,
+        pending: pendingBy.get(p.id) ?? 0,
+        autoUpdate: p.auto_update, // false = check + email only (manual update)
+      })),
       runs: runs.map((r) => ({
         id: r.id,
         projectId: r.project_id,

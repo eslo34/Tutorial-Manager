@@ -149,6 +149,10 @@ interface RepoDigestVideo {
   id: string;
   title: string;
   edits: RepoDigestEdit[];
+  // false (default) = notify-only: this video isn't built in the editor, so the
+  // digest IS the deliverable — review the script and update the video yourself.
+  // true = the animation pipeline auto-updates it; the email is just an FYI.
+  autoUpdate?: boolean;
 }
 
 interface RepoDigestChange {
@@ -174,14 +178,25 @@ export async function sendRepoDigestEmail(params: RepoDigestParams): Promise<voi
   if (!resend) return;
 
   const affectedVideoIds = new Set<string>();
+  const manualVideoIds = new Set<string>();
   let totalEdits = 0;
   for (const c of changes) {
     for (const v of c.videos) {
       affectedVideoIds.add(v.id);
+      if (!v.autoUpdate) manualVideoIds.add(v.id);
       totalEdits += v.edits.length;
     }
   }
   const videoCount = affectedVideoIds.size;
+  const manualCount = manualVideoIds.size;
+  const autoCount = videoCount - manualCount;
+  // Lead with what the operator actually has to do.
+  const actionLine =
+    autoCount === 0
+      ? `${manualCount} video${manualCount === 1 ? '' : 's'} need${manualCount === 1 ? 's' : ''} a manual update.`
+      : manualCount === 0
+        ? `All affected videos update automatically — nothing to do unless a run halts.`
+        : `${manualCount} need${manualCount === 1 ? 's' : ''} a manual update; ${autoCount} update${autoCount === 1 ? 's' : ''} automatically.`;
   const subject = `[${repoLabel}] ${changes.length} feature update${changes.length === 1 ? '' : 's'} affect${changes.length === 1 ? 's' : ''} ${videoCount} video${videoCount === 1 ? '' : 's'}`;
 
   const changeBlocks = changes
@@ -199,12 +214,19 @@ export async function sendRepoDigestEmail(params: RepoDigestParams): Promise<voi
             )
             .join('');
           const reviewUrl = `${baseUrl}/?projectId=${encodeURIComponent(v.id)}`;
+          const modeChip = v.autoUpdate
+            ? `<span style="display:inline-block;padding:2px 8px;border-radius:9999px;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;font-size:11px;font-weight:600;">Auto-updating</span>`
+            : `<span style="display:inline-block;padding:2px 8px;border-radius:9999px;background:#fffbeb;color:#b45309;border:1px solid #fde68a;font-size:11px;font-weight:600;">Update manually</span>`;
+          const modeNote = v.autoUpdate
+            ? 'The animation pipeline updates this video automatically — no action needed unless it halts.'
+            : 'This video isn&rsquo;t built in the editor, so it needs a manual update.';
           return `
           <div style="margin:12px 0 0 0;padding:12px 14px;background:#f9fafb;border-radius:8px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <strong style="color:#111827;">${escapeHtml(v.title)}</strong>
             </div>
-            <p style="margin:4px 0 8px 0;color:#6b7280;font-size:12px;">${v.edits.length} outdated part${v.edits.length === 1 ? '' : 's'}</p>
+            <p style="margin:6px 0 6px 0;">${modeChip}</p>
+            <p style="margin:0 0 8px 0;color:#6b7280;font-size:12px;">${v.edits.length} outdated part${v.edits.length === 1 ? '' : 's'} · ${modeNote}</p>
             <a href="${reviewUrl}" style="display:inline-block;background:#0d9488;color:#fff;padding:7px 12px;border-radius:6px;text-decoration:none;font-weight:500;font-size:13px;">Review in Script Manager →</a>
             <ul style="margin:12px 0 0 0;padding-left:18px;">${editList}</ul>
           </div>`;
@@ -227,6 +249,7 @@ export async function sendRepoDigestEmail(params: RepoDigestParams): Promise<voi
     <p style="margin:0;color:#6b7280;">
       ${changes.length} feature${changes.length === 1 ? '' : 's'} changed upstream today,
       producing ${totalEdits} suggested edit${totalEdits === 1 ? '' : 's'} across ${videoCount} video${videoCount === 1 ? '' : 's'}.
+      <br/><strong style="color:#111827;">${escapeHtml(actionLine)}</strong>
     </p>
     ${changeBlocks}
     <p style="margin:24px 0 0 0;color:#9ca3af;font-size:11px;">Client: ${escapeHtml(clientName)} · Run ID: ${escapeHtml(runId)}</p>
@@ -237,6 +260,7 @@ export async function sendRepoDigestEmail(params: RepoDigestParams): Promise<voi
     `${repoLabel} — feature updates`,
     '',
     `${changes.length} feature(s) changed upstream today, producing ${totalEdits} suggested edit(s) across ${videoCount} video(s).`,
+    actionLine,
     '',
   ];
   for (const c of changes) {
@@ -244,7 +268,9 @@ export async function sendRepoDigestEmail(params: RepoDigestParams): Promise<voi
     textLines.push(c.summary);
     textLines.push(`What changed: ${c.sourceUrl}`);
     for (const v of c.videos) {
-      textLines.push(`  — ${v.title} (${v.edits.length} outdated part(s))`);
+      textLines.push(
+        `  — ${v.title} (${v.edits.length} outdated part(s)) [${v.autoUpdate ? 'AUTO-UPDATING' : 'UPDATE MANUALLY'}]`
+      );
       textLines.push(`    Review: ${baseUrl}/?projectId=${v.id}`);
       for (const e of v.edits) {
         textLines.push(`    [${e.severity.toUpperCase()}] ${e.reason}`);

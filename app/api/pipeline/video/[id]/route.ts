@@ -12,7 +12,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   try {
     const video = await prisma.project.findFirst({
       where: { id: params.id, user_id: session.user.id },
-      select: { id: true, title: true, script: true, client: { select: { name: true } } },
+      select: {
+        id: true, title: true, script: true, auto_update: true, editor_project: true,
+        client: { select: { name: true } },
+      },
     });
     if (!video) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
@@ -30,7 +33,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     ]);
 
     return NextResponse.json({
-      video: { id: video.id, title: video.title, client: video.client?.name ?? null, script: video.script ?? '' },
+      video: {
+        id: video.id,
+        title: video.title,
+        client: video.client?.name ?? null,
+        script: video.script ?? '',
+        autoUpdate: video.auto_update,
+        editorProject: video.editor_project,
+      },
       changes: changes.map((c) => ({
         id: c.id,
         original_text: c.original_text,

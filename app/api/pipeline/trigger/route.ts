@@ -50,9 +50,15 @@ export async function POST(req: NextRequest) {
   const project = await prisma.project.findFirst({
     where: { title: VIDEO_TITLE },
     orderBy: { updated_at: 'desc' },
-    select: { id: true, title: true },
+    select: { id: true, title: true, auto_update: true },
   });
   if (!project) return NextResponse.json({ error: `no project "${VIDEO_TITLE}"` }, { status: 404 });
+
+  // Notify-only video (not built in the editor): the original system owns it —
+  // the daily check audits the script and emails a digest. Never queue a run.
+  if (!project.auto_update) {
+    return NextResponse.json({ ok: true, skipped: 'notify-only', video: project.title });
+  }
 
   // Idempotent against webhook redelivery: skip if this sha is already in flight.
   const dup = await prisma.runRequest.findFirst({
