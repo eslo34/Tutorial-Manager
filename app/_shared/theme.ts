@@ -178,6 +178,7 @@ export const CSS = `
 .sbs .dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:6px;}
 .sbs .dtitle{margin:0;font-size:26px;font-weight:800;letter-spacing:-.03em;color:var(--text);}
 .sbs .dsub{margin-top:7px;font-size:10px;letter-spacing:.1em;color:var(--text-3);}
+.sbs .vdesc{margin:10px 0 0;font-size:13px;line-height:1.55;color:var(--text-2);max-width:70ch;}
 .sbs .hpills{display:flex;align-items:center;gap:9px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
 
 /* changes awaiting a decision */

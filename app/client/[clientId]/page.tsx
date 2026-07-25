@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Plus, GitBranch } from 'lucide-react';
+import { Plus, GitBranch, Pencil } from 'lucide-react';
 import { ago, shortDate, videoState } from '../../_shared/model';
 import { Header, Modal, RunFlow, Shell, VideoTile, useBoard, latestRuns } from '../../_shared/ui';
 
@@ -18,6 +18,12 @@ export default function ClientBoard() {
   const [form, setForm] = useState({ title: '', description: '' });
   const [saving, setSaving] = useState(false);
   const [formErr, setFormErr] = useState<string | null>(null);
+
+  // edit client
+  const [showEdit, setShowEdit] = useState(false);
+  const [edit, setEdit] = useState({ name: '', company: '' });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editErr, setEditErr] = useState<string | null>(null);
 
   // repo-updates config
   const [showRepo, setShowRepo] = useState(false);
@@ -80,6 +86,38 @@ export default function ClientBoard() {
     if (!confirm(`Delete "${v?.title ?? 'this video'}"? Its script and change history go with it. This cannot be undone.`)) return;
     await fetch(`/api/projects?id=${id}`, { method: 'DELETE' });
     await reload();
+  };
+
+  const openEdit = () => {
+    if (!client) return;
+    setEdit({ name: client.name, company: client.company });
+    setEditErr(null);
+    setShowEdit(true);
+  };
+
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!client || !edit.name.trim()) return;
+    setEditSaving(true);
+    setEditErr(null);
+    try {
+      const res = await fetch('/api/clients', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: client.id, name: edit.name.trim(), company: edit.company.trim() }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setEditErr(j.error ?? 'Could not save.');
+        return;
+      }
+      setShowEdit(false);
+      await reload();
+    } catch {
+      setEditErr('Network error.');
+    } finally {
+      setEditSaving(false);
+    }
   };
 
   const openRepo = async () => {
@@ -148,6 +186,9 @@ export default function ClientBoard() {
         right={
           !isUnassigned && (
             <>
+              <button type="button" className="btn" onClick={openEdit} disabled={!client} title="Rename this client / edit what they do">
+                <Pencil className="w-3.5 h-3.5" />Edit
+              </button>
               <button type="button" className="btn" onClick={openRepo} title="Watch a GitHub repo's feature docs for changes">
                 <GitBranch className="w-3.5 h-3.5" />Repo updates
               </button>
@@ -231,6 +272,35 @@ export default function ClientBoard() {
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
             </div>
             {formErr && <p className="modeerr mono">{formErr}</p>}
+          </form>
+        </Modal>
+      )}
+
+      {showEdit && (
+        <Modal
+          title="Edit client"
+          onClose={() => { if (!editSaving) { setShowEdit(false); setEditErr(null); } }}
+          footer={
+            <>
+              <button type="button" className="btn" disabled={editSaving} onClick={() => { setShowEdit(false); setEditErr(null); }}>Cancel</button>
+              <button type="submit" form="editclient" className="btn primary" disabled={editSaving || !edit.name.trim()}>
+                {editSaving ? 'Saving…' : 'Save changes'}
+              </button>
+            </>
+          }
+        >
+          <form id="editclient" onSubmit={saveEdit}>
+            <div className="field">
+              <label htmlFor="ecname">Client name</label>
+              <input id="ecname" className="inp" value={edit.name} placeholder="Acme Corp" required
+                onChange={(e) => setEdit((s) => ({ ...s, name: e.target.value }))} />
+            </div>
+            <div className="field">
+              <label htmlFor="eccompany">What they do</label>
+              <textarea id="eccompany" className="inp" rows={2} value={edit.company} placeholder="Describe this company…"
+                onChange={(e) => setEdit((s) => ({ ...s, company: e.target.value }))} />
+            </div>
+            {editErr && <p className="modeerr mono">{editErr}</p>}
           </form>
         </Modal>
       )}

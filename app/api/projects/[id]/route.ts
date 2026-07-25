@@ -87,7 +87,19 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const data: { auto_update?: boolean; editor_project?: string | null } = {}
+    const data: {
+      auto_update?: boolean; editor_project?: string | null;
+      title?: string; description?: string;
+    } = {}
+
+    // Title / description edits.
+    if (typeof body.title === 'string') {
+      if (!body.title.trim()) {
+        return NextResponse.json({ error: 'Title cannot be empty' }, { status: 400 })
+      }
+      data.title = body.title.trim()
+    }
+    if (typeof body.description === 'string') data.description = body.description.trim()
 
     if (typeof body.editorProject === 'string' || body.editorProject === null) {
       const slug = typeof body.editorProject === 'string' ? body.editorProject.trim() : ''
@@ -110,10 +122,16 @@ export async function PATCH(
     const updated = await prisma.project.update({
       where: { id: params.id },
       data,
-      select: { id: true, auto_update: true, editor_project: true },
+      select: { id: true, auto_update: true, editor_project: true, title: true, description: true },
     })
     return NextResponse.json({
-      project: { id: updated.id, autoUpdate: updated.auto_update, editorProject: updated.editor_project },
+      project: {
+        id: updated.id,
+        autoUpdate: updated.auto_update,
+        editorProject: updated.editor_project,
+        title: updated.title,
+        description: updated.description,
+      },
     })
   } catch (error) {
     console.error('Error updating project:', error)

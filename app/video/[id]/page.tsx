@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Check, Video as VideoIcon, X, Wand2 } from 'lucide-react';
+import { Check, Video as VideoIcon, X, Wand2, Pencil } from 'lucide-react';
 import { Change, Kind, Run, ago, labelOf, PHASES } from '../../_shared/model';
-import { Header, Shell } from '../../_shared/ui';
+import { Header, Modal, Shell } from '../../_shared/ui';
 import { locate, buildRanges, Range } from './locate';
 
 type VideoInfo = {
@@ -60,6 +60,12 @@ export default function VideoPage() {
   const [slugDraft, setSlugDraft] = useState<string | null>(null);
   const [savingMode, setSavingMode] = useState(false);
   const [modeErr, setModeErr] = useState<string | null>(null);
+
+  // edit title / description
+  const [showEdit, setShowEdit] = useState(false);
+  const [edit, setEdit] = useState({ title: '', description: '' });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editErr, setEditErr] = useState<string | null>(null);
 
   // The poll must not overwrite text you're mid-sentence on, so it checks this
   // before replacing the draft.
@@ -204,6 +210,39 @@ export default function VideoPage() {
       setModeErr('Network error.');
     } finally {
       setSavingMode(false);
+    }
+  };
+
+  // ── edit title / description ──────────────────────────────────────────────
+  const openEdit = () => {
+    if (!video) return;
+    setEdit({ title: video.title, description: video.description });
+    setEditErr(null);
+    setShowEdit(true);
+  };
+
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!edit.title.trim()) return;
+    setEditSaving(true);
+    setEditErr(null);
+    try {
+      const res = await fetch(`/api/projects/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: edit.title.trim(), description: edit.description.trim() }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setEditErr(j.error ?? 'Could not save.');
+        return;
+      }
+      setShowEdit(false);
+      await load();
+    } catch {
+      setEditErr('Network error.');
+    } finally {
+      setEditSaving(false);
     }
   };
 
@@ -535,7 +574,13 @@ export default function VideoPage() {
   return (
     <Shell split>
       <div className="vhead">
-        <Header />
+        <Header
+          right={
+            <button type="button" className="btn" onClick={openEdit} title="Edit the title and description">
+              <Pencil className="w-3.5 h-3.5" />Edit
+            </button>
+          }
+        />
 
         <div className="mono crumb">
           <Link href="/">ALL CLIENTS</Link>
@@ -548,6 +593,7 @@ export default function VideoPage() {
             <div className="mono dsub">
               {[video.client, `updated ${ago(video.updatedAt)}`].filter(Boolean).join('  ·  ')}
             </div>
+            {video.description && <p className="vdesc">{video.description}</p>}
           </div>
           <div className="hpills">
             <span className={`mode ${auto ? 'auto' : 'manual'}`}>{auto ? 'AUTO' : 'MANUAL'}</span>
@@ -590,6 +636,39 @@ export default function VideoPage() {
 
         <div className="vcol right">{scriptPane}</div>
       </div>
+
+      {showEdit && (
+        <Modal
+          title="Edit video"
+          onClose={() => { if (!editSaving) { setShowEdit(false); setEditErr(null); } }}
+          footer={
+            <>
+              <button type="button" className="btn" disabled={editSaving} onClick={() => { setShowEdit(false); setEditErr(null); }}>Cancel</button>
+              <button type="submit" form="editvideo" className="btn primary" disabled={editSaving || !edit.title.trim()}>
+                {editSaving ? 'Saving…' : 'Save changes'}
+              </button>
+            </>
+          }
+        >
+          <p className="modal-note">
+            The title and description are for organising videos here — editing them doesn&rsquo;t touch
+            the script itself.
+          </p>
+          <form id="editvideo" onSubmit={saveEdit}>
+            <div className="field">
+              <label htmlFor="evtitle">Title</label>
+              <input id="evtitle" className="inp" value={edit.title} placeholder="How to create a property group" required
+                onChange={(e) => setEdit((s) => ({ ...s, title: e.target.value }))} />
+            </div>
+            <div className="field">
+              <label htmlFor="evdesc">What it covers</label>
+              <textarea id="evdesc" className="inp" rows={3} value={edit.description} placeholder="Describe what this video teaches…"
+                onChange={(e) => setEdit((s) => ({ ...s, description: e.target.value }))} />
+            </div>
+            {editErr && <p className="modeerr mono">{editErr}</p>}
+          </form>
+        </Modal>
+      )}
     </Shell>
   );
 }

@@ -111,6 +111,51 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PATCH { id, name?, company? } — rename a client / edit what they do.
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id, name, company } = await request.json()
+    if (!id) {
+      return NextResponse.json({ error: 'Client ID is required' }, { status: 400 })
+    }
+
+    const data: { name?: string; company?: string } = {}
+    if (typeof name === 'string') {
+      if (!name.trim()) {
+        return NextResponse.json({ error: 'Name cannot be empty' }, { status: 400 })
+      }
+      data.name = name.trim()
+    }
+    if (typeof company === 'string') data.company = company.trim()
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
+    }
+
+    // Ownership check via user_id in the where clause — updateMany returns a count
+    // rather than throwing, so a wrong owner is a clean 404 not a 500.
+    const result = await prisma.client.updateMany({
+      where: { id, user_id: session.user.id },
+      data,
+    })
+    if (result.count === 0) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+    }
+
+    const client = await prisma.client.findUnique({ where: { id } })
+    return NextResponse.json({
+      client: { id: client!.id, name: client!.name, company: client!.company },
+    })
+  } catch (error) {
+    console.error('Error updating client:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
