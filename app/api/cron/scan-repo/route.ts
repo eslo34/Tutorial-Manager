@@ -97,7 +97,32 @@ export async function POST(request: NextRequest) {
     });
     checkRunId = checkRun.id;
 
-    const head = await getBranchHeadSha(owner, name, branch);
+    // The first GitHub call. A 401/403/404 here is the EXPECTED state while the
+    // token can't read the repo yet — a private repo returns 404 (GitHub hides
+    // existence), and a fine-grained PAT pending org approval / missing
+    // Contents:Read returns 401/403/404. None of these are a real failure worth
+    // a daily red alert, so record a quiet 'awaiting_access' check and return
+    // WITHOUT an error email. (A persistent 404 AFTER approval means the
+    // owner/name/branch is wrong — the summary says to check that too.)
+    let head: string;
+    try {
+      head = await getBranchHeadSha(owner, name, branch);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (/GitHub 40[134]/.test(msg)) {
+        await prisma.checkRun.update({
+          where: { id: checkRunId },
+          data: {
+            status: 'awaiting_access',
+            finished_at: new Date(),
+            error_message: msg.slice(0, 300),
+            summary: `Can't read ${repoLabel} yet — the GitHub token has no access (fine-grained PAT pending org approval, or missing Contents:Read). If it stays this way after approval, double-check the owner/name/branch.`,
+          },
+        });
+        return NextResponse.json({ skipped: true, reason: 'awaiting_access', repo: repoLabel });
+      }
+      throw e; // any other failure is a real error → outer catch (alerts)
+    }
 
     // ----- First run: seed the cursor and watch forward from here. ----------
     // (A one-time "audit current docs vs scripts" backfill is a separate
