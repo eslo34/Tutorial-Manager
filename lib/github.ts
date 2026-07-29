@@ -33,6 +33,13 @@ function tokenFor(owner: string, name: string): string {
   return t;
 }
 
+// Non-throwing: is ANY token configured that covers this repo? The scan-repo cron
+// uses this to decide whether to attempt a check — a repo can be reachable via its
+// own per-repo token even when the global GITHUB_RELEASE_TOKEN is unset.
+export function hasReleaseToken(owner: string, name: string): boolean {
+  return !!(process.env[envKey(owner, name)] || process.env[envKey(owner)] || process.env.GITHUB_RELEASE_TOKEN);
+}
+
 function headers(tok: string, accept = 'application/vnd.github+json'): Record<string, string> {
   return {
     Authorization: `Bearer ${tok}`,

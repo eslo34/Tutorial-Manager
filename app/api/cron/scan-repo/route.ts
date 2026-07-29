@@ -5,6 +5,7 @@ import {
   getBranchHeadSha,
   getFileContent,
   blobUrl,
+  hasReleaseToken,
 } from '@/lib/github';
 import {
   gateChangeForRelevance,
@@ -82,11 +83,13 @@ export async function POST(request: NextRequest) {
     if (!watch || !watch.enabled) {
       return NextResponse.json({ skipped: true, reason: 'No enabled repo watch' });
     }
-    if (!process.env.GITHUB_RELEASE_TOKEN) {
-      return NextResponse.json({ skipped: true, reason: 'GITHUB_RELEASE_TOKEN not set' });
-    }
 
     const { owner, name, branch, docs_path } = watch;
+    // Per-repo aware: this repo may be reachable via its own token even if the
+    // global GITHUB_RELEASE_TOKEN is unset (and vice-versa).
+    if (!hasReleaseToken(owner, name)) {
+      return NextResponse.json({ skipped: true, reason: `No GitHub token for ${owner}/${name}` });
+    }
     const repoLabel = `${owner}/${name}`;
 
     const checkRun = await prisma.checkRun.create({
