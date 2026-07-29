@@ -1,29 +1,49 @@
 // Minimal READ-ONLY GitHub REST client for the repo-release-notes update flow.
 //
-// Auth: a fine-grained PAT with `Contents: Read` on the watched repo, supplied
-// via the GITHUB_RELEASE_TOKEN env var. This module is strictly read-only — it
-// only ever performs GET requests (branch head, commit compare, file contents).
-// It never writes, pushes, creates releases, or mutates the repo in any way.
+// Auth: a fine-grained PAT with `Contents: Read` on the watched repo. This module
+// is strictly read-only — it only ever performs GET requests (branch head, commit
+// compare, file contents). It never writes, pushes, creates releases, or mutates
+// the repo in any way.
+//
+// PER-REPO TOKENS. A fine-grained PAT is tied to ONE owner, and two repos under the
+// same owner can even need DIFFERENT tokens (e.g. bimobject/bim-dictionary and
+// bimobject/prodikt.prodikt-public-docs are scoped to separate PATs). So the token
+// is resolved most-specific-first, per (owner, name):
+//   GITHUB_RELEASE_TOKEN_<OWNER>_<NAME>   ← one repo
+//   GITHUB_RELEASE_TOKEN_<OWNER>          ← every repo of an owner
+//   GITHUB_RELEASE_TOKEN                  ← global fallback
+// (owner/name upper-cased, every run of non-alphanumerics collapsed to "_".)
 
 const API = 'https://api.github.com';
 
-function token(): string {
+function envKey(...parts: string[]): string {
+  return 'GITHUB_RELEASE_TOKEN_' + parts.map((p) => p.toUpperCase().replace(/[^A-Z0-9]+/g, '_')).join('_');
+}
+
+function tokenFor(owner: string, name: string): string {
+  const candidates = [envKey(owner, name), envKey(owner)];
+  for (const key of candidates) {
+    const v = process.env[key];
+    if (v) return v;
+  }
   const t = process.env.GITHUB_RELEASE_TOKEN;
-  if (!t) throw new Error('GITHUB_RELEASE_TOKEN not set');
+  if (!t) {
+    throw new Error(`No GitHub token for ${owner}/${name} — set ${candidates[0]} or GITHUB_RELEASE_TOKEN`);
+  }
   return t;
 }
 
-function headers(accept = 'application/vnd.github+json'): Record<string, string> {
+function headers(tok: string, accept = 'application/vnd.github+json'): Record<string, string> {
   return {
-    Authorization: `Bearer ${token()}`,
+    Authorization: `Bearer ${tok}`,
     Accept: accept,
     'X-GitHub-Api-Version': '2022-11-28',
     'User-Agent': 'tutorial-manager-release-watch',
   };
 }
 
-async function ghGet(url: string, accept?: string): Promise<Response> {
-  const res = await fetch(url, { headers: headers(accept), cache: 'no-store' });
+async function ghGet(url: string, tok: string, accept?: string): Promise<Response> {
+  const res = await fetch(url, { headers: headers(tok, accept), cache: 'no-store' });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     const path = url.replace(API, '');
@@ -58,7 +78,8 @@ export async function getBranchHeadSha(
   branch: string
 ): Promise<string> {
   const res = await ghGet(
-    `${API}/repos/${owner}/${name}/commits/${encodeURIComponent(branch)}`
+    `${API}/repos/${owner}/${name}/commits/${encodeURIComponent(branch)}`,
+    tokenFor(owner, name)
   );
   const data = (await res.json()) as { sha: string };
   return data.sha;
@@ -75,7 +96,8 @@ export async function compareCommits(
   head: string
 ): Promise<CompareResult> {
   const res = await ghGet(
-    `${API}/repos/${owner}/${name}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}?per_page=100`
+    `${API}/repos/${owner}/${name}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}?per_page=100`,
+    tokenFor(owner, name)
   );
   const data = (await res.json()) as {
     status: string;
@@ -111,6 +133,7 @@ export async function getFileContent(
   const encodedPath = path.split('/').map(encodeURIComponent).join('/');
   const res = await ghGet(
     `${API}/repos/${owner}/${name}/contents/${encodedPath}?ref=${encodeURIComponent(ref)}`,
+    tokenFor(owner, name),
     'application/vnd.github.raw'
   );
   return res.text();
