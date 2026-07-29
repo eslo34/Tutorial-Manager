@@ -75,6 +75,7 @@ model Client {
   check_runs          CheckRun[]
   repo_files          RepoFile[]
   repo_watch          RepoWatch?
+  repo_scans          RepoScan[]
 
   @@map("clients")
 }
@@ -415,7 +416,41 @@ model RepoWatch {
   created_at         DateTime  @default(now())
   updated_at         DateTime  @updatedAt
 
+  // LOCAL-VERIFY mode. false (default) = the cloud cron audits changed docs against
+  // scripts via the Anthropic API (the OpenDictionary path). true = the cloud only
+  // DETECTS new commits (a free GitHub compare, no AI) and queues a RepoScan; the
+  // reading/verifying happens on the user's machine via a headless Claude Code agent
+  // (subscription, not metered API credits). Used for big code repos (keystone) where
+  // per-commit code reading would be expensive on the API.
+  local_verify       Boolean   @default(false)
+
   client Client @relation(fields: [client_id], references: [id], onDelete: Cascade)
 
   @@map("repo_watches")
+}
+
+// A LOCAL-VERIFY job. Created by the cloud scan-repo when a local_verify watch sees new
+// commits: it captures the sha range + changed files (no AI), and the local poller claims
+// it, runs the headless Claude Code verifier over the real diffs, and posts back a verdict.
+// Confirmed-affected videos then get a normal rebuild RunRequest. This is the "cloud detects,
+// your Claude Code thinks" split — it never calls the Anthropic API.
+model RepoScan {
+  id              String    @id @default(cuid())
+  client_id       String
+  repo            String    // "owner/name"
+  base_sha        String    // last processed (exclusive)
+  head_sha        String    // new HEAD (inclusive)
+  changed_files   Json      // [{filename, status, additions, deletions}] — capped
+  commit_messages Json      // string[] — capped
+  status          String    @default("pending") // pending | claimed | done | launched | no_change | error
+  verdict         Json?     // [{videoId, videoTitle, affected, reason, confidence}] from the local agent
+  detail          String?
+  created_at      DateTime  @default(now())
+  claimed_at      DateTime?
+  finished_at     DateTime?
+
+  client Client @relation(fields: [client_id], references: [id], onDelete: Cascade)
+
+  @@index([status, created_at])
+  @@map("repo_scans")
 }

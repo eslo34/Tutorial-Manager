@@ -17,6 +17,7 @@ import {
   auditScriptAgainstChangeNotes,
 } from '@/lib/script-audit';
 import { sendRepoDigestEmail, sendErrorEmail } from '@/lib/email';
+import { notify } from '@/lib/notify';
 
 export const maxDuration = 60;
 
@@ -159,6 +160,65 @@ export async function POST(request: NextRequest) {
         },
       });
       return NextResponse.json({ runId: checkRunId, aheadBy: 0, changedDocs: 0 });
+    }
+
+    // ----- LOCAL-VERIFY: cloud only DETECTS; your machine reads + verifies. --
+    // No AI here — just capture the diff into a RepoScan for the local Claude
+    // Code agent (subscription, not metered API). Never runs the audit below.
+    if (watch.local_verify) {
+      const files = cmp.files
+        .filter((f) => f.status !== 'removed')
+        .slice(0, 300)
+        .map((f) => ({
+          filename: f.filename,
+          status: f.status,
+          additions: f.additions,
+          deletions: f.deletions,
+          patch: (f.patch || '').slice(0, 8000),
+        }));
+      const messages = Array.from(
+        new Set(cmp.commits.map((c) => c.message.split('\n')[0].trim()).filter(Boolean))
+      ).slice(0, 200);
+
+      const scan =
+        files.length > 0
+          ? await prisma.repoScan.create({
+              data: {
+                client_id: clientId,
+                repo: repoLabel,
+                base_sha: watch.last_processed_sha,
+                head_sha: head,
+                changed_files: files,
+                commit_messages: messages,
+                status: 'pending',
+              },
+            })
+          : null;
+
+      // Advance the cursor now — the RepoScan owns the range from here.
+      await prisma.repoWatch.update({
+        where: { id: watch.id },
+        data: { last_processed_sha: head, last_checked_at: new Date() },
+      });
+      await prisma.checkRun.update({
+        where: { id: checkRunId },
+        data: {
+          status: 'success',
+          finished_at: new Date(),
+          pages_checked: files.length,
+          pages_changed: files.length,
+          summary: scan
+            ? `${cmp.ahead_by} commit(s), ${files.length} file(s) changed — queued for local verification on your machine.`
+            : `${cmp.ahead_by} commit(s), nothing to verify (only removals).`,
+        },
+      });
+      if (scan) {
+        await notify(
+          `🔎 ${repoLabel} changed (${cmp.ahead_by} commit${cmp.ahead_by === 1 ? '' : 's'}, ${files.length} file${files.length === 1 ? '' : 's'}) — verifying on your machine.`,
+          { title: `${clientName}: checking a change`, click: 'https://tutorial-manager-three.vercel.app/pipeline' }
+        );
+      }
+      return NextResponse.json({ runId: checkRunId, aheadBy: cmp.ahead_by, localVerify: true, scanId: scan?.id ?? null, files: files.length });
     }
 
     const changedDocs = cmp.files.filter(
