@@ -15,7 +15,7 @@ export default function ClientBoard() {
 
   // new video
   const [showNew, setShowNew] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '' });
+  const [form, setForm] = useState({ title: '', description: '', designUrl: '' });
   const [saving, setSaving] = useState(false);
   const [formErr, setFormErr] = useState<string | null>(null);
 
@@ -60,6 +60,7 @@ export default function ClientBoard() {
           clientId,
           title: form.title.trim(),
           description: form.description.trim(),
+          designUrl: form.designUrl.trim(),
           documentationUrls: [],
           prompt: '',
           status: 'planning',
@@ -71,7 +72,7 @@ export default function ClientBoard() {
         setFormErr(j.error ?? 'Could not create the video.');
         return;
       }
-      setForm({ title: '', description: '' });
+      setForm({ title: '', description: '', designUrl: '' });
       setShowNew(false);
       await reload();
     } catch {
@@ -270,6 +271,12 @@ export default function ClientBoard() {
               <label htmlFor="vdesc">What it covers</label>
               <textarea id="vdesc" className="inp" rows={3} value={form.description} placeholder="Describe what this video teaches…" required
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
+            </div>
+            <div className="field">
+              <label htmlFor="vdesign">Claude Design URL <span className="opt">optional</span></label>
+              <input id="vdesign" className="inp" type="url" value={form.designUrl} placeholder="https://claude.ai/design/p/…"
+                onChange={(e) => setForm((f) => ({ ...f, designUrl: e.target.value }))} />
+              <p className="field-hint">The animation project the pipeline edits. You can add or change it later from the video&rsquo;s Edit button.</p>
             </div>
             {formErr && <p className="modeerr mono">{formErr}</p>}
           </form>

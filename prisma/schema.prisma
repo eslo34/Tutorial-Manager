@@ -122,8 +122,15 @@ model Project {
   auto_update         Boolean  @default(true)
 
   // Which StepByStep editor project backs this video (library slug, e.g.
-  // "newvideo"). Null = not made in the editor, so it can't be auto-updated.
+  // "newvideo"). OPTIONAL override — normally the launched agent finds the right
+  // editor project itself by matching this video's title (list_projects +
+  // open_project). Set it only to pin an exact slug when the name is ambiguous.
   editor_project      String?
+
+  // The video's Claude Design animation project (the claude.ai/design URL). Set
+  // in Tutorial Manager (create form or the edit dialog); the animation pipeline
+  // opens this to edit the animation. Replaces the local video-map's designUrl.
+  design_url          String?
 
   // Relations
   user                User           @relation(fields: [user_id], references: [id], onDelete: Cascade)

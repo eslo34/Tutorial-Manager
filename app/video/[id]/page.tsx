@@ -10,7 +10,7 @@ import { locate, buildRanges, Range } from './locate';
 
 type VideoInfo = {
   id: string; title: string; description: string; clientId: string | null; client: string | null;
-  script: string; autoUpdate: boolean; editorProject: string | null; clientAutoDefault: boolean;
+  script: string; autoUpdate: boolean; editorProject: string | null; designUrl: string | null; clientAutoDefault: boolean;
   updatedAt: string;
 };
 type Data = { video: VideoInfo; changes: Change[]; runs: Run[] };
@@ -63,7 +63,7 @@ export default function VideoPage() {
 
   // edit title / description
   const [showEdit, setShowEdit] = useState(false);
-  const [edit, setEdit] = useState({ title: '', description: '' });
+  const [edit, setEdit] = useState({ title: '', description: '', designUrl: '' });
   const [editSaving, setEditSaving] = useState(false);
   const [editErr, setEditErr] = useState<string | null>(null);
 
@@ -213,10 +213,10 @@ export default function VideoPage() {
     }
   };
 
-  // ── edit title / description ──────────────────────────────────────────────
+  // ── edit title / description / design URL ─────────────────────────────────
   const openEdit = () => {
     if (!video) return;
-    setEdit({ title: video.title, description: video.description });
+    setEdit({ title: video.title, description: video.description, designUrl: video.designUrl ?? '' });
     setEditErr(null);
     setShowEdit(true);
   };
@@ -230,7 +230,7 @@ export default function VideoPage() {
       const res = await fetch(`/api/projects/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: edit.title.trim(), description: edit.description.trim() }),
+        body: JSON.stringify({ title: edit.title.trim(), description: edit.description.trim(), designUrl: edit.designUrl.trim() }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -539,23 +539,43 @@ export default function VideoPage() {
             {video.client}&rsquo;s videos are produced outside the editor — new videos for this client start on CHECK + EMAIL.
           </p>
         )}
-        <div className="slugrow">
-          <label className="mono slug-label" htmlFor="editorproj">EDITOR PROJECT</label>
-          <input
-            id="editorproj"
-            className="inp mono"
-            style={{ flex: 1, minWidth: 170, width: 'auto' }}
-            value={slugDraft ?? video.editorProject ?? ''}
-            placeholder="— not made in the editor —"
-            spellCheck={false}
-            onChange={(e) => setSlugDraft(e.target.value)}
-          />
-          {slugDraft !== null && slugDraft.trim() !== (video.editorProject ?? '') && (
-            <button type="button" className="btn primary" disabled={savingMode} onClick={() => saveMode({ editorProject: slugDraft })}>
-              Save
-            </button>
-          )}
-        </div>
+        {auto && (
+          <div className="mode-map mono">
+            <div className="mm-row">
+              <span className="mm-k">ANIMATION</span>
+              {video.designUrl ? (
+                <a className="mm-v" href={video.designUrl} target="_blank" rel="noreferrer">{video.designUrl}</a>
+              ) : (
+                <span className="mm-v muted">no Claude Design URL — add it with Edit</span>
+              )}
+            </div>
+            <div className="mm-row">
+              <span className="mm-k">EDITOR</span>
+              <span className="mm-v muted">
+                {video.editorProject ? `pinned: ${video.editorProject}` : 'found automatically by video name'}
+              </span>
+            </div>
+          </div>
+        )}
+        <details className="slug-advanced">
+          <summary className="mono">Advanced: pin editor project</summary>
+          <div className="slugrow">
+            <input
+              id="editorproj"
+              className="inp mono"
+              style={{ flex: 1, minWidth: 170, width: 'auto' }}
+              value={slugDraft ?? video.editorProject ?? ''}
+              placeholder="— found by name; type a slug only to override —"
+              spellCheck={false}
+              onChange={(e) => setSlugDraft(e.target.value)}
+            />
+            {slugDraft !== null && slugDraft.trim() !== (video.editorProject ?? '') && (
+              <button type="button" className="btn primary" disabled={savingMode} onClick={() => saveMode({ editorProject: slugDraft })}>
+                Save
+              </button>
+            )}
+          </div>
+        </details>
         {modeErr && <p className="mono modeerr">{modeErr}</p>}
       </div>
     </section>
@@ -664,6 +684,12 @@ export default function VideoPage() {
               <label htmlFor="evdesc">What it covers</label>
               <textarea id="evdesc" className="inp" rows={3} value={edit.description} placeholder="Describe what this video teaches…"
                 onChange={(e) => setEdit((s) => ({ ...s, description: e.target.value }))} />
+            </div>
+            <div className="field">
+              <label htmlFor="evdesign">Claude Design URL <span className="opt">optional</span></label>
+              <input id="evdesign" className="inp" type="url" value={edit.designUrl} placeholder="https://claude.ai/design/p/…"
+                onChange={(e) => setEdit((s) => ({ ...s, designUrl: e.target.value }))} />
+              <p className="field-hint">The animation project the pipeline opens to edit this video. Clear it to unset.</p>
             </div>
             {editErr && <p className="modeerr mono">{editErr}</p>}
           </form>

@@ -89,7 +89,7 @@ export async function PATCH(
     const body = await request.json()
     const data: {
       auto_update?: boolean; editor_project?: string | null;
-      title?: string; description?: string;
+      title?: string; description?: string; design_url?: string | null;
     } = {}
 
     // Title / description edits.
@@ -101,18 +101,19 @@ export async function PATCH(
     }
     if (typeof body.description === 'string') data.description = body.description.trim()
 
+    // Claude Design URL (the animation project). '' clears it.
+    if (typeof body.designUrl === 'string' || body.designUrl === null) {
+      const url = typeof body.designUrl === 'string' ? body.designUrl.trim() : ''
+      data.design_url = url === '' ? null : url
+    }
+
     if (typeof body.editorProject === 'string' || body.editorProject === null) {
       const slug = typeof body.editorProject === 'string' ? body.editorProject.trim() : ''
       data.editor_project = slug === '' ? null : slug
     }
+    // No editor-slug requirement to turn auto-update on: the launched agent finds
+    // the right editor project itself by matching the video's title.
     if (typeof body.autoUpdate === 'boolean') {
-      const slug = data.editor_project !== undefined ? data.editor_project : existing.editor_project
-      if (body.autoUpdate && !slug) {
-        return NextResponse.json(
-          { error: 'Set the editor project slug first — only videos built in the editor can auto-update.' },
-          { status: 400 }
-        )
-      }
       data.auto_update = body.autoUpdate
     }
     if (Object.keys(data).length === 0) {
@@ -122,7 +123,7 @@ export async function PATCH(
     const updated = await prisma.project.update({
       where: { id: params.id },
       data,
-      select: { id: true, auto_update: true, editor_project: true, title: true, description: true },
+      select: { id: true, auto_update: true, editor_project: true, title: true, description: true, design_url: true },
     })
     return NextResponse.json({
       project: {
@@ -131,6 +132,7 @@ export async function PATCH(
         editorProject: updated.editor_project,
         title: updated.title,
         description: updated.description,
+        designUrl: updated.design_url,
       },
     })
   } catch (error) {

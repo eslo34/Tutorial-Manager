@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       if (res.count !== 1) continue; // lost the race
       const videos = await prisma.project.findMany({
         where: { client_id: s.client_id, auto_update: true, script: { not: null } },
-        select: { id: true, title: true, script: true, editor_project: true },
+        select: { id: true, title: true, script: true, editor_project: true, design_url: true },
       });
       return NextResponse.json({
         job: {
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
           headSha: s.head_sha,
           changedFiles: s.changed_files,
           commitMessages: s.commit_messages,
-          videos: videos.map((v) => ({ id: v.id, title: v.title, script: v.script, editorProject: v.editor_project })),
+          videos: videos.map((v) => ({ id: v.id, title: v.title, script: v.script, editorProject: v.editor_project, designUrl: v.design_url })),
         },
       });
     }

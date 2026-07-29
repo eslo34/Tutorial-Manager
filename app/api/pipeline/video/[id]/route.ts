@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       where: { id: params.id, user_id: session.user.id },
       select: {
         id: true, title: true, description: true, script: true, auto_update: true,
-        editor_project: true, client_id: true, updated_at: true,
+        editor_project: true, design_url: true, client_id: true, updated_at: true,
         client: { select: { name: true, auto_update_default: true } },
       },
     });
@@ -43,6 +43,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         script: video.script ?? '',
         autoUpdate: video.auto_update,
         editorProject: video.editor_project,
+        designUrl: video.design_url,
         updatedAt: video.updated_at,
         // false = this client's videos are made outside the editor, so manual is the norm here
         clientAutoDefault: video.client?.auto_update_default ?? true,

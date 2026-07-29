@@ -215,6 +215,20 @@ export const CSS = `
 .sbs .modeerr{margin:11px 0 0;font-size:11px;color:var(--stale);letter-spacing:.03em;}
 .sbs .client-default{margin:10px 0 0;font-size:10px;line-height:1.55;letter-spacing:.05em;color:var(--text-3);}
 
+/* mapping read-out (AUTO videos): animation URL + how the editor project is resolved */
+.sbs .mode-map{margin-top:15px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;}
+.sbs .mm-row{display:flex;align-items:baseline;gap:12px;font-size:11px;}
+.sbs .mm-k{flex-shrink:0;width:74px;font-size:9px;letter-spacing:.16em;color:var(--text-3);}
+.sbs .mm-v{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-2);}
+.sbs a.mm-v{color:var(--sync);}
+.sbs .mm-v.muted{color:var(--text-3);}
+.sbs .slug-advanced{margin-top:12px;}
+.sbs .slug-advanced>summary{cursor:pointer;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3);list-style:none;}
+.sbs .slug-advanced>summary:hover{color:var(--text-2);}
+.sbs .slug-advanced[open]>summary{color:var(--text-2);}
+.sbs .field-hint{margin:6px 0 0;font-size:10.5px;line-height:1.5;color:var(--text-3);}
+.sbs .field .opt{font-size:8.5px;letter-spacing:.12em;color:var(--text-3);opacity:.8;}
+
 /* inputs */
 .sbs .inp{background:var(--inset);border:1px solid var(--line-2);border-radius:7px;color:var(--text);
   font-size:12.5px;letter-spacing:.02em;padding:9px 11px;outline:none;width:100%;font-family:var(--sans);
