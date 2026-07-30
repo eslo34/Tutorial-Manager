@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
         select: { id: true },
       });
       if (dup) { launched.push(project.title); continue; }
+      const ev = (r.evidence ?? {}) as Record<string, unknown>;
       await prisma.runRequest.create({
         data: {
           project_id: project.id,
@@ -67,6 +68,16 @@ export async function POST(req: NextRequest) {
           detail: (r.reason || 'confirmed UI/workflow change').slice(0, 300),
           status: 'queued',
           queued_offline: false,
+          // Carry the verifier's finding so the local brief composer knows exactly what to change.
+          change: {
+            videoTitle: project.title,
+            reason: r.reason ?? '',
+            confidence: r.confidence ?? '',
+            file: typeof ev.file === 'string' ? ev.file : '',
+            oldText: typeof ev.oldText === 'string' ? ev.oldText : '',
+            newText: typeof ev.newText === 'string' ? ev.newText : '',
+            scriptQuote: typeof ev.scriptQuote === 'string' ? ev.scriptQuote : '',
+          },
         },
       });
       launched.push(project.title);

@@ -378,6 +378,10 @@ model RunRequest {
   queued_offline Boolean @default(false) // true if the PC was off when queued → ping "launching" on boot
   status      String    @default("queued") // queued | claimed | launched | done | error
   detail      String?
+  // The verified change that triggered this rebuild (from the local verify agent):
+  // {file, oldText, newText, scriptQuote, reason, confidence, videoTitle}. Lets the
+  // local brief composer tell the rebuild agent exactly WHAT changed, with no video-map.
+  change      Json?
   created_at  DateTime  @default(now())
   claimed_at  DateTime?
   launched_at DateTime?

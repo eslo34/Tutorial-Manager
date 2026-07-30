@@ -60,7 +60,10 @@ export async function POST(req: NextRequest) {
       if (busy) continue;
       const res = await prisma.runRequest.updateMany({ where: { id: q.id, status: 'queued' }, data: { status: 'claimed', claimed_at: new Date() } });
       if (res.count !== 1) continue; // lost the race to another claim
-      const job = await prisma.runRequest.findUnique({ where: { id: q.id }, include: { project: { select: { title: true, editor_project: true } } } });
+      const job = await prisma.runRequest.findUnique({
+        where: { id: q.id },
+        include: { project: { select: { title: true, editor_project: true, design_url: true, script: true } } },
+      });
       if (!job) continue;
       // "launching" ping only if it was queued while the PC was off (the online path already pinged).
       if (job.queued_offline) {
@@ -74,7 +77,10 @@ export async function POST(req: NextRequest) {
           id: job.id,
           projectId: job.project_id,
           video: job.project.title,
-          editorProject: job.project.editor_project, // library slug for the agent's open_project
+          editorProject: job.project.editor_project, // optional pin; else the agent finds it by name
+          designUrl: job.project.design_url,         // the Claude Design animation, straight from Tutorial Manager
+          script: job.project.script ?? '',
+          change: job.change ?? null,                // the verified change (what to fix), from the verifier
           repo: job.repo,
           sha: job.sha,
           detail: job.detail,
