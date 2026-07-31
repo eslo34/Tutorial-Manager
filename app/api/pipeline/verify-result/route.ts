@@ -34,11 +34,17 @@ export async function POST(req: NextRequest) {
     if (!scan) return NextResponse.json({ error: 'scan not found' }, { status: 404 });
 
     // The agent itself failed (couldn't verify) — record and stop; don't launch anything.
+    // This is a DEAD END: the watch cursor already advanced past these commits, so nothing
+    // will re-check them. Always tell the operator, or the change is silently unreviewed.
     if (body.error) {
       await prisma.repoScan.update({
         where: { id: scan.id },
         data: { status: 'error', detail: body.error.slice(0, 500), finished_at: new Date() },
       });
+      await notify(
+        `⚠️ Could not check ${scan.repo} @ ${scan.head_sha.slice(0, 7)} — ${body.error.slice(0, 200)}. These commits were NOT reviewed against your videos.`,
+        { title: 'Video check FAILED', priority: 'high', click: DASHBOARD }
+      );
       return NextResponse.json({ ok: true, status: 'error' });
     }
 
@@ -97,6 +103,15 @@ export async function POST(req: NextRequest) {
       await notify(
         `🎬 Confirmed change in ${scan.repo} — auto-rebuilding: ${launched.join(', ')}.`,
         { title: 'Video rebuild launching', priority: 'high', click: DASHBOARD }
+      );
+    } else {
+      // Close the loop on the "checking a change" ping the scan-repo cron already sent.
+      // Without this, a clean check is indistinguishable from a check that never ran.
+      const checked = results.map((r) => r.videoTitle).filter(Boolean);
+      await notify(
+        `✅ Checked ${scan.repo} @ ${scan.head_sha.slice(0, 7)} — nothing your videos show has changed.` +
+          (checked.length ? ` Cleared: ${checked.join(', ')}.` : ''),
+        { title: 'Check complete - all clear', priority: 'low', click: DASHBOARD }
       );
     }
     return NextResponse.json({ ok: true, status: affected.length > 0 ? 'launched' : 'no_change', launched });

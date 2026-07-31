@@ -16,6 +16,7 @@ import { notify } from '@/lib/notify';
 export const maxDuration = 30;
 
 const SILENT_MIN = Number(process.env.SBS_RUNNER_SILENT_MIN || 30); // silence before it counts as down
+const VERIFY_STUCK_MIN = Number(process.env.SBS_VERIFY_STUCK_MIN || 30); // a verify normally finishes in ~1 min
 const IN_FLIGHT = ['queued', 'claimed', 'launched'];
 const DASHBOARD = 'https://tutorial-manager-three.vercel.app/pipeline';
 
@@ -24,7 +25,39 @@ function authorized(req: NextRequest): boolean {
   return !!auth && !!process.env.CRON_SECRET && auth === `Bearer ${process.env.CRON_SECRET}`;
 }
 
+// A verify job the poller CLAIMED but never reported back on — the machine slept mid-run, the
+// poller died, or the headless agent hung. verify-result never fires, so neither the all-clear nor
+// the failure ping does either; claim-verify only hands out 'pending', so it's never retried. This
+// is the one hole where a change silently goes unreviewed with no signal at all. Mark it errored
+// (terminal, so this can't nag) and say so.
+async function sweepStuckVerifies() {
+  const cutoff = new Date(Date.now() - VERIFY_STUCK_MIN * 60000);
+  const stuck = await prisma.repoScan.findMany({
+    where: { status: 'claimed', claimed_at: { lt: cutoff } },
+    orderBy: { created_at: 'asc' },
+  });
+  if (stuck.length === 0) return { stuckVerifies: 0 };
+
+  await prisma.repoScan.updateMany({
+    where: { id: { in: stuck.map((s) => s.id) } },
+    data: {
+      status: 'error',
+      detail: `verify never reported back (claimed >${VERIFY_STUCK_MIN} min ago)`,
+      finished_at: new Date(),
+    },
+  });
+  const repos = Array.from(new Set(stuck.map((s) => s.repo)));
+  await notify(
+    `⚠️ ${stuck.length} code check${stuck.length === 1 ? '' : 's'} (${repos.join(', ')}) started on your machine but never finished. Those commits were NOT reviewed against your videos.`,
+    { title: 'Video check never finished', priority: 'high', click: DASHBOARD }
+  );
+  return { stuckVerifies: stuck.length, stuckRepos: repos };
+}
+
 async function handle() {
+  // Runs regardless of runner liveness — a verify can stall while the poller keeps heartbeating.
+  const verifySweep = await sweepStuckVerifies();
+
   const [hb, waiting] = await Promise.all([
     prisma.runnerHeartbeat.findFirst({ orderBy: { last_seen_at: 'desc' } }),
     prisma.runRequest.findMany({
@@ -40,6 +73,7 @@ async function handle() {
 
   if (!silent || waiting.length === 0) {
     return {
+      ...verifySweep,
       alerted: false,
       silentMin: hb ? silentMin : null,
       waiting: waiting.length,
@@ -49,7 +83,7 @@ async function handle() {
 
   // Already told them about THIS outage — don't nag every tick.
   if (hb?.alerted_at && new Date(hb.alerted_at) > new Date(hb.last_seen_at)) {
-    return { alerted: false, silentMin, waiting: waiting.length, reason: 'already alerted for this outage' };
+    return { ...verifySweep, alerted: false, silentMin, waiting: waiting.length, reason: 'already alerted for this outage' };
   }
 
   const titles = Array.from(new Set(waiting.map((w) => w.project.title)));
@@ -62,7 +96,7 @@ async function handle() {
   if (hb) {
     await prisma.runnerHeartbeat.update({ where: { id: hb.id }, data: { alerted_at: new Date() } });
   }
-  return { alerted: true, silentMin, waiting: waiting.length, videos: titles };
+  return { ...verifySweep, alerted: true, silentMin, waiting: waiting.length, videos: titles };
 }
 
 export async function POST(req: NextRequest) {
