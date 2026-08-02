@@ -439,14 +439,18 @@ export default function VideoPage() {
 
   const scriptPane = (
     <>
-      <div className="mono eyebrow sec"><span className="dot dim" />SCRIPT</div>
+      {/* Label, legend and save controls share one row so the editor can start
+          right under the header. */}
       <div className="editbar">
-        <div className="legend">
-          {accepted.length > 0 && <span><i className="a" />accepted · re-record</span>}
-          {autoApplied.length > 0 && <span><i className="b" />pipeline updated</span>}
-          {pending.length > 0 && <span><i className="c" />change suggested</span>}
+        <div className="editbar-left">
+          <div className="mono eyebrow"><span className="dot dim" />SCRIPT</div>
+          <div className="legend">
+            {accepted.length > 0 && <span><i className="a" />accepted · re-record</span>}
+            {autoApplied.length > 0 && <span><i className="b" />pipeline updated</span>}
+            {pending.length > 0 && <span><i className="c" />change suggested</span>}
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 9, alignItems: 'center' }}>
+        <div className="editbar-right">
           {dirty && <span className="dirty">UNSAVED</span>}
           {dirty && (
             <button type="button" className="btn" disabled={savingScript} onClick={() => setDraft(savedScript)}>Revert</button>
@@ -593,37 +597,42 @@ export default function VideoPage() {
 
   return (
     <Shell split>
+      {/* Only the brand row stays above the two panes — the state pills sit
+          beside Edit, and the title block rides at the top of the left pane, so
+          the script editor starts just under the header. */}
       <div className="vhead">
         <Header
           right={
-            <button type="button" className="btn" onClick={openEdit} title="Edit the title and description">
-              <Pencil className="w-3.5 h-3.5" />Edit
-            </button>
+            <>
+              <div className="hpills">
+                <span className={`mode ${auto ? 'auto' : 'manual'}`}>{auto ? 'AUTO' : 'MANUAL'}</span>
+                <span className={`pill ${st.kind}`}><span className="pdot" />{st.label}</span>
+              </div>
+              <button type="button" className="btn" onClick={openEdit} title="Edit the title and description">
+                <Pencil className="w-3.5 h-3.5" />Edit
+              </button>
+            </>
           }
         />
-
-        <div className="mono crumb">
-          <Link href="/">ALL CLIENTS</Link>
-          {video.clientId && <> · <Link href={`/client/${video.clientId}`}>{video.client ?? 'CLIENT'}</Link></>}
-        </div>
-
-        <header className="dhead">
-          <div className="min0">
-            <h1 className="dtitle">{video.title}</h1>
-            <div className="mono dsub">
-              {[video.client, `updated ${ago(video.updatedAt)}`].filter(Boolean).join('  ·  ')}
-            </div>
-            {video.description && <p className="vdesc">{video.description}</p>}
-          </div>
-          <div className="hpills">
-            <span className={`mode ${auto ? 'auto' : 'manual'}`}>{auto ? 'AUTO' : 'MANUAL'}</span>
-            <span className={`pill ${st.kind}`}><span className="pdot" />{st.label}</span>
-          </div>
-        </header>
       </div>
 
       <div className="vcols">
         <div className="vcol left">
+          <div className="mono crumb">
+            <Link href="/">ALL CLIENTS</Link>
+            {video.clientId && <> · <Link href={`/client/${video.clientId}`}>{video.client ?? 'CLIENT'}</Link></>}
+          </div>
+
+          <header className="dhead">
+            <div className="min0">
+              <h1 className="dtitle">{video.title}</h1>
+              <div className="mono dsub">
+                {[video.client, `updated ${ago(video.updatedAt)}`].filter(Boolean).join('  ·  ')}
+              </div>
+              {video.description && <p className="vdesc">{video.description}</p>}
+            </div>
+          </header>
+
           {actionErr && <div className="banner stale">{actionErr}</div>}
 
           {latest?.status === 'ready_for_review' && (
