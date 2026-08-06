@@ -304,6 +304,7 @@ export const CSS = `
 .sbs .modal{background:var(--raised);border:1px solid var(--line-2);border-radius:var(--radius);
   box-shadow:var(--shadow);width:100%;max-width:460px;max-height:86vh;overflow:auto;}
 .sbs .modal.wide{max-width:560px;}
+.sbs .modal.xwide{max-width:820px;max-height:88vh;}
 .sbs .modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--raised);z-index:1;}
 .sbs .modal-title{font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--text);}
 .sbs .modal-x{appearance:none;background:transparent;border:0;cursor:pointer;color:var(--text-3);padding:4px;line-height:0;border-radius:6px;}
@@ -317,6 +318,61 @@ export const CSS = `
 .sbs .runlog-row:last-child{border-bottom:0;}
 .sbs .runlog-top{display:flex;justify-content:space-between;gap:10px;color:var(--text-3);font-family:var(--mono);font-size:9.5px;}
 .sbs .runlog-sum{color:var(--text-2);margin-top:4px;line-height:1.5;}
+
+/* ── video list (client's internal planning note) ───────────────────────── */
+.sbs .vl-empty{text-align:center;padding:26px 10px 12px;}
+.sbs .vl-empty h3{font-size:15px;font-weight:700;color:var(--text);margin:0 0 8px;}
+.sbs .vl-empty p{font-size:12.5px;line-height:1.7;color:var(--text-2);margin:0 auto 18px;max-width:56ch;}
+.sbs .vl-empty .mono{font-size:11px;color:var(--text-3);}
+.sbs .vl-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap;}
+.sbs .vl-prog{flex:1;min-width:180px;}
+.sbs .vl-count{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-2);margin-bottom:8px;}
+.sbs .vl-count .vl-src{color:var(--text-3);text-transform:none;letter-spacing:.04em;}
+.sbs .vl-bar{height:3px;border-radius:3px;background:var(--line-2);overflow:hidden;}
+.sbs .vl-bar-fill{height:100%;border-radius:3px;background:var(--sync);box-shadow:0 0 10px var(--sync-line);transition:width .4s var(--ease);}
+.sbs .vl-tools{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.sbs .vl-saved{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3);min-width:46px;text-align:right;}
+.sbs .vl-groups{display:flex;flex-direction:column;gap:6px;}
+.sbs .vl-group{border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;}
+.sbs .vl-ghead{display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(151,164,190,.04);}
+.sbs .vl-gtoggle{appearance:none;background:transparent;border:0;cursor:pointer;color:var(--text-2);
+  display:inline-flex;align-items:center;gap:9px;padding:0;min-width:0;flex:1;text-align:left;}
+.sbs .vl-gtoggle:hover{color:var(--text);}
+.sbs .vl-gtoggle.bare{flex:none;}
+.sbs .vl-gname{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sbs .vl-ginp{flex:1;padding:5px 9px;font-size:12px;}
+.sbs .vl-gcount{font-size:9.5px;letter-spacing:.1em;color:var(--text-3);flex-shrink:0;}
+.sbs .vl-items{padding:4px 6px 6px;}
+.sbs .vl-gnote{margin:4px 8px 10px;font-size:11.5px;line-height:1.6;color:var(--text-3);white-space:pre-wrap;}
+.sbs .vl-row{display:flex;align-items:flex-start;gap:11px;padding:7px 8px;border-radius:7px;cursor:pointer;}
+.sbs .vl-row:hover{background:rgba(151,164,190,.05);}
+.sbs .vl-check{appearance:none;width:14px;height:14px;margin:2px 0 0;flex-shrink:0;cursor:pointer;
+  border:1px solid var(--line-2);border-radius:4px;background:var(--inset);position:relative;}
+.sbs .vl-check:hover{border-color:var(--sync-line);}
+.sbs .vl-check:checked{background:var(--sync-dim);border-color:var(--sync-line);}
+.sbs .vl-check:checked::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+  border:solid var(--sync);border-width:0 2px 2px 0;transform:rotate(42deg);}
+.sbs .vl-main{min-width:0;flex:1;}
+.sbs .vl-line{display:flex;align-items:baseline;gap:10px;min-width:0;}
+.sbs .vl-code{font-size:9.5px;letter-spacing:.08em;color:var(--text-3);flex-shrink:0;min-width:26px;}
+.sbs .vl-title{font-size:12.5px;color:var(--text);line-height:1.45;flex:1;min-width:0;}
+.sbs .vl-meta{font-size:9.5px;letter-spacing:.06em;color:var(--text-3);flex-shrink:0;white-space:nowrap;}
+.sbs .vl-row.done .vl-title{color:var(--text-3);text-decoration:line-through;text-decoration-color:var(--line-2);}
+.sbs .vl-row.done .vl-code,.sbs .vl-row.done .vl-meta{opacity:.5;}
+.sbs .vl-note{display:block;font-size:11px;line-height:1.6;color:var(--text-3);margin-top:5px;white-space:pre-wrap;}
+.sbs .vl-erow{display:flex;align-items:center;gap:7px;padding:4px 2px;}
+.sbs .vl-erow .inp{padding:6px 9px;font-size:12px;}
+.sbs .vl-ecode{width:64px;flex-shrink:0;}
+.sbs .vl-etitle{flex:1;min-width:0;}
+.sbs .vl-emeta{width:158px;flex-shrink:0;}
+.sbs .vl-del{appearance:none;background:transparent;border:0;cursor:pointer;color:var(--text-3);
+  padding:5px;line-height:0;border-radius:6px;flex-shrink:0;}
+.sbs .vl-del:hover{color:var(--stale);background:var(--stale-dim);}
+.sbs .vl-add{appearance:none;background:transparent;border:0;cursor:pointer;color:var(--text-3);
+  display:inline-flex;align-items:center;gap:7px;padding:7px 9px;font-size:11px;letter-spacing:.04em;border-radius:7px;}
+.sbs .vl-add:hover{color:var(--sync);background:var(--sync-dim);}
+.sbs .vl-add.group{margin-top:10px;border:1px dashed var(--line-2);width:100%;justify-content:center;padding:11px;}
 
 /* ── empty state ────────────────────────────────────────────────────────── */
 .sbs .empty{text-align:center;padding:64px 20px;}
@@ -352,6 +408,11 @@ export const CSS = `
   .sbs .hpills{justify-content:flex-start;}
   .sbs .grid2{grid-template-columns:1fr;}
   .sbs .s-time{width:auto;}
+  .sbs .vl-line{flex-wrap:wrap;gap:4px 9px;}
+  .sbs .vl-meta{white-space:normal;}
+  .sbs .vl-erow{flex-wrap:wrap;}
+  .sbs .vl-etitle{flex:1 1 100%;order:-1;}
+  .sbs .vl-emeta{flex:1;width:auto;}
 }
 @media (prefers-reduced-motion:reduce){
   .sbs .conn-head,.sbs .logo b,.sbs .eq b,.sbs .live .scan,.sbs .pill.render .pdot,.sbs .hl-busy{animation:none;}

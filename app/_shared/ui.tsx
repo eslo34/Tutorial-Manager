@@ -94,12 +94,15 @@ export function Header({ right, live }: { right?: React.ReactNode; live?: string
   );
 }
 
-export function Modal({ title, onClose, children, footer, wide }: {
+export function Modal({ title, onClose, children, footer, wide, xwide }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   footer?: React.ReactNode;
   wide?: boolean;
+  // xwide is for the video list, which is a long two-column scan (title + meta)
+  // rather than a form — at `wide` the meta column wraps under every row.
+  xwide?: boolean;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -109,7 +112,7 @@ export function Modal({ title, onClose, children, footer, wide }: {
 
   return (
     <div className="scrim" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className={`modal${wide ? ' wide' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
+      <div className={`modal${xwide ? ' xwide' : wide ? ' wide' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
         <div className="modal-head">
           <span className="modal-title">{title}</span>
           <button type="button" className="modal-x" onClick={onClose} aria-label="Close"><X className="w-5 h-5" /></button>

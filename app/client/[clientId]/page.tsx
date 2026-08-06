@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Plus, GitBranch, Pencil } from 'lucide-react';
+import { Plus, GitBranch, Pencil, ListChecks } from 'lucide-react';
 import { ago, shortDate, videoState } from '../../_shared/model';
 import { Header, Modal, RunFlow, Shell, VideoTile, useBoard, latestRuns } from '../../_shared/ui';
+import VideoListModal from './VideoListModal';
 
 type RepoRun = { id: string; started_at: string; status: string; summary: string | null };
 
@@ -24,6 +25,9 @@ export default function ClientBoard() {
   const [edit, setEdit] = useState({ name: '', company: '' });
   const [editSaving, setEditSaving] = useState(false);
   const [editErr, setEditErr] = useState<string | null>(null);
+
+  // internal video list (planning note — see VideoListModal)
+  const [showList, setShowList] = useState(false);
 
   // repo-updates config
   const [showRepo, setShowRepo] = useState(false);
@@ -190,6 +194,9 @@ export default function ClientBoard() {
               <button type="button" className="btn" onClick={openEdit} disabled={!client} title="Rename this client / edit what they do">
                 <Pencil className="w-3.5 h-3.5" />Edit
               </button>
+              <button type="button" className="btn" onClick={() => setShowList(true)} title="Your internal video list for this client">
+                <ListChecks className="w-3.5 h-3.5" />Video list
+              </button>
               <button type="button" className="btn" onClick={openRepo} title="Watch a GitHub repo's feature docs for changes">
                 <GitBranch className="w-3.5 h-3.5" />Repo updates
               </button>
@@ -281,6 +288,10 @@ export default function ClientBoard() {
             {formErr && <p className="modeerr mono">{formErr}</p>}
           </form>
         </Modal>
+      )}
+
+      {showList && !isUnassigned && (
+        <VideoListModal clientId={clientId} clientName={clientName} onClose={() => setShowList(false)} />
       )}
 
       {showEdit && (

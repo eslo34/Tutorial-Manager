@@ -20,6 +20,10 @@ import {
 import prismaPkg from "../lib/generated/prisma/index.js";
 const { PrismaClient } = prismaPkg;
 
+// Shared with the Next app (app/api/clients/video-list) — same normalizer, same
+// merge rules, so a list imported here and one edited in the UI cannot drift.
+import { normalizeList, mergeTicks, listStats } from "../lib/video-list.mjs";
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 const backupDir = join(__dirname, "backups");
@@ -78,6 +82,30 @@ async function findProject(ref) {
   return null;
 }
 
+// Resolve a client by exact id, else by case-insensitive name/company match.
+async function findClient(ref) {
+  const client = await prisma.client.findUnique({ where: { id: ref } });
+  if (client) return client;
+
+  const matches = await prisma.client.findMany({
+    where: {
+      OR: [
+        { name: { contains: ref, mode: "insensitive" } },
+        { company: { contains: ref, mode: "insensitive" } },
+      ],
+    },
+    take: 5,
+  });
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) {
+    throw new Error(
+      `"${ref}" matched ${matches.length} clients. Use the exact id. Candidates: ` +
+        matches.map((c) => `${c.name} (${c.id})`).join("; ")
+    );
+  }
+  return null;
+}
+
 // --- Tool definitions --------------------------------------------------------
 const TOOLS = [
   {
@@ -128,6 +156,52 @@ const TOOLS = [
         query: { type: "string", description: "Text to search for inside scripts." },
       },
       required: ["query"],
+    },
+  },
+  {
+    name: "list_clients",
+    description:
+      "List all clients with their id, name, company, video count and whether they have an internal video list.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "get_video_list",
+    description:
+      "Return a client's internal video list — the planning checklist shown behind the 'Video list' button on their page. 'client' may be a client id, name or company.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        client: { type: "string", description: "Client id, name or company." },
+      },
+      required: ["client"],
+    },
+  },
+  {
+    name: "set_video_list",
+    description:
+      "Write a client's internal video list. Use this to import a VIDEO-LIST.md (or any planning doc) into the app: read the file, split it into groups (tracks/categories) of videos, and pass them here. Field names are forgiving — a group takes name + items, an item takes title plus optional code, meta (type/length) and note (what it covers). By default this MERGES: existing checkmarks survive rows being rewritten, and a tick is never cleared by an import.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        client: { type: "string", description: "Client id, name or company." },
+        groups: {
+          type: "array",
+          description:
+            "The list, as groups of videos: [{ name, note?, items: [{ code?, title, meta?, note?, done? }] }].",
+          items: { type: "object" },
+        },
+        source: {
+          type: "string",
+          description: "Where this came from, shown in the UI, e.g. 'Clients/Prodikt/VIDEO-LIST.md'.",
+        },
+        mode: {
+          type: "string",
+          enum: ["merge", "replace"],
+          description:
+            "merge (default) keeps existing checkmarks; replace discards them and takes the incoming done flags verbatim.",
+        },
+      },
+      required: ["client", "groups"],
     },
   },
 ];
@@ -224,6 +298,84 @@ async function handleSearchScripts(args) {
   );
 }
 
+async function handleListClients() {
+  const clients = await prisma.client.findMany({
+    orderBy: { created_at: "asc" },
+    include: { _count: { select: { projects: true } } },
+  });
+  return ok(
+    clients.map((c) => {
+      const stats = listStats(c.video_list);
+      return {
+        id: c.id,
+        name: c.name,
+        company: c.company,
+        videos: c._count.projects,
+        video_list: c.video_list
+          ? { groups: stats.groups, items: stats.items, done: stats.done, source: c.video_list.source || null }
+          : null,
+      };
+    })
+  );
+}
+
+async function handleGetVideoList(args) {
+  const c = await findClient(args.client);
+  if (!c) return fail(`No client found for "${args.client}".`);
+  if (!c.video_list) {
+    return ok({ client: c.name, client_id: c.id, list: null, note: "This client has no video list yet." });
+  }
+  return ok({ client: c.name, client_id: c.id, stats: listStats(c.video_list), list: c.video_list });
+}
+
+async function handleSetVideoList(args) {
+  const c = await findClient(args.client);
+  if (!c) return fail(`No client found for "${args.client}".`);
+
+  const { source, groups, truncated } = normalizeList({ source: args.source, groups: args.groups });
+  if (groups.length === 0) {
+    return fail("Nothing usable in `groups`. Expected [{ name, items: [{ title, … }] }].");
+  }
+
+  const mode = args.mode === "replace" ? "replace" : "merge";
+  let finalGroups = groups;
+  let merge = null;
+  if (mode === "merge") {
+    const result = mergeTicks(groups, c.video_list);
+    finalGroups = result.groups;
+    merge = { checks_kept: result.kept, new_items: result.added, items_no_longer_listed: result.removed };
+  }
+
+  // Back up the previous list before overwriting, the same way update_script
+  // does — an import that mangles the shape should never be unrecoverable.
+  if (c.video_list) {
+    if (!existsSync(backupDir)) mkdirSync(backupDir, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    writeFileSync(
+      join(backupDir, `${c.id}-videolist-${stamp}.json`),
+      JSON.stringify(c.video_list, null, 2),
+      "utf8"
+    );
+  }
+
+  const saved = {
+    source: source || c.video_list?.source || "",
+    updatedAt: new Date().toISOString(),
+    groups: finalGroups,
+  };
+  await prisma.client.update({ where: { id: c.id }, data: { video_list: saved } });
+
+  return ok({
+    updated: true,
+    client: c.name,
+    client_id: c.id,
+    mode,
+    stats: listStats(saved),
+    merge,
+    truncated: truncated || undefined,
+  });
+}
+
 // --- Wire up the server ------------------------------------------------------
 const server = new Server(
   { name: "tutorial-scripts", version: "0.1.0" },
@@ -244,6 +396,12 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         return await handleUpdateScript(args);
       case "search_scripts":
         return await handleSearchScripts(args);
+      case "list_clients":
+        return await handleListClients(args);
+      case "get_video_list":
+        return await handleGetVideoList(args);
+      case "set_video_list":
+        return await handleSetVideoList(args);
       default:
         return fail(`Unknown tool: ${name}`);
     }

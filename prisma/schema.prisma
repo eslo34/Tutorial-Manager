@@ -60,6 +60,16 @@ model Client {
   // be flipped either way afterwards.
   auto_update_default Boolean   @default(true)
 
+  // The internal video list for this client — the planning doc that lives in
+  // Clients/<name>/VIDEO-LIST.md, mirrored here so it can be read (and ticked
+  // off) in the app instead of opening the markdown. Deliberately a loose blob,
+  // NOT a modelled entity: it is a private note, it never appears on the board,
+  // and nothing here is linked to Project rows. Shape:
+  //   { source?, groups: [{ name, items: [{ code?, title, meta?, note?, done }] }] }
+  // Written by hand in the UI or by Claude through the local MCP server's
+  // set_video_list tool, which merges by code/title so ticks survive a re-import.
+  video_list     Json?
+
   // Code-repo source (alternative to scraped docs). Files are uploaded from a
   // local folder or a .zip — no external credentials are ever stored.
   repo_label     String?    // folder or zip name shown in the UI
