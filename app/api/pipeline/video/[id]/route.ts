@@ -73,6 +73,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         started_at: r.started_at,
         updated_at: r.updated_at,
         finished_at: r.finished_at,
+        // The agent's plain-language "what changed" note for this update (may be null
+        // on older runs and on halts) — the script page leads with it.
+        brief: r.brief ?? null,
+        brief_at: r.brief_at,
         events: r.events.map((e) => ({ phase: e.phase, status: e.status, detail: e.detail, at: e.at })),
       })),
     });

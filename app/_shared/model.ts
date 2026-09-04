@@ -7,6 +7,12 @@ export type Kind = 'sync' | 'render' | 'review' | 'stale';
 
 export type Evt = { phase: string; status: string; detail: string | null; at: string };
 
+// One line of the agent's "what changed" note. `at` is a timecode into the
+// FINISHED film ("1:24" or "1:24–1:38") so you can jump to the changed seconds;
+// everything but `what` is optional, because the agent only claims what it knows.
+export type BriefItem = { what: string; where?: string; at?: string; note?: string };
+export type Brief = { headline: string | null; items: BriefItem[] };
+
 export type Run = {
   id: string;
   projectId: string;
@@ -21,6 +27,8 @@ export type Run = {
   started_at: string;
   updated_at: string;
   finished_at: string | null;
+  brief?: Brief | null;      // written by the agent when it finishes; null on older runs
+  brief_at?: string | null;
   events: Evt[];
 };
 

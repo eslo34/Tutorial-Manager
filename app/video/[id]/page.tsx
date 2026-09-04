@@ -305,6 +305,41 @@ export default function VideoPage() {
   }
 
   // ── section builders (ordered by mode below) ──────────────────────────────
+  // The agent's plain-language note about the update it just did: what changed in
+  // the product, where it lives, and the timecodes to watch. Taken from the newest
+  // run that actually filed one, so a later run that halted before writing its own
+  // can't hide the last real explanation.
+  const briefRun = runs.find((r) => r.brief && (r.brief.headline || (r.brief.items ?? []).length > 0));
+  const brief = briefRun?.brief ?? null;
+  const briefItems = brief?.items ?? [];
+
+  const briefSection = brief && (
+    <section key="brief">
+      <div className="mono eyebrow sec"><span className="dot dim" />WHAT CHANGED IN THIS UPDATE</div>
+      <div className="card brf">
+        {brief.headline && <p className="brf-head">{brief.headline}</p>}
+        {briefItems.length > 0 && (
+          <div className="brf-items">
+            {briefItems.map((it, i) => (
+              <div className="brf-item" key={i}>
+                <span className={`brf-at mono${it.at ? '' : ' none'}`}>{it.at ?? 'no timecode'}</span>
+                <div className="min0">
+                  <div className="brf-what">{it.what}</div>
+                  {it.where && <div className="brf-where">{it.where}</div>}
+                  {it.note && <div className="brf-note mono">{it.note}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="brf-foot">
+          {briefItems.some((it) => it.at) ? 'Timecodes are into the finished film · ' : ''}
+          Written by the agent {ago(briefRun?.brief_at ?? briefRun?.finished_at ?? briefRun?.updated_at)}
+        </div>
+      </div>
+    </section>
+  );
+
   const changesSection = pending.length > 0 && (
     <section key="pending">
       <div className="mono eyebrow sec"><span className="dot" />CHANGES TO REVIEW · {pending.length}</div>
@@ -589,8 +624,8 @@ export default function VideoPage() {
   // machine did and whether it's ready for your sign-off. The script isn't in
   // this list — it lives in its own pane on the right.
   const leftSections = auto
-    ? [runSection, autoSection, changesSection, recordSection, modeSection]
-    : [changesSection, recordSection, autoSection, runSection, modeSection];
+    ? [briefSection, runSection, autoSection, changesSection, recordSection, modeSection]
+    : [briefSection, changesSection, recordSection, autoSection, runSection, modeSection];
 
   const nothingOutstanding =
     pending.length === 0 && accepted.length === 0 && autoApplied.length === 0 && runs.length === 0;

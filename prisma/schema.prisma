@@ -351,6 +351,15 @@ model PipelineRun {
   updated_at  DateTime  @updatedAt
   finished_at DateTime?
 
+  // The founder-facing "what changed" brief for this update, written by the agent as
+  // its last act (POST /api/pipeline/brief) and shown at the top of the video's script
+  // page. Shape: { headline: string, items: [{ what, where?, at?, note? }] } where `at`
+  // is a timecode INTO THE FINISHED FILM ("1:24" or "1:24-1:38"), read off the editor's
+  // describe_timeline — so a review can jump straight to the seconds that changed.
+  // Null on runs that never wrote one (every run before this shipped, and halts).
+  brief       Json?
+  brief_at    DateTime?
+
   project Project         @relation(fields: [project_id], references: [id], onDelete: Cascade)
   events  PipelineEvent[]
 

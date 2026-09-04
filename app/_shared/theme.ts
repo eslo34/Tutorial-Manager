@@ -291,6 +291,21 @@ export const CSS = `
 .sbs .tl-detail.err{color:var(--stale);}
 .sbs .tl-time{color:var(--text-3);flex-shrink:0;font-size:10px;}
 
+/* "what changed in this update" — the agent's plain-language note, top of the
+   script page. Timecodes get the render/amber chip so the eye lands on WHERE to
+   look in the film before reading WHAT changed. */
+.sbs .brf{padding:15px 17px;}
+.sbs .brf-head{font-size:13.5px;line-height:1.6;color:var(--text);margin:0;}
+.sbs .brf-items{display:flex;flex-direction:column;gap:12px;margin-top:13px;padding-top:13px;border-top:1px solid var(--line);}
+.sbs .brf-item{display:flex;gap:12px;align-items:flex-start;}
+.sbs .brf-at{flex-shrink:0;min-width:78px;text-align:center;font-size:9.5px;letter-spacing:.07em;padding:5px 8px;border-radius:6px;
+  background:var(--render-dim);border:1px solid var(--render-line);color:var(--render);}
+.sbs .brf-at.none{background:transparent;border-color:var(--line);color:var(--text-3);}
+.sbs .brf-what{font-size:12.5px;line-height:1.55;color:var(--text-2);word-break:break-word;}
+.sbs .brf-where{font-size:11.5px;line-height:1.5;color:var(--text-3);margin-top:3px;word-break:break-word;}
+.sbs .brf-note{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);margin-top:6px;}
+.sbs .brf-foot{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-top:13px;padding-top:12px;border-top:1px solid var(--line);}
+
 /* banners */
 .sbs .banner{padding:13px 16px;border-radius:var(--radius-sm);font-size:12.5px;line-height:1.6;margin-bottom:14px;border:1px solid;}
 .sbs .banner.review{background:var(--review-dim);border-color:var(--review-line);color:var(--review);}
