@@ -23,8 +23,10 @@ export async function POST(req: NextRequest) {
         data: { status: 'claimed', claimed_at: new Date() },
       });
       if (res.count !== 1) continue; // lost the race
+      // Only videos the pipeline is allowed to rebuild: AUTO with a linked Claude
+      // Design project. Unfinished/manual videos never reach the verifier.
       const videos = await prisma.project.findMany({
-        where: { client_id: s.client_id, auto_update: true, script: { not: null } },
+        where: { client_id: s.client_id, auto_update: true, design_url: { not: null }, script: { not: null } },
         select: { id: true, title: true, script: true, editor_project: true, design_url: true },
       });
       return NextResponse.json({

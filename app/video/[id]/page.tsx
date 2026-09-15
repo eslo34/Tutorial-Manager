@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Check, Video as VideoIcon, X, Wand2, Pencil } from 'lucide-react';
 import { Change, Kind, Run, ago, labelOf, PHASES } from '../../_shared/model';
-import { Header, Modal, Shell } from '../../_shared/ui';
+import { Header, Modal, ModeChip, MODE_COPY, Shell, useUpdateMode } from '../../_shared/ui';
 import { locate, buildRanges, Range } from './locate';
 
 type VideoInfo = {
@@ -193,7 +193,11 @@ export default function VideoPage() {
   };
 
   // ── update mode ───────────────────────────────────────────────────────────
+  // The header chip and the mode card both go through this. Switching AUTO on
+  // needs the film's Claude Design project, so without one the modal asks for it.
+  const mode = useUpdateMode(load);
   const saveMode = async (patch: { autoUpdate?: boolean; editorProject?: string | null }) => {
+    if (patch.autoUpdate === true && video && !video.designUrl) { mode.open(video, true); return; }
     setSavingMode(true);
     setModeErr(null);
     try {
@@ -203,7 +207,11 @@ export default function VideoPage() {
         body: JSON.stringify(patch),
       });
       const j = await res.json();
-      if (!res.ok) { setModeErr(j.error ?? 'Could not save.'); return; }
+      if (!res.ok) {
+        if (j.needsDesignUrl && video) { mode.open(video, true); return; }
+        setModeErr(j.error ?? 'Could not save.');
+        return;
+      }
       setSlugDraft(null);
       await load();
     } catch {
@@ -568,14 +576,12 @@ export default function VideoPage() {
             CHECK + EMAIL
           </button>
         </div>
-        <p className="mode-desc">
-          {auto
-            ? 'Built in the StepByStep editor. When the product changes, the pipeline briefs an agent on your machine, updates the animation, re-renders, regenerates the affected narration and re-syncs the timeline — you just review the result here.'
-            : 'Not built in the editor. When the product changes, the daily check audits this script and emails you a digest — then you accept the changes above and re-record the affected sections yourself. No agent ever touches it.'}
-        </p>
-        {video.clientAutoDefault === false && (
+        <p className="mode-desc">{auto ? MODE_COPY.auto : MODE_COPY.manual}</p>
+        {!auto && (
           <p className="mono client-default">
-            {video.client}&rsquo;s videos are produced outside the editor — new videos for this client start on CHECK + EMAIL.
+            {video.designUrl
+              ? 'Claude Design project linked — switching to AUTO-UPDATE takes effect at the next product change.'
+              : 'Switching to AUTO-UPDATE asks for this film\u2019s Claude Design project first.'}
           </p>
         )}
         {auto && (
@@ -585,7 +591,7 @@ export default function VideoPage() {
               {video.designUrl ? (
                 <a className="mm-v" href={video.designUrl} target="_blank" rel="noreferrer">{video.designUrl}</a>
               ) : (
-                <span className="mm-v muted">no Claude Design URL — add it with Edit</span>
+                <span className="mm-v muted">no Claude Design project — the pipeline cannot rebuild this</span>
               )}
             </div>
             <div className="mm-row">
@@ -640,7 +646,7 @@ export default function VideoPage() {
           right={
             <>
               <div className="hpills">
-                <span className={`mode ${auto ? 'auto' : 'manual'}`}>{auto ? 'AUTO' : 'MANUAL'}</span>
+                <ModeChip auto={auto} onClick={() => mode.open(video)} />
                 <span className={`pill ${st.kind}`}><span className="pdot" />{st.label}</span>
               </div>
               <button type="button" className="btn" onClick={openEdit} title="Edit the title and description">
@@ -701,6 +707,8 @@ export default function VideoPage() {
         <div className="vcol right">{scriptPane}</div>
       </div>
 
+      {mode.modal}
+
       {showEdit && (
         <Modal
           title="Edit video"
@@ -733,7 +741,7 @@ export default function VideoPage() {
               <label htmlFor="evdesign">Claude Design URL <span className="opt">optional</span></label>
               <input id="evdesign" className="inp" type="url" value={edit.designUrl} placeholder="https://claude.ai/design/p/…"
                 onChange={(e) => setEdit((s) => ({ ...s, designUrl: e.target.value }))} />
-              <p className="field-hint">The animation project the pipeline opens to edit this video. Clear it to unset.</p>
+              <p className="field-hint">The animation project the pipeline opens to edit this video. Clearing it switches the video to check + email.</p>
             </div>
             {editErr && <p className="modeerr mono">{editErr}</p>}
           </form>

@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     const queued = await prisma.runRequest.findMany({
       where: { status: 'queued' },
       orderBy: { created_at: 'asc' },
-      include: { project: { select: { auto_update: true } } },
+      include: { project: { select: { auto_update: true, design_url: true } } },
     });
     for (const q of queued) {
       // The video was switched to notify-only after this was queued (or slipped
@@ -50,6 +50,16 @@ export async function POST(req: NextRequest) {
         await prisma.runRequest.update({
           where: { id: q.id },
           data: { status: 'done', finished_at: new Date(), detail: 'skipped — video is notify-only (manual update)' },
+        });
+        continue;
+      }
+      // No Claude Design project linked: there is no animation for the agent to
+      // edit, and the local brief composer would fall back to the wrong harness.
+      // The UI won't let AUTO be on without a link; this catches stale rows.
+      if (!q.project.design_url) {
+        await prisma.runRequest.update({
+          where: { id: q.id },
+          data: { status: 'done', finished_at: new Date(), detail: 'skipped — no Claude Design project linked (switch auto-update on from the video page to link one)' },
         });
         continue;
       }

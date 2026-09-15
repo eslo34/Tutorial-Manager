@@ -61,14 +61,18 @@ export async function POST(req: NextRequest) {
   const project = await prisma.project.findFirst({
     where: { title: VIDEO_TITLE },
     orderBy: { updated_at: 'desc' },
-    select: { id: true, title: true, auto_update: true },
+    select: { id: true, title: true, auto_update: true, design_url: true },
   });
   if (!project) return NextResponse.json({ error: `no project "${VIDEO_TITLE}"` }, { status: 404 });
 
-  // Notify-only video (not built in the editor): the original system owns it —
-  // the daily check audits the script and emails a digest. Never queue a run.
+  // Notify-only video (not built in the editor, or not finished yet): the
+  // original system owns it — the daily check audits the script and emails a
+  // digest. Never queue a run. Same if no Claude Design project is linked.
   if (!project.auto_update) {
     return NextResponse.json({ ok: true, skipped: 'notify-only', video: project.title });
+  }
+  if (!project.design_url) {
+    return NextResponse.json({ ok: true, skipped: 'no-design-project', video: project.title });
   }
 
   // Idempotent against webhook redelivery: skip if this sha is already in flight.

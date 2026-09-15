@@ -170,11 +170,19 @@ export const CSS = `
 .sbs .tile-title{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:18px;}
 .sbs .tile-client{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-top:4px;}
 .sbs .tile-foot{font-size:9.5px;letter-spacing:.06em;color:var(--text-3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.sbs .tile-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;}
+.sbs .tile-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-right:76px;}
 .sbs .mode{flex-shrink:0;font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.16em;
   padding:3px 7px;border-radius:5px;border:1px solid var(--line-2);color:var(--text-3);white-space:nowrap;}
 .sbs .mode.auto{color:var(--sync);border-color:var(--sync-line);background:rgba(95,227,140,.07);}
 .sbs .mode.manual{color:var(--text-2);border-color:var(--line-2);background:rgba(151,164,190,.06);}
+/* the chip as the switch: same look, plus a hand cursor and a lift on hover */
+.sbs button.mode{appearance:none;cursor:pointer;line-height:normal;margin:0;
+  transition:border-color .18s var(--ease),background .18s var(--ease),color .18s var(--ease);}
+.sbs button.mode.manual:hover{color:var(--text);border-color:var(--text-3);background:rgba(151,164,190,.14);}
+.sbs button.mode.auto:hover{border-color:var(--sync);background:rgba(95,227,140,.16);}
+.sbs button.mode:focus-visible{outline:2px solid var(--sync);outline-offset:2px;}
+/* sits where the chip used to be, but outside the tile's link */
+.sbs .tile .tile-mode{position:absolute;right:16px;bottom:15px;z-index:3;}
 
 /* ── video page ─────────────────────────────────────────────────────────── */
 .sbs .dhead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:6px;}

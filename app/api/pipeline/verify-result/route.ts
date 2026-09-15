@@ -51,11 +51,13 @@ export async function POST(req: NextRequest) {
     const results = Array.isArray(body.results) ? body.results : [];
     const affected = results.filter((r) => r.affected && r.videoId);
 
-    // Queue a rebuild for each confirmed video whose project is still auto-update.
+    // Queue a rebuild for each confirmed video whose project is still auto-update
+    // AND has a Claude Design project to edit. Videos without one are still in
+    // production (or manual) — they only get the check-and-email path.
     const launched: string[] = [];
     for (const r of affected) {
       const project = await prisma.project.findFirst({
-        where: { id: r.videoId, auto_update: true },
+        where: { id: r.videoId, auto_update: true, design_url: { not: null } },
         select: { id: true, title: true },
       });
       if (!project) continue;

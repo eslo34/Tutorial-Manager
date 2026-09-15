@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Plus, GitBranch, Pencil, ListChecks } from 'lucide-react';
 import { ago, shortDate, videoState } from '../../_shared/model';
-import { Header, Modal, RunFlow, Shell, VideoTile, useBoard, latestRuns } from '../../_shared/ui';
+import { Header, Modal, RunFlow, Shell, VideoTile, useBoard, useUpdateMode, latestRuns } from '../../_shared/ui';
 import VideoListModal from './VideoListModal';
 
 type RepoRun = { id: string; started_at: string; status: string; summary: string | null };
@@ -28,6 +28,9 @@ export default function ClientBoard() {
 
   // internal video list (planning note — see VideoListModal)
   const [showList, setShowList] = useState(false);
+
+  // per-video update mode — the AUTO/MANUAL chip on every tile opens this
+  const mode = useUpdateMode(reload);
 
   // repo-updates config
   const [showRepo, setShowRepo] = useState(false);
@@ -244,7 +247,7 @@ export default function ClientBoard() {
           ) : (
             <div className="grid">
               {videos.map((v) => (
-                <VideoTile key={v.id} video={v} latest={latest.get(v.id)} onDelete={deleteVideo} />
+                <VideoTile key={v.id} video={v} latest={latest.get(v.id)} onDelete={deleteVideo} onMode={mode.open} />
               ))}
             </div>
           )}
@@ -265,8 +268,9 @@ export default function ClientBoard() {
           }
         >
           <p className="modal-note">
-            New videos start on <b>auto-update</b> unless this client&rsquo;s videos are made outside
-            the editor. You can switch either way on the video&rsquo;s own page.
+            New videos start on <b>check + email</b> — nothing gets rebuilt while a film is in
+            production or waiting on the client. Switch <b>auto-update</b> on from the video&rsquo;s
+            AUTO/MANUAL chip once it&rsquo;s approved; that asks for its Claude Design project.
           </p>
           <form id="newvideo" onSubmit={createVideo}>
             <div className="field">
@@ -289,6 +293,8 @@ export default function ClientBoard() {
           </form>
         </Modal>
       )}
+
+      {mode.modal}
 
       {showList && !isUnassigned && (
         <VideoListModal clientId={clientId} clientName={clientName} onClose={() => setShowList(false)} />

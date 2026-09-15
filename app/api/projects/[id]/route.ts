@@ -3,6 +3,11 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// The animation lives at claude.ai/design/p/<id>; anything else is a paste error.
+function isDesignUrl(url: string): boolean {
+  return /^https:\/\/claude\.ai\/design\//i.test(url)
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -53,6 +58,7 @@ export async function GET(
       pendingEditsCount: project._count.pending_edits,
       autoUpdate: project.auto_update,
       editorProject: project.editor_project,
+      designUrl: project.design_url,
     }
 
     return NextResponse.json({ project: transformedProject })
@@ -63,11 +69,17 @@ export async function GET(
 }
 
 // PATCH — change how this video is kept up to date.
-//   autoUpdate:false (default) → the original system: when the product changes we
-//     audit the script and email a digest; a human updates the video.
-//   autoUpdate:true → the animation pipeline may auto-update it end-to-end. Only
-//     meaningful for videos actually built in the StepByStep editor, so we require
-//     an editorProject slug before allowing it.
+//   autoUpdate:false (default for new videos) → the original system: when the
+//     product changes we audit the script and email a digest; a human updates
+//     the video. Films still in production, or not yet approved by the client,
+//     stay here.
+//   autoUpdate:true → the animation pipeline may rebuild it end-to-end. That is
+//     only possible with a linked Claude Design project (the animation the agent
+//     edits), so switching it on REQUIRES a design URL — either already stored or
+//     sent in the same request. Without one the brief composer falls back to the
+//     wrong harness (the 2026-09-12 wrong-brief halt), so the gate lives here at
+//     the source and every pipeline route re-checks it.
+// Clearing the design URL of an AUTO video switches it back to check + email.
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -80,7 +92,7 @@ export async function PATCH(
 
     const existing = await prisma.project.findFirst({
       where: { id: params.id, user_id: session.user.id },
-      select: { id: true, editor_project: true },
+      select: { id: true, editor_project: true, auto_update: true, design_url: true },
     })
     if (!existing) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -104,6 +116,9 @@ export async function PATCH(
     // Claude Design URL (the animation project). '' clears it.
     if (typeof body.designUrl === 'string' || body.designUrl === null) {
       const url = typeof body.designUrl === 'string' ? body.designUrl.trim() : ''
+      if (url !== '' && !isDesignUrl(url)) {
+        return NextResponse.json({ error: "That doesn't look like a Claude Design project URL (https://claude.ai/design/p/…)." }, { status: 400 })
+      }
       data.design_url = url === '' ? null : url
     }
 
@@ -112,9 +127,24 @@ export async function PATCH(
       data.editor_project = slug === '' ? null : slug
     }
     // No editor-slug requirement to turn auto-update on: the launched agent finds
-    // the right editor project itself by matching the video's title.
+    // the right editor project itself by matching the video's title. The design
+    // URL is the one hard requirement — see the note above.
     if (typeof body.autoUpdate === 'boolean') {
       data.auto_update = body.autoUpdate
+    }
+    const designAfter = 'design_url' in data ? data.design_url : existing.design_url
+    const autoAfter = data.auto_update ?? existing.auto_update
+    let note: string | null = null
+    if (autoAfter && !designAfter) {
+      if (data.auto_update === true) {
+        return NextResponse.json(
+          { error: "Link this video's Claude Design project before switching auto-update on.", needsDesignUrl: true },
+          { status: 400 }
+        )
+      }
+      // The link was just cleared on an AUTO video: it can't be rebuilt any more.
+      data.auto_update = false
+      note = 'Switched to check + email — no Claude Design project is linked.'
     }
     if (Object.keys(data).length === 0) {
       return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
@@ -134,6 +164,7 @@ export async function PATCH(
         description: updated.description,
         designUrl: updated.design_url,
       },
+      note,
     })
   } catch (error) {
     console.error('Error updating project:', error)

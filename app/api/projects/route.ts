@@ -65,12 +65,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Client ID and title are required' }, { status: 400 })
     }
 
-    // New videos are auto-updated by the animation pipeline unless the client is
-    // one whose videos are produced outside the editor (e.g. cut in Premiere) —
-    // then they start on the original check-and-email system.
+    // Every new video starts on the original check-and-email system. A film that
+    // is still being made, or that the client hasn't approved yet, must never be
+    // rebuilt by the pipeline — so auto-update is something you switch ON from
+    // the video's page once it is finished, and switching it on requires the
+    // linked Claude Design project (PATCH /api/projects/[id] enforces that).
+    // Client.auto_update_default is no longer read: it used to seed this and
+    // made unfinished films AUTO by default.
     const client = await prisma.client.findFirst({
       where: { id: clientId, user_id: session.user.id },
-      select: { auto_update_default: true },
+      select: { id: true },
     })
     if (!client) {
       return NextResponse.json({ error: 'Client not found' }, { status: 404 })
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
         status: status || 'planning',
         video_type: videoType || 'tutorial',
         source_type: sourceType === 'code' ? 'code' : 'docs',
-        auto_update: client.auto_update_default,
+        auto_update: false,
         design_url: typeof designUrl === 'string' && designUrl.trim() ? designUrl.trim() : null,
         user_id: session.user.id
       }

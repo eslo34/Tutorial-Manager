@@ -33,7 +33,7 @@ export async function GET() {
         // The video page fetches its own script from /api/pipeline/video/[id].
         select: {
           id: true, title: true, description: true, client_id: true, auto_update: true,
-          editor_project: true, updated_at: true,
+          editor_project: true, design_url: true, updated_at: true,
           client: { select: { name: true } },
         },
       }),
@@ -81,6 +81,7 @@ export async function GET() {
         autoApplied: countFor(p.id, 'auto_applied'),
         autoUpdate: p.auto_update,
         editorProject: p.editor_project,
+        designUrl: p.design_url,
         updatedAt: p.updated_at,
       })),
       runs: runs.map((r) => ({

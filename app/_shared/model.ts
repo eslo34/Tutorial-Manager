@@ -44,6 +44,7 @@ export type Video = {
   autoApplied: number;  // status 'auto_applied' → pipeline already did it, informational
   autoUpdate: boolean;  // false = MANUAL: check + email, you update the video
   editorProject: string | null;
+  designUrl: string | null; // the Claude Design animation; AUTO is impossible without it
   updatedAt: string;
 };
 
