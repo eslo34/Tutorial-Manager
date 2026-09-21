@@ -498,9 +498,8 @@ model RepoScan {
 // with ended_at = null; the server holds started_at, so the count survives a
 // reload, a closed tab, or a switch of machine. Only one session per user runs
 // at a time — starting a new one stops the old one. Stretches can also be typed
-// in after the fact (from the modal or the MCP server's add_work_session) for
-// time that went untracked. Duration is never stored: it is ended_at -
-// started_at, computed on read.
+// in after the fact from the modal, for time that went untracked. Duration is
+// never stored: it is ended_at - started_at, computed on read.
 model WorkSession {
   id         String    @id @default(cuid())
   project_id String

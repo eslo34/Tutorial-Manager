@@ -24,7 +24,7 @@ const { PrismaClient } = prismaPkg;
 // merge rules, so a list imported here and one edited in the UI cannot drift.
 import { normalizeList, mergeTicks, listStats } from "../lib/video-list.mjs";
 // Time tracking — same summariser and report builder the app's /api/work uses.
-import { buildReport, summarize, secondsOf, fmtDuration, normalizeNotes } from "../lib/work-log.mjs";
+import { buildReport } from "../lib/work-log.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
@@ -223,50 +223,6 @@ const TOOLS = [
       },
     },
   },
-  {
-    name: "get_work_log",
-    description:
-      "The time log of one video: every tracked stretch (start, end, minutes), whether a timer is running, the total, " +
-      "and the notes. 'project' may be a project id or a title (substring).",
-    inputSchema: {
-      type: "object",
-      properties: {
-        project: { type: "string", description: "Project id or title." },
-      },
-      required: ["project"],
-    },
-  },
-  {
-    name: "add_work_session",
-    description:
-      "Log a stretch of work on a video after the fact (e.g. 'I spent 2h on it yesterday'). Give started_at as an ISO " +
-      "date-time and either ended_at or minutes. Requires the exact project id.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        project_id: { type: "string", description: "Exact project id (from list_projects)." },
-        started_at: { type: "string", description: "ISO 8601 start, e.g. 2026-09-11T13:00:00+02:00." },
-        ended_at: { type: "string", description: "ISO 8601 end. Give this or `minutes`." },
-        minutes: { type: "number", description: "Duration in minutes, instead of ended_at." },
-      },
-      required: ["project_id", "started_at"],
-    },
-  },
-  {
-    name: "set_work_notes",
-    description:
-      "Write a video's time-tracking notes. `notes` replaces the whole text; `append` adds a dated paragraph under what is " +
-      "there (use this for 'note that…'). Requires the exact project id.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        project_id: { type: "string", description: "Exact project id (from list_projects)." },
-        notes: { type: "string", description: "Replace the notes with this text." },
-        append: { type: "string", description: "Add this as a new dated paragraph under the existing notes." },
-      },
-      required: ["project_id"],
-    },
-  },
 ];
 
 // --- Tool handlers -----------------------------------------------------------
@@ -448,89 +404,6 @@ async function handleGetTimeReport(args) {
   return ok(report);
 }
 
-async function handleGetWorkLog(args) {
-  const p = await findProject(args.project);
-  if (!p) return fail(`No project found for "${args.project}".`);
-  const sessions = await prisma.workSession.findMany({
-    where: { project_id: p.id },
-    orderBy: { started_at: "asc" },
-  });
-  const sum = summarize(sessions);
-  return ok({
-    id: p.id,
-    title: p.title,
-    client: p.client?.name ?? null,
-    total_min: Math.round(sum.total_sec / 60),
-    total_human: fmtDuration(sum.total_sec),
-    days_worked: sum.days_worked,
-    first_worked_at: sum.first_worked_at,
-    last_worked_at: sum.last_worked_at,
-    timer_running: sum.running
-      ? { since: sum.running.started_at, min_so_far: Math.round(secondsOf(sum.running) / 60) }
-      : null,
-    notes: p.work_notes ?? null,
-    sessions: sessions.map((s) => ({
-      id: s.id,
-      started_at: s.started_at,
-      ended_at: s.ended_at,
-      min: Math.round(secondsOf(s) / 60),
-    })),
-  });
-}
-
-async function handleAddWorkSession(args) {
-  const p = await prisma.project.findUnique({ where: { id: args.project_id }, select: { id: true, title: true } });
-  if (!p) return fail(`No project with id "${args.project_id}".`);
-  const started = new Date(args.started_at);
-  if (Number.isNaN(started.getTime())) return fail("started_at must be an ISO 8601 date-time.");
-  let ended;
-  if (args.ended_at) {
-    ended = new Date(args.ended_at);
-    if (Number.isNaN(ended.getTime())) return fail("ended_at must be an ISO 8601 date-time.");
-  } else if (typeof args.minutes === "number" && args.minutes > 0) {
-    ended = new Date(started.getTime() + Math.round(args.minutes * 60000));
-  } else {
-    return fail("Give ended_at or a positive minutes.");
-  }
-  if (ended <= started) return fail("The end must come after the start.");
-
-  const created = await prisma.workSession.create({
-    data: { project_id: p.id, started_at: started, ended_at: ended },
-  });
-  return ok({
-    added: true,
-    id: created.id,
-    project: p.title,
-    started_at: created.started_at,
-    ended_at: created.ended_at,
-    min: Math.round(secondsOf(created) / 60),
-  });
-}
-
-async function handleSetWorkNotes(args) {
-  const p = await prisma.project.findUnique({
-    where: { id: args.project_id },
-    select: { id: true, title: true, work_notes: true },
-  });
-  if (!p) return fail(`No project with id "${args.project_id}".`);
-  let notes;
-  if (typeof args.notes === "string") {
-    notes = normalizeNotes(args.notes);
-  } else if (typeof args.append === "string" && args.append.trim()) {
-    const stamp = new Date().toISOString().slice(0, 10);
-    const prev = p.work_notes ? `${p.work_notes.trimEnd()}\n\n` : "";
-    notes = normalizeNotes(`${prev}[${stamp}] ${args.append.trim()}`);
-  } else {
-    return fail("Nothing to write: give notes or append.");
-  }
-  const updated = await prisma.project.update({
-    where: { id: p.id },
-    data: { work_notes: notes },
-    select: { work_notes: true },
-  });
-  return ok({ updated: true, project: p.title, notes: updated.work_notes ?? null });
-}
-
 // --- Wire up the server ------------------------------------------------------
 const server = new Server(
   { name: "tutorial-scripts", version: "0.1.0" },
@@ -559,12 +432,6 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         return await handleSetVideoList(args);
       case "get_time_report":
         return await handleGetTimeReport(args);
-      case "get_work_log":
-        return await handleGetWorkLog(args);
-      case "add_work_session":
-        return await handleAddWorkSession(args);
-      case "set_work_notes":
-        return await handleSetWorkNotes(args);
       default:
         return fail(`Unknown tool: ${name}`);
     }
