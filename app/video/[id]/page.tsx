@@ -3,17 +3,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Check, Video as VideoIcon, X, Wand2, Pencil } from 'lucide-react';
+import { Check, Video as VideoIcon, X, Wand2, Pencil, Timer } from 'lucide-react';
+import { fmtClock, fmtDuration } from '@/lib/work-log.mjs';
 import { Change, Kind, Run, ago, labelOf, PHASES } from '../../_shared/model';
 import { Header, Modal, ModeChip, MODE_COPY, Shell, useUpdateMode } from '../../_shared/ui';
 import { locate, buildRanges, Range } from './locate';
+import WorkLogModal, { useNow } from './WorkLogModal';
 
 type VideoInfo = {
   id: string; title: string; description: string; clientId: string | null; client: string | null;
   script: string; autoUpdate: boolean; editorProject: string | null; designUrl: string | null; clientAutoDefault: boolean;
   updatedAt: string;
 };
-type Data = { video: VideoInfo; changes: Change[]; runs: Run[] };
+// `work` is the time-tracking headline only — the running timer and the total —
+// so the header's Time button can tick; the full log loads in its own modal.
+type Work = { running: { id: string; started_at: string } | null; total_sec: number };
+type Data = { video: VideoInfo; changes: Change[]; runs: Run[]; work: Work };
 
 const sevKind: Record<string, Kind> = { critical: 'stale', moderate: 'render', minor: 'sync' };
 
@@ -61,6 +66,11 @@ export default function VideoPage() {
   const [savingMode, setSavingMode] = useState(false);
   const [modeErr, setModeErr] = useState<string | null>(null);
 
+  // time tracking — the modal owns the details; the header only ticks
+  const [showWork, setShowWork] = useState(false);
+  const running = data?.work?.running ?? null;
+  const now = useNow(!!running);
+
   // edit title / description
   const [showEdit, setShowEdit] = useState(false);
   const [edit, setEdit] = useState({ title: '', description: '', designUrl: '' });
@@ -99,6 +109,8 @@ export default function VideoPage() {
   const runs = data?.runs ?? [];
   const latest = runs[0];
   const auto = video?.autoUpdate === true;
+  const totalSec = data?.work?.total_sec ?? 0;
+  const runningSec = running ? Math.max(0, Math.round((now - new Date(running.started_at).getTime()) / 1000)) : 0;
 
   const pending = changes.filter((c) => c.status === 'pending');
   const accepted = changes.filter((c) => c.status === 'accepted');
@@ -649,6 +661,15 @@ export default function VideoPage() {
                 <ModeChip auto={auto} onClick={() => mode.open(video)} />
                 <span className={`pill ${st.kind}`}><span className="pdot" />{st.label}</span>
               </div>
+              <button
+                type="button"
+                className={`btn wl-btn${running ? ' on' : ''}`}
+                onClick={() => setShowWork(true)}
+                title={running ? 'Timer running' : 'Track the time behind this video'}
+              >
+                <Timer className="w-3.5 h-3.5" />
+                {running ? <span className="mono">{fmtClock(runningSec)}</span> : totalSec > 0 ? fmtDuration(totalSec) : 'Time'}
+              </button>
               <button type="button" className="btn" onClick={openEdit} title="Edit the title and description">
                 <Pencil className="w-3.5 h-3.5" />Edit
               </button>
@@ -708,6 +729,10 @@ export default function VideoPage() {
       </div>
 
       {mode.modal}
+
+      {showWork && (
+        <WorkLogModal projectId={id} title={video.title} onClose={() => setShowWork(false)} onChange={load} />
+      )}
 
       {showEdit && (
         <Modal

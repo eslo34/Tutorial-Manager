@@ -397,6 +397,35 @@ export const CSS = `
 .sbs .vl-add:hover{color:var(--sync);background:var(--sync-dim);}
 .sbs .vl-add.group{margin-top:10px;border:1px dashed var(--line-2);width:100%;justify-content:center;padding:11px;}
 
+/* ── work log (time tracking behind a video) ────────────────────────────── */
+.sbs .wl-btn.on{color:var(--render);border-color:var(--render-line);background:var(--render-dim);}
+.sbs .wl-btn.on .mono{font-size:10.5px;letter-spacing:.08em;}
+.sbs .wl-btn.on svg{animation:blink 1.3s var(--ease) infinite;}
+.sbs .wl-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.sbs .wl-big{font-size:34px;font-weight:600;letter-spacing:-.02em;color:var(--text);line-height:1;}
+.sbs .wl-sub{font-size:9.5px;letter-spacing:.16em;color:var(--text-3);margin-top:9px;}
+.sbs .wl-timer{display:flex;align-items:center;gap:14px;}
+.sbs .wl-clock{font-size:30px;font-weight:600;letter-spacing:-.01em;color:var(--render);line-height:1;}
+.sbs .wl-warn{margin:12px 0 0;font-size:10px;line-height:1.5;color:var(--render);}
+.sbs .wl-notice{margin-top:14px;}
+.sbs .wl-sessions{display:flex;flex-direction:column;gap:2px;}
+.sbs .wl-empty{margin:2px 0 6px;font-size:12px;line-height:1.6;color:var(--text-3);}
+.sbs .wl-row{display:flex;align-items:center;gap:12px;padding:7px 8px;border-radius:7px;}
+.sbs .wl-row:hover{background:rgba(151,164,190,.05);}
+.sbs .wl-when{font-size:10.5px;color:var(--text-2);flex:1;}
+.sbs .wl-dur{font-size:11px;font-weight:600;color:var(--text);}
+.sbs .wl-row.live .wl-dur{color:var(--render);}
+.sbs .wl-icon{appearance:none;background:transparent;border:0;cursor:pointer;color:var(--text-3);padding:5px;line-height:0;border-radius:6px;flex-shrink:0;}
+.sbs .wl-icon:hover{color:var(--text);background:rgba(151,164,190,.08);}
+.sbs .wl-icon.del:hover{color:var(--stale);background:var(--stale-dim);}
+.sbs .wl-erow{display:flex;align-items:center;gap:7px;padding:6px 2px;flex-wrap:wrap;}
+.sbs .wl-erow .inp{padding:6px 9px;font-size:11.5px;width:auto;}
+.sbs .wl-erow input[type=datetime-local]{width:172px;color-scheme:dark;}
+.sbs .wl-arrow{color:var(--text-3);font-size:11px;}
+.sbs .wl-sec{display:flex;align-items:center;}
+.sbs .wl-sec .vl-saved{margin-left:auto;}
+.sbs .wl-notes{font-size:12.5px;}
+
 /* ── empty state ────────────────────────────────────────────────────────── */
 .sbs .empty{text-align:center;padding:64px 20px;}
 .sbs .empty h2{font-size:19px;font-weight:700;color:var(--text);margin:0 0 8px;letter-spacing:-.01em;}

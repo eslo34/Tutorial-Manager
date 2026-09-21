@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { summarize } from '@/lib/work-log.mjs';
 
 // GET /api/pipeline/video/[id] — everything the merged video page needs: the
 // script, the detected changes (PendingScriptEdit — both the cron's suggestions
-// and the animation pipeline's auto-applied lines), and the pipeline runs.
+// and the animation pipeline's auto-applied lines), the pipeline runs, and the
+// time-tracking headline (running timer + total) for the header's "Time" button.
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -20,7 +22,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     });
     if (!video) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const [changes, runs] = await Promise.all([
+    const [changes, runs, sessions] = await Promise.all([
       prisma.pendingScriptEdit.findMany({
         where: { project_id: video.id, status: { in: ['pending', 'accepted', 'auto_applied'] } },
         orderBy: [{ severity: 'asc' }, { detected_at: 'desc' }],
@@ -31,7 +33,13 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         take: 10,
         include: { events: { orderBy: { at: 'asc' } } },
       }),
+      // Just enough to show a ticking total; the full log loads in its modal.
+      prisma.workSession.findMany({
+        where: { project_id: video.id },
+        select: { id: true, started_at: true, ended_at: true },
+      }),
     ]);
+    const work = summarize(sessions);
 
     return NextResponse.json({
       video: {
@@ -79,6 +87,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         brief_at: r.brief_at,
         events: r.events.map((e) => ({ phase: e.phase, status: e.status, detail: e.detail, at: e.at })),
       })),
+      work: {
+        running: work.running,
+        total_sec: work.total_sec,
+      },
     });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });

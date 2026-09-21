@@ -142,6 +142,13 @@ model Project {
   // opens this to edit the animation. Replaces the local video-map's designUrl.
   design_url          String?
 
+  // TIME TRACKING. The hours behind this video live in WorkSession rows (one per
+  // timer run or hand-typed stretch); this is the one free-text note on the whole
+  // video — what made it slow or fast, what was charged, anything a pricing
+  // review should know. Read together with the sessions by the MCP server's
+  // get_time_report, so an AI can look at every video at once.
+  work_notes          String?
+
   // Relations
   user                User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
   client              Client         @relation(fields: [client_id], references: [id], onDelete: Cascade)
@@ -149,6 +156,7 @@ model Project {
   script_chat_messages ScriptChatMessage[]
   pipeline_runs       PipelineRun[]
   run_requests        RunRequest[]
+  work_sessions       WorkSession[]
 
   @@map("projects")
 }
@@ -483,4 +491,26 @@ model RepoScan {
 
   @@index([status, created_at])
   @@map("repo_scans")
+}
+
+// ── Time tracking ────────────────────────────────────────────────────────────
+// One stretch of work on a video. The timer on the video page is simply a row
+// with ended_at = null; the server holds started_at, so the count survives a
+// reload, a closed tab, or a switch of machine. Only one session per user runs
+// at a time — starting a new one stops the old one. Stretches can also be typed
+// in after the fact (from the modal or the MCP server's add_work_session) for
+// time that went untracked. Duration is never stored: it is ended_at -
+// started_at, computed on read.
+model WorkSession {
+  id         String    @id @default(cuid())
+  project_id String
+  started_at DateTime
+  ended_at   DateTime? // null = running
+  created_at DateTime  @default(now())
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id, started_at(sort: Desc)])
+  @@index([ended_at])
+  @@map("work_sessions")
 }
